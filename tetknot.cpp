@@ -1,6 +1,8 @@
 #include "lib/pez/pez.h"
 #include "jsoncpp/json.h"
 #include "tetgen/tetgen.h"
+#include "glm/glm.hpp"
+#include "glm/gtx/constants.inl"
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -43,6 +45,43 @@ void ReadJsonFile(string filename, Json::Value* root)
     }
 }
 
+// Creates a circular ribbon, composing it out of quads.
+void GenerateWheel(glm::vec3 center, float radius, float width,
+                   int numQuads, tetgenio* dest)
+{
+    dest->numberofpoints = numQuads * 2;
+    dest->pointlist = new float[dest->numberofpoints * 3];
+    const float twopi = 2 * glm::pi<float>();
+    const float dtheta = twopi / numQuads;
+    float* coord = dest->pointlist;
+    for (float theta = 0; theta < twopi - dtheta / 2; theta += dtheta) {
+        float x = radius * std::cos(theta);
+        float y = radius * std::sin(theta);
+        float z0 = -width / 2;
+        float z1 = width / 2;
+        *coord++ = x;
+        *coord++ = y;
+        *coord++ = z0;
+        *coord++ = x;
+        *coord++ = y;
+        *coord++ = z1;
+    }
+
+    dest->numberoftrifaces = numQuads * 2;
+    dest->trifacelist = new int[dest->numberoftrifaces * 3];
+    int numPoints = dest->numberofpoints;
+    int numTris = dest->numberoftrifaces;
+    int* corner = dest->trifacelist;
+    for (int n = 0; n < numTris; n += 2) {
+        *corner++ = n;
+        *corner++ = n+1;
+        *corner++ = (n+2) % numPoints;
+        *corner++ = (n+2) % numPoints;
+        *corner++ = n+1;
+        *corner++ = (n+3) % numPoints;
+    }
+}
+
 void PezInitialize()
 {
     Json::Value root;
@@ -50,6 +89,9 @@ void PezInitialize()
 
     Blob centerlines;
     ReadBinaryFile("data/centerlines.bin", &centerlines);
+
+    tetgenio in;
+    GenerateWheel(glm::vec3(0), 1.0f, 0.1f, 32, &in);
 
     // Write a TubeGenerator class that generates verts in the "tetgen" format
 
