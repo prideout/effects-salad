@@ -119,7 +119,7 @@
 // To compile TetGen as a library instead of an executable program, define
 //   the TETLIBRARY symbol.
 
-// #define TETLIBRARY
+#define TETLIBRARY
 
 // Uncomment the following line to disable assert macros. These macros are
 //   inserted in places where I hope to catch bugs.
@@ -138,7 +138,7 @@
 // For double precision ( which will allow you to refine meshes to a smaller
 //   edge length), leave SINGLE undefined.
 
-// #define SINGLE
+#define SINGLE
 
 #ifdef SINGLE
   #define REAL float
