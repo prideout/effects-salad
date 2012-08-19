@@ -92,13 +92,13 @@
     
         // Lop off the trailing .c
         bstring name = bfromcstr(PezGetConfig().Title);
-        bstring shaderPrefix = bmidstr(name, 0, blength(name) - 1);
+        bstring shaderPrefix = bfromcstr("shaders/"); //bmidstr(name, 0, blength(name) - 1);
         pezSwInit(bdata(shaderPrefix));
         bdestroy(shaderPrefix);
 
         // Set up the Shader Wrangler
-        pezSwAddPath("./", ".glsl");
-        pezSwAddPath("../", ".glsl");
+        //pezSwAddPath("./", ".glsl");
+        //pezSwAddPath("../", ".glsl");
         pezSwAddDirective("*", "#version 150");
 
         // Perform user-specified intialization

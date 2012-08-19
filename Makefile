@@ -5,9 +5,14 @@ CXXFLAGS=-Wall -c -O3 -Ilib -Icommon
 OBJDIR=build
 
 SHARED := \
-	$(OBJDIR)/lib/pez/pez.o \
+	$(OBJDIR)/common/camera.o \
+	$(OBJDIR)/common/init.o \
+	$(OBJDIR)/common/programs.o \
+	$(OBJDIR)/common/surface.o \
+	$(OBJDIR)/common/transforms.o \
+	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
-	$(OBJDIR)/lib/lodepng/lodepng.o
+	$(OBJDIR)/lib/pez/pez.o
 
 UNAME := $(shell uname)
 
@@ -30,6 +35,7 @@ salad:  $(OBJDIR)/main.o $(SHARED)
 	$(CXX) $< $(SHARED) -o salad $(LIBS)
 
 $(OBJDIR):
+	@mkdir -p $@/common
 	@mkdir -p $@/lib/pez
 	@mkdir -p $@/lib/lodepng
 
