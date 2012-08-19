@@ -10,3 +10,6 @@
 *.lai
 *.la
 *.a
+
+# Library that generate build artifacts
+lib/jsoncpp/*
