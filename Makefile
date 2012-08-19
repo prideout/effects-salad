@@ -24,10 +24,13 @@ ifeq ($(UNAME), Darwin)
 endif
 
 
-all: $(OBJDIR) salad 
+all: $(OBJDIR) salad tetknot
 
 salad:  $(OBJDIR)/main.o $(SHARED)
 	$(CXX) $< $(SHARED) -o salad $(LIBS)
+
+tetknot:  $(OBJDIR)/tetknot.o $(SHARED)
+	$(CXX) $< $(SHARED) -o tetknot $(LIBS)
 
 $(OBJDIR):
 	@mkdir -p $@/lib/pez
