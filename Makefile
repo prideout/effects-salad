@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -Icommon
-CXXFLAGS=-Wall -c -O3 -Ilib
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -Icommon -Llib/jsoncpp
+CXXFLAGS=-Wall -c -O3 -Ilib -Icommon -Llib/jsoncpp
 OBJDIR=build
 
 SHARED := \
@@ -25,7 +25,7 @@ endif
 all: $(OBJDIR) salad 
 
 salad:  $(OBJDIR)/main.o $(SHARED)
-	$(CXX) $(FLAGS) $(SHARED) $< -o salad 
+	$(CXX) $< $(SHARED) -o salad $(LIBS)
 
 $(OBJDIR):
 	@mkdir -p $@/lib/pez
