@@ -1,5 +1,6 @@
 #include "lib/pez/pez.h"
 #include "jsoncpp/json.h"
+#include "common/init.h"
 #include "tetgen/tetgen.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/constants.inl"
@@ -8,8 +9,6 @@
 #include <streambuf>
 
 using namespace std;
-
-typedef std::vector<unsigned char> Blob;
 
 PezConfig PezGetConfig()
 {
@@ -22,28 +21,7 @@ PezConfig PezGetConfig()
     return config;
 }
 
-void ReadBinaryFile(string filename, Blob* destination)
-{
-    ifstream binFile(filename.c_str(), ios::binary);
-    vector<char> blob((istreambuf_iterator<char>(binFile)), 
-                      (istreambuf_iterator<char>()));
-    destination->resize(blob.size());
-    memcpy(&destination[0], &blob[0], blob.size());
-}
 
-void ReadJsonFile(string filename, Json::Value* root)
-{
-    ifstream jsonFile(filename.c_str());
-    string jsonString((istreambuf_iterator<char>(jsonFile)),
-                      istreambuf_iterator<char>());
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(jsonString.c_str(), *root);
-    if (!parsingSuccessful) {
-        cerr  << "Failed to parse knot metadata \n"
-              << reader.getFormatedErrorMessages();
-        exit(1);
-    }
-}
 
 // Creates a circular ribbon, composing it out of quads.
 void GenerateWheel(glm::vec3 center, float radius, float width,
@@ -85,10 +63,10 @@ void GenerateWheel(glm::vec3 center, float radius, float width,
 void PezInitialize()
 {
     Json::Value root;
-    ReadJsonFile("data/knots.json", &root);
+    ::ReadJsonFile("data/knots.json", &root);
 
     Blob centerlines;
-    ReadBinaryFile("data/centerlines.bin", &centerlines);
+    ::ReadBinaryFile("data/centerlines.bin", &centerlines);
 
     tetgenio in;
     GenerateWheel(glm::vec3(0), 1.0f, 0.1f, 32, &in);
