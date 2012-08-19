@@ -70,6 +70,13 @@ void PezInitialize()
     GenerateWheel(glm::vec3(0), 1.0f, 0.1f, 32, &in);
 
     // Write a TubeGenerator class that generates verts in the "tetgen" format
+    // Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
+    //   do quality mesh generation (q) with a specified quality bound
+    //   (1.414), and apply a maximum volume constraint (a0.1).
+
+    tetgenio out;
+    //tetrahedralize("pq1.414a0.1", &in, &out);
+    tetrahedralize("q1.414a0.1", &in, &out);
 
     // Call tetgen
     
