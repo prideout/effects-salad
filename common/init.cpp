@@ -1,6 +1,11 @@
 
 #include "init.h"
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <streambuf>
+
+using namespace std;
 
 void _CheckShader(bool success, const char* shaderType, const char* key) {
     pezCheck(success, 
@@ -56,3 +61,29 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
     glUseProgram(programHandle);
     return programHandle;
 }
+
+void ReadBinaryFile(string filename, Blob* destination)
+{
+    ifstream binFile(filename.c_str(), ios::binary);
+    vector<char> blob((istreambuf_iterator<char>(binFile)), 
+                      (istreambuf_iterator<char>()));
+    destination->resize(blob.size());
+    memcpy(&destination[0], &blob[0], blob.size());
+}
+
+void ReadJsonFile(string filename, Json::Value* root)
+{
+    ifstream jsonFile(filename.c_str());
+    string jsonString((istreambuf_iterator<char>(jsonFile)),
+                      istreambuf_iterator<char>());
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse(jsonString.c_str(), *root);
+    if (!parsingSuccessful) {
+        cerr  << "Failed to parse knot metadata \n"
+              << reader.getFormatedErrorMessages();
+        exit(1);
+    }
+}
+
+
+
