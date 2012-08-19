@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -Icommon -Llib/jsoncpp
-CXXFLAGS=-Wall -c -O3 -Ilib -Icommon -Llib/jsoncpp
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -Icommon
+CXXFLAGS=-Wall -c -O3 -Ilib -Icommon
 OBJDIR=build
 
 SHARED := \
@@ -17,8 +17,10 @@ ifeq ($(UNAME), Linux)
 endif
 
 ifeq ($(UNAME), Darwin)
+	CC = clang
+	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -framework OpenGL -framework AppKit
+	LIBS = -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a
 endif
 
 
@@ -44,4 +46,5 @@ $(OBJDIR)/%.o: %.m
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
+	rm -f salad 
 	rm -rf $(OBJDIR)
