@@ -7,14 +7,6 @@
 
 using namespace std;
 
-void _CheckShader(bool success, const char* shaderType, const char* key) {
-    pezCheck(success, 
-            "Can't find %s: %s\n"
-            "PezError: %s\n", 
-            key,
-            pezSwGetError());
-}
-
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
 {
     GLchar spew[256];
