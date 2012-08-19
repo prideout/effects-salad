@@ -900,7 +900,7 @@ bool tetgenio::load_off(char* filebasename)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp;
-  double *coord;
+  REAL *coord;
   int nverts = 0, iverts = 0;
   int nfaces = 0, ifaces = 0;
   int nedges = 0;
@@ -1048,7 +1048,7 @@ bool tetgenio::load_ply(char* filebasename)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp, *str;
-  double *coord;
+  REAL *coord;
   int endheader = 0, format = 0;
   int nverts = 0, iverts = 0;
   int nfaces = 0, ifaces = 0;
@@ -1255,7 +1255,7 @@ bool tetgenio::load_stl(char* filebasename)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp, *str;
-  double *coord;
+  REAL *coord;
   int solid = 0;
   int nverts = 0, iverts = 0;
   int nfaces = 0;
@@ -1278,7 +1278,7 @@ bool tetgenio::load_stl(char* filebasename)
   printf("Opening %s.\n", infilename);
 
   // STL file has no number of points available. Use a list to read points.
-  plist = new tetgenmesh::list(sizeof(double) * 3, NULL, 1024); 
+  plist = new tetgenmesh::list(sizeof(REAL) * 3, NULL, 1024); 
 
   while ((bufferp = readline(buffer, fp, &line_count)) != NULL) {
     // The ASCII .stl file must start with the lower case keyword solid and
@@ -1301,7 +1301,7 @@ bool tetgenio::load_stl(char* filebasename)
         bufferp = str;
         bufferp = strstr(bufferp, "vertex");
         if (bufferp != NULL) {
-          coord = (double *) plist->append(NULL);
+          coord = (REAL *) plist->append(NULL);
           for (i = 0; i < 3; i++) {
             bufferp = findnextnumber(bufferp);
             if (*bufferp == '\0') {
@@ -1329,7 +1329,7 @@ bool tetgenio::load_stl(char* filebasename)
   numberofpoints = nverts;
   pointlist = new REAL[nverts * 3];
   for (i = 0; i < nverts; i++) {
-    coord = (double *) (* plist)[i];
+    coord = (REAL *) (* plist)[i];
     iverts = i * 3;
     pointlist[iverts] = (REAL) coord[0];
     pointlist[iverts + 1] = (REAL) coord[1];
@@ -1384,7 +1384,7 @@ bool tetgenio::load_medit(char* filebasename)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp, *str;
-  double *coord;
+  REAL *coord;
   int *tmpfmlist;
   int dimension = 0;
   int nverts = 0;
@@ -1608,7 +1608,7 @@ bool tetgenio::load_vtk(char* filebasename)
   char line[INPUTLINESIZE];
   char mode[128], id[256], fmt[64];
   char *bufferp;
-  double *coord;
+  REAL *coord;
   float _x, _y, _z;
   int nverts = 0;
   int nfaces = 0;
@@ -31450,7 +31450,7 @@ void tetgenmesh::outelements(tetgenio* out)
   // Avoid compile warnings.
   outfile = (FILE *) NULL;
   tlist = (int *) NULL;
-  talist = (double *) NULL;
+  talist = (REAL *) NULL;
   pointindex = attribindex = 0;
 
   eextras = in->numberoftetrahedronattributes;
@@ -33297,7 +33297,7 @@ void tetgenmesh::outmesh2vtk(char* ofilename)
   char vtkfilename[FILENAMESIZE];
   point pointloop;
   tetrahedron* tptr;
-  double x, y, z;
+  REAL x, y, z;
   int n1, n2, n3, n4;
   int nnodes = 4;
   int celltype = 10;
@@ -34867,7 +34867,7 @@ int main(int argc, char *argv[])
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
+void tetrahedralize(const char *switches, tetgenio *in, tetgenio *out,
   tetgenio *addin, tetgenio *bgmin)
 
 #endif // not TETLIBRARY
@@ -34912,7 +34912,7 @@ void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
 
 #else // with TETLIBRARY
 
-  if (!b.parse_commandline(switches)) {
+  if (!b.parse_commandline((char*) switches)) {
     terminatetetgen(1);
   }
   tetrahedralize(&b, in, out, addin, bgmin);

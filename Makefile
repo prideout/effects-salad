@@ -16,6 +16,8 @@ SHARED := \
 	$(OBJDIR)/common/transforms.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
+	$(OBJDIR)/lib/tetgen/tetgen.o \
+	$(OBJDIR)/lib/tetgen/predicates.o \
 	$(OBJDIR)/lib/pez/pez.o
 
 UNAME := $(shell uname)
@@ -45,10 +47,16 @@ $(OBJDIR):
 	@mkdir -p $@/common
 	@mkdir -p $@/lib/pez
 	@mkdir -p $@/lib/lodepng
+	@mkdir -p $@/lib/tetgen
 
 $(OBJDIR)/%.o: %.cpp
 	@echo $<
 	$(CXX) $(CXXFLAGS) $< -o $@
+
+$(OBJDIR)/%.o: %.cxx
+	@echo $<
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 
 $(OBJDIR)/%.o: %.c
 	@echo $<
