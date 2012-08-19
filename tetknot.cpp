@@ -21,8 +21,6 @@ PezConfig PezGetConfig()
     return config;
 }
 
-
-
 // Creates a circular ribbon, composing it out of quads.
 void GenerateWheel(glm::vec3 center, float radius, float width,
                    int numQuads, tetgenio* dest)

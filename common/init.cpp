@@ -79,7 +79,8 @@ void ReadJsonFile(string filename, Json::Value* root)
     Json::Reader reader;
     bool parsingSuccessful = reader.parse(jsonString.c_str(), *root);
     if (!parsingSuccessful) {
-        cerr  << "Failed to parse knot metadata \n"
+        cerr  << "Failed to parse JSON file: "
+              << filename << endl
               << reader.getFormatedErrorMessages();
         exit(1);
     }
