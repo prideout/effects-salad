@@ -1,6 +1,6 @@
 -- Simple.FS
 
-in vec3 vNormal;
+//in vec3 vNormal;
 in vec3 vPosition;
 out vec4 FragColor;
 
@@ -11,11 +11,11 @@ void main()
 
 
 -- Simple.VS
-layout(location = 0) in vec4 Position;
-layout(location = 1) in vec3 Normal;
+layout(location = 0) in vec2 Position;
+//layout(location = 1) in vec3 Normal;
 
-out vec3 vPosition;
-out vec3 vNormal;
+out vec4 vPosition;
+//out vec3 vNormal;
 
 /*
 uniform mat4 Projection;
@@ -31,8 +31,10 @@ void main()
     gl_Position = Projection * Modelview * Position;
     vNormal = NormalMatrix * Normal;
     */
-    vPosition = Position.xyz;
-    vNormal = Normal;
+    vPosition.xy = Position.xy;
+    vPosition.z = 0.5;
+    vPosition.w = 1;
+    //vNormal = Normal;
 }
 
 

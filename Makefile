@@ -1,13 +1,17 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -Icommon
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib 
 CXXFLAGS=-Wall -c -O3 -Ilib -Icommon
 OBJDIR=build
 
 SHARED := \
 	$(OBJDIR)/common/camera.o \
+	$(OBJDIR)/common/demoContext.o \
+	$(OBJDIR)/common/drawable.o \
 	$(OBJDIR)/common/init.o \
+	$(OBJDIR)/common/mesh.o \
 	$(OBJDIR)/common/programs.o \
+	$(OBJDIR)/common/quad.o \
 	$(OBJDIR)/common/surface.o \
 	$(OBJDIR)/common/transforms.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
