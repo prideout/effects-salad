@@ -15,16 +15,13 @@ SHARED := \
 	$(OBJDIR)/common/surface.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
-	$(OBJDIR)/lib/tetgen/tetgen.o \
-	$(OBJDIR)/lib/tetgen/predicates.o \
 	$(OBJDIR)/lib/pez/pez.o
 
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
-	LIBS = -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a
-	CXXFLAGS := $(CXXFLAGS) -w
+	LIBS = -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
@@ -68,4 +65,5 @@ $(OBJDIR)/%.o: %.m
 
 clean:
 	rm -f salad 
+	rm -f tetknot
 	rm -rf $(OBJDIR)
