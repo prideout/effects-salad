@@ -12,7 +12,7 @@ using namespace std;
 
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);
 GLuint InitVao(int componentCount, const FloatList& verts);
-//GLuint InitVao(const Vec4List& verts, const IndexList& indices);
+GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices);
 
 void ReadBinaryFile(string filename, Blob* destination);
 

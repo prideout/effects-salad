@@ -6,7 +6,7 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(.2, .2, .9, 1.0);
+    FragColor = vec4(.1, .4, .9, 1.0);
 }
 
 
@@ -32,10 +32,10 @@ void main()
     vNormal = NormalMatrix * Normal;
     */
     vPosition.xy = Position.xy;
-    vPosition.z = 0.5;
+    vPosition.z = 0.1;
     vPosition.w = 1;
     gl_Position.xy = Position.xy;
-    gl_Position.z = 0.5;
+    gl_Position.z = 0.1;
     gl_Position.w = 1;
     //vNormal = Normal;
 }

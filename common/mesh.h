@@ -19,6 +19,10 @@ public:
 
     Mesh(int componentCount, const FloatList& verts);
 
+    Mesh(int componentCount, 
+        const FloatList& verts, 
+        const IndexList& indices);
+
 
     void Bind();
 

@@ -54,40 +54,30 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
     return programHandle;
 }
 
+GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices) {
+    GLuint vbo, vao, ibo;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-//GLuint InitVao(int componentCount, const FloatList& verts) {
+    // vertices
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts[0]) * verts.size(), &verts[0], GL_STATIC_DRAW);
+    pezCheck(glGetError() == GL_NO_ERROR, "vao-vbo setup failed");
+
+    // indices
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);
+    pezCheck(glGetError() == GL_NO_ERROR, "vao-ibo setup failed");
+
+    // setup the "Position" attribute
+    glVertexAttribPointer(0, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+    return vao;
+}
+
 GLuint InitVao(int componentCount, const FloatList& verts) {
-    /*
-    // Stretch to fit:
-    float q[] = {
-        -1, -1, 0, 1,
-        +1, -1, 1, 1,
-        -1, +1, 0, 0,
-        +1, +1, 1, 0 };
-        
-    if (sourceHeight < 0) {
-        sourceHeight = -sourceHeight;
-        q[3] = 1-q[3];
-        q[7] = 1-q[7];
-        q[11] = 1-q[11];
-        q[15] = 1-q[15];
-    }
-
-    float sourceRatio = (float) sourceWidth / sourceHeight;
-    float destRatio = (float) destWidth  / destHeight;
-    
-    // Horizontal fit:
-    if (sourceRatio > destRatio) {
-        q[1] = q[5] = -destRatio / sourceRatio;
-        q[9] = q[13] = destRatio / sourceRatio;
-
-    // Vertical fit:    
-    } else {
-        q[0] = q[8] = -sourceRatio / destRatio;
-        q[4] = q[12] = sourceRatio / destRatio;
-    }
-    */
-
     GLuint vbo, vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -103,7 +93,6 @@ GLuint InitVao(int componentCount, const FloatList& verts) {
     //glEnableVertexAttribArray(AttrTexCoord);
 
     return vao;
-
 }
 
 void ReadBinaryFile(string filename, Blob* destination)

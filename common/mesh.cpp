@@ -15,6 +15,16 @@ Mesh::Mesh(int componentCount, const FloatList& verts) :
     vao = ::InitVao(componentCount, verts);
 }
 
+Mesh::Mesh(int componentCount, 
+            const FloatList& verts, 
+            const IndexList& indices) :
+        vertexCount(verts.size()),
+        indexCount(indices.size()) {
+    
+    vao = ::InitVao(componentCount, verts, indices);
+}
+
+
 void Mesh::Bind() {
     glBindVertexArray(vao);
     pezCheck(vao != 0, "Invalid VAO in mesh.bind");

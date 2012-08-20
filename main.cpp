@@ -20,8 +20,6 @@ void PezInitialize()
     Programs& progs = Programs::GetInstance();
     glUseProgram(progs.Load("Default.Simple"));
     pezCheck(glGetError() == GL_NO_ERROR, "compile failed");
-    printf("Prog: %u\n", progs["Default.Simple"]);
-    printf("Mesh Vao: %u\n", quad.mesh.vao);
 }
 
 PezConfig PezGetConfig()
