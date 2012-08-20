@@ -9,6 +9,12 @@
 
 using namespace std;
 
+// Well known vertex attributes
+enum VertexAttribs {
+    AttrPosition,
+    AttrNormal,
+    AttrTexCoord
+};
 
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);
 GLuint InitVao(int componentCount, const FloatList& verts);

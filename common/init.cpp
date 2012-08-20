@@ -72,8 +72,8 @@ GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indi
     pezCheck(glGetError() == GL_NO_ERROR, "vao-ibo setup failed");
 
     // setup the "Position" attribute
-    glVertexAttribPointer(0, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(AttrPosition, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(AttrPosition);
     return vao;
 }
 
@@ -81,16 +81,15 @@ GLuint InitVao(int componentCount, const FloatList& verts) {
     GLuint vbo, vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
+
+    // vertices
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts[0]) * verts.size(), &verts[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(0, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
-    //glVertexAttribPointer(AttrPosition, componentCount, GL_FLOAT, GL_FALSE, verts.size(), 0);
-    //glVertexAttribPointer(AttrTexCoord, 2, GL_FLOAT, GL_FALSE, 16, offset(8));
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(AttrPosition, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(AttrPosition);
+    
     pezCheck(glGetError() == GL_NO_ERROR, "vao failed");
-    //glEnableVertexAttribArray(AttrPosition);
-    //glEnableVertexAttribArray(AttrTexCoord);
 
     return vao;
 }

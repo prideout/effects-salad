@@ -52,8 +52,8 @@ void Quad::Init() {
 /* vitural */
 void Quad::Draw() {
     mesh.Bind();
-    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, NULL);
-    //glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    //glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, NULL);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 
