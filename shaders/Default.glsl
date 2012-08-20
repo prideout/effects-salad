@@ -34,6 +34,9 @@ void main()
     vPosition.xy = Position.xy;
     vPosition.z = 0.5;
     vPosition.w = 1;
+    gl_Position.xy = Position.xy;
+    gl_Position.z = 0.5;
+    gl_Position.w = 1;
     //vNormal = Normal;
 }
 
