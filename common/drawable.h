@@ -4,9 +4,6 @@
 #include "pez/pez.h"
 #include "glm/glm.hpp"
 
-// specialized matrix ops
-#include "glm/gtc/matrix_transform.hpp"
-
 
 class Drawable {
 public:
