@@ -14,9 +14,13 @@ PerspCamera cam;
 
 void PezInitialize()
 {
+    PezConfig cfg = PezGetConfig();
     // add our shader path
     pezSwAddPath("", ".glsl");
     quad.Init();
+
+    cam.eye.z = 5;
+    cam.aspect= cfg.Width / cfg.Height;
 
     printf("Running!\n");
     Programs& progs = Programs::GetInstance();
@@ -46,7 +50,7 @@ void PezRender()
 {
     PezConfig cfg = PezGetConfig();
     glViewport(0, 0, cfg.Width, cfg.Height);
-    glClearColor(1,0,0,1);
+    glClearColor(0,0,0,1);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -55,7 +59,9 @@ void PezRender()
     pezCheck(glGetError() == GL_NO_ERROR, "draw failed");
 }
 
+float t;
 void PezUpdate(float seconds)
 {
- 
+    t += seconds;
+    cam.eye.x += .1*cos(t*2); 
 }

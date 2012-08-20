@@ -9,15 +9,18 @@ using namespace glm;
 // abstract base 
 class Camera {
 public:
-    mat4 projection;
-    mat4 view;
+    vec3 eye;
+    vec3 center;
+    vec3 up;
 
-    Camera() {}
+    Camera();
+    Camera(vec3 eye, vec3 center, vec3 up);
+
     virtual ~Camera() {}
 
-    void LookAt(const vec3& eye, const vec3& center, const vec3& up);
-
-    void Bind(const mat4& modelMatrix);
+    virtual mat4 GetProjection() = 0;
+    virtual mat4 GetView();
+    virtual void Bind(const mat4& modelMatrix);
 };
 
 
@@ -29,6 +32,8 @@ public:
     float far;
 
     PerspCamera();
+
+    virtual mat4 GetProjection();
 };
 
 
