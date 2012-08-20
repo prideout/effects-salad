@@ -24,7 +24,7 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
-	LIBS = -lX11 -lGL
+	LIBS = -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a
 endif
 
 ifeq ($(UNAME), Darwin)
