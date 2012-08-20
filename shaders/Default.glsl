@@ -17,11 +17,12 @@ layout(location = 0) in vec2 Position;
 out vec4 vPosition;
 //out vec3 vNormal;
 
-/*
 uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
+/*
+
 uniform mat3 NormalMatrix;
 */
 void main()
@@ -32,11 +33,9 @@ void main()
     vNormal = NormalMatrix * Normal;
     */
     vPosition.xy = Position.xy;
-    vPosition.z = 0.1;
+    vPosition.z = -3;
     vPosition.w = 1;
-    gl_Position.xy = Position.xy;
-    gl_Position.z = 0.1;
-    gl_Position.w = 1;
+    gl_Position = Projection * Modelview * vPosition;
     //vNormal = Normal;
 }
 

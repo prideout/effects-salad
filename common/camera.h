@@ -15,7 +15,9 @@ public:
     Camera() {}
     virtual ~Camera() {}
 
-    void LookAt(vec3 eye, vec3 center, vec3 up);
+    void LookAt(const vec3& eye, const vec3& center, const vec3& up);
+
+    void Bind(const mat4& modelMatrix);
 };
 
 

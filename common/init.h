@@ -24,4 +24,13 @@ void ReadBinaryFile(string filename, Blob* destination);
 
 void ReadJsonFile(string filename, Json::Value* root);
 
+inline
+GLuint CurrentProgram()
+{
+    GLuint p;
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &p);
+    return p;
+}
 
+#define u(x) glGetUniformLocation(CurrentProgram(), x)
+#define offset(x) ((const GLvoid*)(x))

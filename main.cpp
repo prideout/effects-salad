@@ -1,5 +1,6 @@
 #include "lib/pez/pez.h"
 
+#include "common/camera.h"
 #include "common/init.h"
 #include "common/programs.h"
 #include "common/surface.h"
@@ -9,6 +10,7 @@
 #include <iostream>
 
 Quad quad;
+PerspCamera cam;
 
 void PezInitialize()
 {
@@ -48,6 +50,7 @@ void PezRender()
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    cam.Bind(quad.modelMat);
     quad.Draw();
     pezCheck(glGetError() == GL_NO_ERROR, "draw failed");
 }
