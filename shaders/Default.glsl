@@ -39,7 +39,32 @@ void main()
     //vNormal = Normal;
 }
 
+-- Instanced.VS
 
+layout(location = 0) in vec2 Position;
+
+/*
+layout(std140) uniform ubPosition
+{
+    vec4 position[5];
+}; //uniform block
+*/
+
+out vec4 vPosition;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat4 ViewMatrix;
+uniform mat4 ModelMatrix;
+
+void main()
+{
+    vPosition.xy = Position.xy;
+    vPosition.x += 3*(2-gl_InstanceID);
+    vPosition.z = -3;
+    vPosition.w = 1;
+    gl_Position = Projection * Modelview * vPosition;
+}
 
 -- Lit.VS
 

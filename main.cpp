@@ -2,6 +2,7 @@
 
 #include "common/camera.h"
 #include "common/init.h"
+#include "common/instancer.h"
 #include "common/programs.h"
 #include "common/surface.h"
 #include "common/quad.h"
@@ -9,6 +10,7 @@
 #include "jsoncpp/json.h"
 #include <iostream>
 
+Instancer manyQuads;
 Quad quad;
 PerspCamera cam;
 
@@ -18,6 +20,8 @@ void PezInitialize()
     // add our shader path
     pezSwAddPath("", ".glsl");
     quad.Init();
+    manyQuads.mesh = quad.mesh;
+    manyQuads.Init();
 
     cam.eye.z = 5;
     cam.aspect= cfg.Width / cfg.Height;
@@ -25,6 +29,7 @@ void PezInitialize()
     printf("Running!\n");
     Programs& progs = Programs::GetInstance();
     glUseProgram(progs.Load("Default.Simple"));
+    glUseProgram(progs.Load("Default.Instanced", "Default.Simple.FS", "Default.Instanced.VS"));
     pezCheck(glGetError() == GL_NO_ERROR, "compile failed");
 }
 
@@ -55,13 +60,16 @@ void PezRender()
     glDisable(GL_CULL_FACE);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     cam.Bind(quad.modelMat);
-    quad.Draw();
+    //quad.Draw();
+    manyQuads.Draw();
     pezCheck(glGetError() == GL_NO_ERROR, "draw failed");
 }
 
 float t;
 void PezUpdate(float seconds)
 {
+    quad.Update();
+    manyQuads.Update();
     t += seconds;
     cam.eye.x += .1*cos(t*2); 
 }

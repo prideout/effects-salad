@@ -24,6 +24,11 @@ public:
         const IndexList& indices);
 
 
+    void AddVertexAttribute(GLuint attrib, 
+                            int componentCount, 
+                            const FloatList& values);
+
+
     void Bind();
 
     

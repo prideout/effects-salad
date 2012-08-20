@@ -9,6 +9,7 @@ SHARED := \
 	$(OBJDIR)/common/demoContext.o \
 	$(OBJDIR)/common/drawable.o \
 	$(OBJDIR)/common/init.o \
+	$(OBJDIR)/common/instancer.o \
 	$(OBJDIR)/common/mesh.o \
 	$(OBJDIR)/common/programs.o \
 	$(OBJDIR)/common/quad.o \
