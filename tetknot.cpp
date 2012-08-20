@@ -10,6 +10,12 @@
 
 using namespace std;
 
+struct ContextType
+{
+    int PointCount;
+    int PositionSlot;
+} Context;
+
 PezConfig PezGetConfig()
 {
     PezConfig config;
@@ -93,17 +99,41 @@ void PezInitialize()
     tetgenio in;
     GenerateWheel(glm::vec3(0), 1.0f, 0.1f, 32, &in);
 
-    // Write a TubeGenerator class that generates verts in the "tetgen" format,
-    // similar to GenerateWheel
-    // Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
-    //   do quality mesh generation (q) with a specified quality bound
-    //   (1.414), and apply a maximum volume constraint (a0.1).
+    cout << "Tetrahedralizing a hull defined by " << 
+        in.numberofpoints << " points..." << endl;
+
+    const float qualityBound = 1.414f;
+    const float volumeConstraint = 0.1f;
+
+    char configString[128];
+    sprintf(configString, "Qpq%.3fa%.3f", qualityBound, volumeConstraint);
 
     tetgenio out;
-    tetrahedralize("pq1.414a0.1", &in, &out);
+    tetrahedralize(configString, &in, &out);
 
-    // Figure out how to draw a wireframe
-    
+    int* tets = out.tetrahedronlist;
+    int numTets = out.numberoftetrahedra;
+    int numPoints = out.numberofpoints;
+
+    cout << numTets << " tets have been generated, defined by " <<
+        numPoints << " points." << endl;
+
+    Context.PositionSlot = 0;
+
+    GLuint vao;
+    GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
+    GLuint vbo;
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, bufferSize, out.pointlist, GL_STATIC_DRAW);
+    glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(Context.PositionSlot);
+
+    Context.PointCount = numPoints;
+
     // Figure out how to represent the tets in GL:
     //   Static index buffer
     //   Static VBO of the "collapsed" mesh
@@ -116,6 +146,7 @@ void PezHandleMouse(int x, int y, int action)
 
 void PezRender()
 {
+    glDrawArrays(GL_POINTS, 0, Context.PointCount);
 }
 
 void PezUpdate(float seconds)
