@@ -108,11 +108,12 @@ void PezInitialize()
     cout << "Tetrahedralizing a hull defined by " << 
         in.numberofpoints << " points..." << endl;
 
-    const float qualityBound = 1.414f;
-    const float volumeConstraint = 0.1f;
+    const float qualityBound = 15;
+    const float maxVolume = 0.00005f;
 
     char configString[128];
-    sprintf(configString, "Qpq%.3fa%.3f", qualityBound, volumeConstraint);
+    sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
+    cout << configString << endl;
 
     tetgenio out;
     tetrahedralize(configString, &in, &out);
@@ -166,6 +167,8 @@ void PezHandleMouse(int x, int y, int action)
 void PezRender()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     mat4 model;
     vec3 axis = glm::normalize(vec3(1, 1, 0));
@@ -183,5 +186,5 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
-    Context.Theta += seconds * 60;
+    Context.Theta += seconds * 100;
 }
