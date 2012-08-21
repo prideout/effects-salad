@@ -14,7 +14,6 @@ SHARED := \
 	$(OBJDIR)/common/programs.o \
 	$(OBJDIR)/common/quad.o \
 	$(OBJDIR)/common/surface.o \
-	$(OBJDIR)/common/texture.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
 	$(OBJDIR)/lib/pez/pez.o
