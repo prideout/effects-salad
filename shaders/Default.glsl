@@ -42,13 +42,7 @@ void main()
 -- Instanced.VS
 
 layout(location = 0) in vec2 Position;
-
-/*
-layout(std140) uniform ubPosition
-{
-    vec4 position[5];
-}; //uniform block
-*/
+uniform sampler1D Offsets;
 
 out vec4 vPosition;
 
@@ -59,8 +53,10 @@ uniform mat4 ModelMatrix;
 
 void main()
 {
+    float offset = textureOffset(Offsets, 0.0, gl_InstanceID).r;
     vPosition.xy = Position.xy;
-    vPosition.x += 3*(2-gl_InstanceID);
+    //vPosition.x += 3*(2-gl_InstanceID);
+    vPosition.x += 30*offset;
     vPosition.z = -3;
     vPosition.w = 1;
     gl_Position = Projection * Modelview * vPosition;
