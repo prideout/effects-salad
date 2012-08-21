@@ -2,6 +2,9 @@
 #include "jsoncpp/json.h"
 #include "common/init.h"
 #include "tetgen/tetgen.h"
+#include "common/programs.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/constants.inl"
 #include <iostream>
@@ -9,11 +12,14 @@
 #include <streambuf>
 
 using namespace std;
+using glm::mat4;
+using glm::vec3;
 
 struct ContextType
 {
     int PointCount;
     int PositionSlot;
+    float Theta;
 } Context;
 
 PezConfig PezGetConfig()
@@ -119,6 +125,7 @@ void PezInitialize()
         numPoints << " points." << endl;
 
     Context.PositionSlot = 0;
+    Context.Theta = 0;
 
     GLuint vao;
     GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
@@ -138,6 +145,18 @@ void PezInitialize()
     //   Static index buffer
     //   Static VBO of the "collapsed" mesh
     //   Texture buffer for per-tet transforms (?)
+
+    Programs& progs = Programs::GetInstance();
+    glUseProgram(progs.Load("Tetra.Simple"));
+
+    float fov(60);
+    float aspect(1.0);
+    float near(1.0);
+    float far(100);
+    mat4 projection = glm::perspective(fov, aspect, near, far);
+    glUniformMatrix4fv(u("Projection"), 1, 0, &projection[0][0]);
+
+    pezCheck(glGetError() == GL_NO_ERROR, "OpenGL Error.");
 }
 
 void PezHandleMouse(int x, int y, int action)
@@ -146,9 +165,23 @@ void PezHandleMouse(int x, int y, int action)
 
 void PezRender()
 {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    mat4 model;
+    vec3 axis = glm::normalize(vec3(1, 1, 0));
+    model = glm::rotate(model, Context.Theta, axis);
+
+    vec3 eye = vec3(0,0,3);
+    vec3 center = vec3(0,0,0);
+    vec3 up = vec3(0,1,0);
+    mat4 view = glm::lookAt(eye, center, up);
+    mat4 modelview = view * model;
+    glUniformMatrix4fv(u("Modelview"), 1, 0, &modelview[0][0]);
+
     glDrawArrays(GL_POINTS, 0, Context.PointCount);
 }
 
 void PezUpdate(float seconds)
 {
+    Context.Theta += seconds * 60;
 }
