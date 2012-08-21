@@ -92,13 +92,10 @@
     
         // Lop off the trailing .c
         bstring name = bfromcstr(PezGetConfig().Title);
-        bstring shaderPrefix = bfromcstr("shaders/"); //bmidstr(name, 0, blength(name) - 1);
-        pezSwInit(bdata(shaderPrefix));
-        bdestroy(shaderPrefix);
+        pezSwInit(0);
 
         // Set up the Shader Wrangler
-        //pezSwAddPath("./", ".glsl");
-        //pezSwAddPath("../", ".glsl");
+        pezSwAddPath("./shaders/", ".glsl");
         pezSwAddDirective("*", "#version 150");
 
         // Perform user-specified intialization
@@ -188,7 +185,21 @@ int main(int argc, const char *argv[])
 {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     NSApplication *NSApp = [NSApplication sharedApplication];
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     
+    id menubar = [[NSMenu new] autorelease];
+    id appMenuItem = [[NSMenuItem new] autorelease];
+    [menubar addItem:appMenuItem];
+    [NSApp setMainMenu:menubar];
+    
+    id appMenu = [[NSMenu new] autorelease];
+    id appName = [[NSProcessInfo processInfo] processName];
+    id quitTitle = [@"Quit " stringByAppendingString:appName];
+    id quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
+    action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
+    [appMenu addItem:quitMenuItem];
+    [appMenuItem setSubmenu:appMenu];
+
     NSRect screenBounds = [[NSScreen mainScreen] frame];
     NSRect viewBounds = NSMakeRect(0, 0, PezGetConfig().Width, PezGetConfig().Height);
     
@@ -207,11 +218,13 @@ int main(int argc, const char *argv[])
     [window setContentView:view];
     [window setDelegate:view];
     [window makeKeyAndOrderFront:nil];
+    [NSApp activateIgnoringOtherApps:YES];
 
     [view release];
     
     [NSApp run];
-    
+
+
     [pool release];
     return EXIT_SUCCESS;
 }

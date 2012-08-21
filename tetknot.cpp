@@ -113,12 +113,11 @@ void PezInitialize()
 
     char configString[128];
     sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
-    cout << configString << endl;
 
     tetgenio out;
     tetrahedralize(configString, &in, &out);
 
-    int* tets = out.tetrahedronlist;
+    //int* tets = out.tetrahedronlist;
     int numTets = out.numberoftetrahedra;
     int numPoints = out.numberofpoints;
 
