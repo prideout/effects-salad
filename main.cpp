@@ -36,10 +36,8 @@ void PezInitialize()
     glUseProgram(progs.Load("Default.Instanced", "Default.Simple.FS", "Default.Instanced.VS"));
     pezCheck(glGetError() == GL_NO_ERROR, "compile failed");
 
-    //float x[] = {-2,-1,0,1,2,3,7,8,9,10,11,12,13,14,15,16};
-    float x[] = {0,.1,.2,.3,0,0,0,0,0,0,0,0,0,0,0,0};
-    //float x[] = {0,0,0,0,0};
-    tex.Init(GL_TEXTURE_1D, 0, 1, 16, 0, GL_RED, GL_FLOAT, x);
+    float x[] = {1.5,-1.5,200,300,40,40,40,40,40,40,40,40,40,40,40,40};
+    tex.Init(GL_TEXTURE_BUFFER, 0, GL_RED, 16, 0, GL_R32F, GL_FLOAT, x);
     pezCheck(glGetError() == GL_NO_ERROR, "Texture init failed");
     glUniform1i(u("Offsets"), 0);
     pezCheck(glGetError() == GL_NO_ERROR, "Texture init failed1");
@@ -47,7 +45,6 @@ void PezInitialize()
     pezCheck(glGetError() == GL_NO_ERROR, "Texture init failed2");
     tex.Bind();
     pezCheck(glGetError() == GL_NO_ERROR, "Texture bind failed3");
-
 }
 
 PezConfig PezGetConfig()

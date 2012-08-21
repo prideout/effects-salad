@@ -10,7 +10,8 @@ Mesh::Mesh() :
 
 
 Mesh::Mesh(int componentCount, const FloatList& verts) :
-    vertexCount(verts.size()) {
+    vertexCount(verts.size()),
+    indexCount(0) {
     
     vao = ::InitVao(componentCount, verts);
 }

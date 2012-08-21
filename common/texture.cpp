@@ -20,14 +20,20 @@ Texture1D::Init(GLenum target,
     pezCheck(glGetError() == GL_NO_ERROR, "Texture gen failed");
     glBindTexture(target, handle);
     pezCheck(glGetError() == GL_NO_ERROR, "Bind Texture failed");
+
     /*
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     */
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    pezCheck(glGetError() == GL_NO_ERROR, "Set TexParam failed");
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, width*sizeof(float), data, GL_STATIC_DRAW);
+    std::cout << vbo << std::endl;
+
+    /*
     glTexImage1D(target,
                  level,
                  internalformat,
@@ -36,6 +42,10 @@ Texture1D::Init(GLenum target,
                  format,
                  type, 
                  data);
+    */
+
+    glTexBuffer(target, format, vbo);
+
     pezCheck(glGetError() == GL_NO_ERROR, "TexImage1D failed");
 }
 
@@ -51,11 +61,11 @@ Texture1D::Init(GLint internalformat,
 
 void
 Texture1D::Bind() {
-    glBindTexture(GL_TEXTURE_1D, handle);
+    glBindTexture(GL_TEXTURE_BUFFER, handle);
 }
 
 void
 Texture1D::GenMipmaps() {
-    glGenerateMipmap(GL_TEXTURE_1D);
+    glGenerateMipmap(GL_TEXTURE_BUFFER);
 }
 
