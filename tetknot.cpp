@@ -3,6 +3,7 @@
 #include "common/init.h"
 #include "tetgen/tetgen.h"
 #include "common/programs.h"
+#include "common/mesh.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/glm.hpp"
@@ -19,6 +20,7 @@ struct ContextType
 {
     int PointCount;
     int PositionSlot;
+    int TetCount;
     float Theta;
 } Context;
 
@@ -26,8 +28,8 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Width = 512;
-    config.Height = 512;
+    config.Width = 512*2;
+    config.Height = 512*2;
     config.Multisampling = false;
     config.VerticalSync = true;
     return config;
@@ -109,7 +111,7 @@ void PezInitialize()
         in.numberofpoints << " points..." << endl;
 
     const float qualityBound = 15;
-    const float maxVolume = 0.00005f;
+    const float maxVolume = 4.f;
 
     char configString[128];
     sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
@@ -126,11 +128,122 @@ void PezInitialize()
 
     Context.PositionSlot = 0;
     Context.Theta = 0;
+    Context.TetCount = numTets;
 
+    float* pts = out.pointlist;
+    IndexList il;
+    
+    int* tetIt = out.tetrahedronlist;
+    int* endIt = out.tetrahedronlist + (out.numberofcorners * numTets) + 1;
+    il.reserve(numTets*4*3);
+    std::cout << "# Corners: " << out.numberofcorners << std::endl;
+    cout << "# tet attrs: " << out.numberoftetrahedronattributes<< endl;
+    cout << "# trifaces: " << out.numberoftrifaces << endl;
+    cout << "# expected tris: " << numTets * 4 << endl;
+
+    #if 0
+    for (int i = 0; i < out.numberoftrifaces*3; i+=3) {
+        il.push_back(out.trifacelist[i]);
+        il.push_back(out.trifacelist[i+1]);
+        il.push_back(out.trifacelist[i+2]);
+    }
+    #endif
+
+    #if 1
+    int triCount = 0;
+    while (tetIt < endIt) {
+        triCount += 4;
+
+        if (tetIt[0] > numPoints) {
+            cout << float(tetIt[0]) << endl;
+            cout << numPoints << endl;
+            
+        }
+        pezCheck(tetIt[0] <= numPoints, "Error, index out of bounds");
+
+        // FACE 1: bottom, back facing
+        il.push_back(tetIt[1]/1);
+        //il.push_back(tetIt[1]/1+1);
+        //il.push_back(tetIt[1]/1+2);
+
+        il.push_back(tetIt[0]/1);
+        //il.push_back(tetIt[0]/1+1);
+        //il.push_back(tetIt[0]/1+2);
+
+        il.push_back(tetIt[2]/1);
+        //il.push_back(tetIt[2]/1+1);
+        //il.push_back(tetIt[2]/1+2);
+
+
+        // FACE 2: Left, front
+        il.push_back(tetIt[0]/1);
+        //il.push_back(tetIt[0]+1);
+        //il.push_back(tetIt[0]+2);
+
+        il.push_back(tetIt[1]/1);
+        //il.push_back(tetIt[1]+1);
+        //il.push_back(tetIt[1]+2);
+
+        il.push_back(tetIt[3]/1);
+        //il.push_back(tetIt[3]+1);
+        //il.push_back(tetIt[3]+2);
+
+        // FACE 3: Right, front
+        il.push_back(tetIt[1]/1);
+        //il.push_back(tetIt[1]+1);
+        //il.push_back(tetIt[1]+2);
+
+        il.push_back(tetIt[2]/1);
+        //il.push_back(tetIt[2]+1);
+        //il.push_back(tetIt[2]+2);
+
+        il.push_back(tetIt[3]/1);
+        //il.push_back(tetIt[3]+1);
+        //il.push_back(tetIt[3]+2);
+
+        // FACE 4: rear center, back facing
+        il.push_back(tetIt[2]/1);
+        //il.push_back(tetIt[2]+1);
+        //il.push_back(tetIt[2]+2);
+
+        il.push_back(tetIt[0]/1);
+        //il.push_back(tetIt[0]+1);
+        //il.push_back(tetIt[0]+2);
+
+        il.push_back(tetIt[3]/1);
+        //il.push_back(tetIt[3]+1);
+        //il.push_back(tetIt[3]+2);
+
+        tetIt += 4;
+    }
+    cout << "TriCount: " << triCount << endl;
+    #endif
+
+    /*
+    cout << "Facets: " << out.numberoffacets << endl;
+    for (int faceti = 0; faceti < out.numberoffacets; faceti++) {
+        tetgenio::facet& f = out.facetlist[faceti];
+        pezCheck(f.numberofpolygons == 1, "Unexpected number of polys");
+        tetgenio::polygon& poly = f.polygonlist[0];
+        for (int i = 0; i < poly.numberofvertices; i++) {
+            cout << poly.vertexlist[i] << endl;
+            pezCheck(poly.vertexlist[i]+2 < numPoints*3, "Index out of bounds");
+            il.push_back(poly.vertexlist[i]+0);
+            il.push_back(poly.vertexlist[i]+1);
+            il.push_back(poly.vertexlist[i]+2);
+        }
+    }
+    */
+
+
+    Mesh mesh(3, FloatList(out.pointlist, out.pointlist+(3*numPoints)),
+                 il);
+    mesh.Bind();
+
+    /*
     GLuint vao;
     GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
     GLuint vbo;
-
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
     glGenBuffers(1, &vbo);
@@ -138,6 +251,7 @@ void PezInitialize()
     glBufferData(GL_ARRAY_BUFFER, bufferSize, out.pointlist, GL_STATIC_DRAW);
     glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(Context.PositionSlot);
+    */
 
     Context.PointCount = numPoints;
 
@@ -180,6 +294,11 @@ void PezRender()
     mat4 modelview = view * model;
     glUniformMatrix4fv(u("Modelview"), 1, 0, &modelview[0][0]);
 
+    //glDrawArrays(GL_POINTS, 0, Context.PointCount);
+    // tetCount*4*3 : 4 faces per tet, 3 points per face
+    glDrawElements(GL_TRIANGLES, Context.TetCount*4*3, GL_UNSIGNED_INT, NULL);
+
+    // points for reference
     glDrawArrays(GL_POINTS, 0, Context.PointCount);
 }
 
