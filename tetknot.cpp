@@ -19,7 +19,11 @@ struct ContextType
 {
     int PointCount;
     int PositionSlot;
+    int TetCount;
     float Theta;
+    mat4 Projection;
+    mat4 Modelview;
+    int CurrentTet;
 } Context;
 
 PezConfig PezGetConfig()
@@ -117,9 +121,11 @@ void PezInitialize()
     tetgenio out;
     tetrahedralize(configString, &in, &out);
 
-    //int* tets = out.tetrahedronlist;
     int numTets = out.numberoftetrahedra;
     int numPoints = out.numberofpoints;
+    Context.PointCount = numPoints;
+    Context.TetCount = numTets;
+    Context.CurrentTet = 0;
 
     cout << numTets << " tets have been generated, defined by " <<
         numPoints << " points." << endl;
@@ -127,34 +133,67 @@ void PezInitialize()
     Context.PositionSlot = 0;
     Context.Theta = 0;
 
-    GLuint vao;
-    GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
-    GLuint vbo;
+    // Expand the tet indices into a triangle indices
+    int* tetIndices = out.tetrahedronlist;
+    std::vector<int> triIndices;
+    triIndices.reserve(numTets * 4 * 3);
+    int* currentTet = tetIndices;
+    for (int i = 0; i < numTets; ++i, currentTet += 4) {
+        triIndices.push_back(currentTet[1]);
+        triIndices.push_back(currentTet[0]);
+        triIndices.push_back(currentTet[2]);
+    
+        triIndices.push_back(currentTet[0]);
+        triIndices.push_back(currentTet[1]);
+        triIndices.push_back(currentTet[3]);
 
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, bufferSize, out.pointlist, GL_STATIC_DRAW);
-    glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(Context.PositionSlot);
+        triIndices.push_back(currentTet[1]);
+        triIndices.push_back(currentTet[2]);
+        triIndices.push_back(currentTet[3]);
+    
+        triIndices.push_back(currentTet[2]);
+        triIndices.push_back(currentTet[0]);
+        triIndices.push_back(currentTet[3]);
+    }
 
-    Context.PointCount = numPoints;
+    // Create the VAO
+    {
+        GLuint vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+    }
 
-    // Figure out how to represent the tets in GL:
-    //   Static index buffer
-    //   Static VBO of the "collapsed" mesh
-    //   Texture buffer for per-tet transforms (?)
+    // Create a VBO for the points 
+    {
+        GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, bufferSize, out.pointlist, GL_STATIC_DRAW);
+        glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(Context.PositionSlot);
+    }
+
+    // Create a VBO for the indices
+    {
+        GLsizeiptr bufferSize = triIndices.size() * sizeof(triIndices[0]);
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize, &triIndices[0], GL_STATIC_DRAW);
+    }
 
     Programs& progs = Programs::GetInstance();
-    glUseProgram(progs.Load("Tetra.Simple"));
+    progs.Load("Tetra.Simple", false);
+    progs.Load("Tetra.Solid", true);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float fov(60);
     float aspect(1.0);
     float near(1.0);
     float far(100);
-    mat4 projection = glm::perspective(fov, aspect, near, far);
-    glUniformMatrix4fv(u("Projection"), 1, 0, &projection[0][0]);
+    Context.Projection = glm::perspective(fov, aspect, near, far);
 
     pezCheck(glGetError() == GL_NO_ERROR, "OpenGL Error.");
 }
@@ -165,9 +204,30 @@ void PezHandleMouse(int x, int y, int action)
 
 void PezRender()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    Programs& progs = Programs::GetInstance();
+    GLsizei triangleCount = Context.CurrentTet * 4;
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(progs["Tetra.Solid"]);
+    glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
+    glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
+
+    glUseProgram(progs["Tetra.Simple"]);
+    glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
+    glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_POINTS, 0, Context.PointCount);
+}
+
+void PezUpdate(float seconds)
+{
+    Context.Theta += seconds * 100;
+    Context.CurrentTet = (1 + Context.CurrentTet) % Context.TetCount;
 
     mat4 model;
     vec3 axis = glm::normalize(vec3(1, 1, 0));
@@ -177,13 +237,5 @@ void PezRender()
     vec3 center = vec3(0,0,0);
     vec3 up = vec3(0,1,0);
     mat4 view = glm::lookAt(eye, center, up);
-    mat4 modelview = view * model;
-    glUniformMatrix4fv(u("Modelview"), 1, 0, &modelview[0][0]);
-
-    glDrawArrays(GL_POINTS, 0, Context.PointCount);
-}
-
-void PezUpdate(float seconds)
-{
-    Context.Theta += seconds * 100;
+    Context.Modelview = view * model;
 }
