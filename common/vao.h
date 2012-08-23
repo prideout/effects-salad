@@ -10,9 +10,8 @@ using namespace std;
 class Vao {
 public:
     
-
-    int vertexCount;
-    int indexCount;
+    unsigned vertexCount;
+    unsigned indexCount;
     GLuint vao;
 
     Vao();
@@ -22,6 +21,17 @@ public:
     Vao(int componentCount, 
         const FloatList& verts, 
         const IndexList& indices);
+
+    Vao(int componentCount, 
+        const float* verts,
+        unsigned vertCount);
+
+    Vao(int componentCount, 
+        const float* verts, 
+        unsigned vertCount,
+        const unsigned* indices,
+        unsigned indexCount);
+
 
 
     void AddVertexAttribute(GLuint attrib, 

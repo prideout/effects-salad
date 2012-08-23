@@ -45,7 +45,7 @@ void Quad::Init() {
                    1, -1,
                   -1,  1,
                    1,  1 };
-    vao = Vao(2, FloatList(v, v+8));
+    vao = Vao(2, &v[0], 8);
 }
 
 
