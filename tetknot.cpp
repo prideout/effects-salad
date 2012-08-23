@@ -26,6 +26,7 @@ struct ContextType
     mat4 Modelview;
     mat3 NormalMatrix;
     int CurrentTet;
+    float ElapsedTime;
 } Context;
 
 PezConfig PezGetConfig()
@@ -128,6 +129,7 @@ void PezInitialize()
     Context.PointCount = numPoints;
     Context.TetCount = numTets;
     Context.CurrentTet = 0;
+    Context.ElapsedTime = 0;
 
     cout << numTets << " tets have been generated, defined by " <<
         numPoints << " points." << endl;
@@ -229,8 +231,14 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
-    Context.Theta += seconds * 100;
-    Context.CurrentTet = (1 + Context.CurrentTet) % Context.TetCount;
+    const float TetAppearanceRate = 0.01f;
+    const float RotationRate = 100;
+
+    Context.Theta += seconds * RotationRate;
+    Context.ElapsedTime += seconds;
+
+    float percentage = fmod(Context.ElapsedTime * TetAppearanceRate, 1.0);
+    Context.CurrentTet = (int) (percentage * Context.TetCount);
 
     mat4 model;
     vec3 axis = glm::normalize(vec3(1, 1, 0));
