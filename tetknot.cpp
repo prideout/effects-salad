@@ -1,13 +1,12 @@
 #include "lib/pez/pez.h"
 #include "jsoncpp/json.h"
-#include "tetgen/tetgen.h"
 #include "common/init.h"
 #include "common/programs.h"
 #include "common/tube.h"
-#include "glm/glm.hpp"
+#include "common/tetUtil.h"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "glm/glm.hpp"
-#include "glm/gtx/constants.inl"
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -41,67 +40,6 @@ PezConfig PezGetConfig()
     return config;
 }
 
-// Creates a circular ribbon, composing the rim out of quads.
-// Each of the two caps is a single "facet" and each quad is a "facet".
-// (tetgen defines a facet as a coplanar set of polygons)
-void GenerateWheel(glm::vec3 center, float radius, float width,
-                   int numQuads, tetgenio* dest)
-{
-    dest->numberofpoints = numQuads * 2;
-    dest->pointlist = new float[dest->numberofpoints * 3];
-    const float twopi = 2 * glm::pi<float>();
-    const float dtheta = twopi / numQuads;
-    float* coord = dest->pointlist;
-    const float z0 = -width / 2;
-    const float z1 = width / 2;
-    
-    // Rim points:
-    for (float theta = 0; theta < twopi - dtheta / 2; theta += dtheta) {
-        float x = radius * std::cos(theta);
-        float y = radius * std::sin(theta);
-        *coord++ = x;
-        *coord++ = y;
-        *coord++ = z0;
-        *coord++ = x;
-        *coord++ = y;
-        *coord++ = z1;
-    }
-
-    // Facet per rim face + 2 facets for the "caps"
-    dest->numberoffacets = numQuads + 2;
-    dest->facetlist = new tetgenio::facet[dest->numberoffacets];
-    tetgenio::facet* facet = &dest->facetlist[0];
-
-    // Rim faces:
-    for (int n = 0; n < numQuads * 2; n += 2, ++facet) {
-        facet->numberofpolygons = 1;
-        facet->polygonlist = new tetgenio::polygon[facet->numberofpolygons];
-        facet->numberofholes = 0;
-        facet->holelist = NULL;
-        tetgenio::polygon* poly = &facet->polygonlist[0];
-        poly->numberofvertices = 4;
-        poly->vertexlist = new int[poly->numberofvertices];
-        poly->vertexlist[0] = n;
-        poly->vertexlist[1] = n+1;
-        poly->vertexlist[2] = (n+3) % (numQuads*2);
-        poly->vertexlist[3] = (n+2) % (numQuads*2);
-    }
-
-    // Cap fans:
-    for (int cap = 0; cap < 2; ++cap, ++facet) {
-        facet->numberofpolygons = 1;
-        facet->polygonlist = new tetgenio::polygon[facet->numberofpolygons];
-        facet->numberofholes = 0;
-        facet->holelist = NULL;
-        tetgenio::polygon* poly = &facet->polygonlist[0];
-        poly->numberofvertices = numQuads + 1;
-        poly->vertexlist = new int[poly->numberofvertices];
-        for (int q = 0; q < numQuads + 1; ++q) {
-            poly->vertexlist[q] = (q % numQuads) * 2 + cap;
-        }
-    }
-}
-
 void PezInitialize()
 {
     Json::Value root;
@@ -111,19 +49,14 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
 
     tetgenio in;
-    GenerateWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-
+    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
     cout << "Tetrahedralizing a hull defined by " << 
         in.numberofpoints << " points..." << endl;
 
+    tetgenio out;
     const float qualityBound = 15;
     const float maxVolume = 0.0001f;
-
-    char configString[128];
-    sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
-
-    tetgenio out;
-    tetrahedralize(configString, &in, &out);
+    TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume);
 
     int numTets = out.numberoftetrahedra;
     int numPoints = out.numberofpoints;
@@ -139,27 +72,8 @@ void PezInitialize()
     Context.Theta = 0;
 
     // Expand the tet indices into a triangle indices
-    int* tetIndices = out.tetrahedronlist;
-    std::vector<int> triIndices;
-    triIndices.reserve(numTets * 4 * 3);
-    int* currentTet = tetIndices;
-    for (int i = 0; i < numTets; ++i, currentTet += 4) {
-        triIndices.push_back(currentTet[1]);
-        triIndices.push_back(currentTet[0]);
-        triIndices.push_back(currentTet[2]);
-    
-        triIndices.push_back(currentTet[0]);
-        triIndices.push_back(currentTet[1]);
-        triIndices.push_back(currentTet[3]);
-
-        triIndices.push_back(currentTet[1]);
-        triIndices.push_back(currentTet[2]);
-        triIndices.push_back(currentTet[3]);
-    
-        triIndices.push_back(currentTet[2]);
-        triIndices.push_back(currentTet[0]);
-        triIndices.push_back(currentTet[3]);
-    }
+    Blob triIndices;
+    TetUtil::TrianglesFromTets(out, &triIndices);
 
     // Create the VAO
     {
@@ -181,7 +95,7 @@ void PezInitialize()
 
     // Create a VBO for the indices
     {
-        GLsizeiptr bufferSize = triIndices.size() * sizeof(triIndices[0]);
+        GLsizeiptr bufferSize = triIndices.size();
         GLuint vbo;
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
@@ -216,19 +130,22 @@ void PezRender()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
-    glUseProgram(progs["Tetra.Solid"]);
-    glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
-    glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]); 
-    glUniformMatrix3fv(u("NormalMatrix"), 1, 0, &Context.NormalMatrix[0][0]);
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
+    const bool drawSolidTriangles = true;
+    if (drawSolidTriangles) {
+        glUseProgram(progs["Tetra.Solid"]);
+        glUniformMatrix4fv(u("Modelview"), 1, 0, p(Context.Modelview));
+        glUniformMatrix4fv(u("Projection"), 1, 0, p(Context.Projection));
+        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, p(Context.NormalMatrix));
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
+    }
 
     const bool drawPointCloud = false;
     if (drawPointCloud) {
         glUseProgram(progs["Tetra.Simple"]);
-        glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
-        glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]);
+        glUniformMatrix4fv(u("Modelview"), 1, 0, p(Context.Modelview));
+        glUniformMatrix4fv(u("Projection"), 1, 0, p(Context.Projection));
         glEnable(GL_BLEND);
         glDisable(GL_DEPTH_TEST);
         glDrawArrays(GL_POINTS, 0, Context.PointCount);

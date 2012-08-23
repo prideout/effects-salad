@@ -38,4 +38,5 @@ GLuint CurrentProgram()
 }
 
 #define u(x) glGetUniformLocation(CurrentProgram(), x)
+#define p(x) glm::value_ptr(x)
 #define offset(x) ((const GLvoid*)(x))
