@@ -2,7 +2,7 @@
 
 #include "pez/pez.h"
 #include "drawable.h"
-#include "mesh.h"
+#include "vao.h"
 #include <vector>
 
 using std::vector;
@@ -11,7 +11,7 @@ class Instancer : public Drawable {
 public:
     
     unsigned primCount;
-    Mesh mesh;
+    Vao vao;
 
     Instancer();
     virtual ~Instancer();

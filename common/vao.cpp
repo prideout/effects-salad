@@ -1,7 +1,7 @@
-#include "mesh.h"
+#include "vao.h"
 #include "init.h"
 
-Mesh::Mesh() :
+Vao::Vao() :
     vertexCount(0),
     indexCount(0),
     vao(0) {
@@ -9,14 +9,14 @@ Mesh::Mesh() :
 }
 
 
-Mesh::Mesh(int componentCount, const FloatList& verts) :
+Vao::Vao(int componentCount, const FloatList& verts) :
     vertexCount(verts.size()),
     indexCount(0) {
     
     vao = ::InitVao(componentCount, verts);
 }
 
-Mesh::Mesh(int componentCount, 
+Vao::Vao(int componentCount, 
             const FloatList& verts, 
             const IndexList& indices) :
         vertexCount(verts.size()),
@@ -26,7 +26,7 @@ Mesh::Mesh(int componentCount,
 }
 
 void 
-Mesh::AddVertexAttribute(GLuint attrib, 
+Vao::AddVertexAttribute(GLuint attrib, 
                             int componentCount, 
                             const FloatList& values) {
     if (!vao) {
@@ -49,9 +49,9 @@ Mesh::AddVertexAttribute(GLuint attrib,
 }
 
 void 
-Mesh::Bind() {
+Vao::Bind() {
     glBindVertexArray(vao);
-    pezCheck(vao != 0, "Invalid VAO in mesh.bind");
-    pezCheck(glGetError() == GL_NO_ERROR, "mesh.bind failed");
+    pezCheck(vao != 0, "Invalid VAO in vao.bind");
+    pezCheck(glGetError() == GL_NO_ERROR, "vao.bind failed");
 }
 

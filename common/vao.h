@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class Mesh {
+class Vao {
 public:
     
 
@@ -15,11 +15,11 @@ public:
     int indexCount;
     GLuint vao;
 
-    Mesh();
+    Vao();
 
-    Mesh(int componentCount, const FloatList& verts);
+    Vao(int componentCount, const FloatList& verts);
 
-    Mesh(int componentCount, 
+    Vao(int componentCount, 
         const FloatList& verts, 
         const IndexList& indices);
 

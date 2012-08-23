@@ -10,13 +10,13 @@ SHARED := \
 	$(OBJDIR)/common/drawable.o \
 	$(OBJDIR)/common/init.o \
 	$(OBJDIR)/common/instancer.o \
-	$(OBJDIR)/common/mesh.o \
 	$(OBJDIR)/common/programs.o \
 	$(OBJDIR)/common/quad.o \
 	$(OBJDIR)/common/tube.o \
 	$(OBJDIR)/common/surface.o \
 	$(OBJDIR)/common/texture.o \
 	$(OBJDIR)/common/timer.o \
+	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
 	$(OBJDIR)/lib/pez/pez.o

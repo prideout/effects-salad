@@ -22,9 +22,8 @@ void PezInitialize()
     // add our shader path
     pezSwAddPath("", ".glsl");
     quad.Init();
-    manyQuads.mesh = quad.mesh;
+    manyQuads.vao = quad.vao;
     manyQuads.Init();
-
 
     cam.eye.z = 5;
     cam.aspect= cfg.Width / cfg.Height;

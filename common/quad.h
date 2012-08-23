@@ -1,12 +1,12 @@
 #pragma once
 
 #include "drawable.h"
-#include "mesh.h"
+#include "vao.h"
 
 class Quad : public Drawable {
     FloatList floats;
 public:
-    Mesh mesh;
+    Vao vao;
 
     Quad();
 

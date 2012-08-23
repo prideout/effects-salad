@@ -45,13 +45,13 @@ void Quad::Init() {
                    1, -1,
                   -1,  1,
                    1,  1 };
-    mesh = Mesh(2, FloatList(v, v+8));
+    vao = Vao(2, FloatList(v, v+8));
 }
 
 
 /* vitural */
 void Quad::Draw() {
-    mesh.Bind();
+    vao.Bind();
     //glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, NULL);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
