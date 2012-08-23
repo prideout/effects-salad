@@ -16,6 +16,11 @@ enum VertexAttribs {
     AttrTexCoord
 };
 
+// Bit flags useful for argument passing
+#define AttrPositionFlag   (1 << 1)
+#define AttrNormalFlag     (1 << 2)
+#define AttrTexCoordFlag   (1 << 3)
+
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);
 GLuint InitVao(int componentCount, const FloatList& verts);
 GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices);

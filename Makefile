@@ -13,6 +13,7 @@ SHARED := \
 	$(OBJDIR)/common/mesh.o \
 	$(OBJDIR)/common/programs.o \
 	$(OBJDIR)/common/quad.o \
+	$(OBJDIR)/common/tube.o \
 	$(OBJDIR)/common/surface.o \
 	$(OBJDIR)/common/texture.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
