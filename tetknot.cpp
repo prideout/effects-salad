@@ -13,6 +13,7 @@
 
 using namespace std;
 using glm::mat4;
+using glm::mat3;
 using glm::vec3;
 
 struct ContextType
@@ -23,6 +24,7 @@ struct ContextType
     float Theta;
     mat4 Projection;
     mat4 Modelview;
+    mat3 NormalMatrix;
     int CurrentTet;
 } Context;
 
@@ -113,7 +115,7 @@ void PezInitialize()
         in.numberofpoints << " points..." << endl;
 
     const float qualityBound = 15;
-    const float maxVolume = 0.00005f;
+    const float maxVolume = 0.005f;
 
     char configString[128];
     sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
@@ -211,7 +213,8 @@ void PezRender()
 
     glUseProgram(progs["Tetra.Solid"]);
     glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
-    glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]);
+    glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]); 
+    glUniformMatrix3fv(u("NormalMatrix"), 1, 0, &Context.NormalMatrix[0][0]);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
@@ -238,4 +241,6 @@ void PezUpdate(float seconds)
     vec3 up = vec3(0,1,0);
     mat4 view = glm::lookAt(eye, center, up);
     Context.Modelview = view * model;
+
+    Context.NormalMatrix = mat3(Context.Modelview);
 }
