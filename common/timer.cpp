@@ -11,7 +11,10 @@ Timer::Draw() {
     if (not visible) return;
 
     if (drawText and _frameCount == 0) {
-        std::cout << "FPS: " << _fps << std::endl;
+        std::cout << "FPS";
+        if (name.size())
+            std::cout << "[" << name << "]";
+        std::cout << ": " << _fps << std::endl;
     }
 }
 

@@ -59,7 +59,7 @@ void PezRender()
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     // render active effects
-    quads.Render();
+    quads.Draw();
 }
 
 float t;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <ctime>
 #include <time.h>
 
@@ -7,6 +8,7 @@
 
 // Not a high resolution timer, but it should get the job done
 
+using std::string;
 
 class Timer : Drawable {
     clock_t _start;
@@ -17,6 +19,7 @@ class Timer : Drawable {
 public:
     static const unsigned MAX_FRAMES = 120;
     bool drawText;
+    string name;
     
     Timer() :
         Drawable(),

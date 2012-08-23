@@ -6,6 +6,7 @@
 #include "common/quad.h"
 
 
+
 // simple effect used to test framework features
 
 class Quads : public Effect {
@@ -14,10 +15,13 @@ public:
     Instancer manyQuads;
     BufferTexture tex;
 
-    Quads() : Effect() {}
+    Quads() : Effect() {
+    }
     virtual ~Quads() {} ;
    
     virtual void Init() {
+        name = "Quads";
+        Effect::Init();
         Programs& progs = Programs::GetInstance();
         glUseProgram(progs.Load("Default.Simple"));
         glUseProgram(progs.Load("Default.Instanced", 
@@ -46,11 +50,13 @@ public:
     };
 
     virtual void Update() {
+        Effect::Update();
         quad.Update();
         manyQuads.Update();
     };
 
-    virtual void Render() {
+    virtual void Draw() {
+        Effect::Draw();
         context->mainCam.Bind(quad.modelMat);
         //quad.Draw();
         manyQuads.Draw();
