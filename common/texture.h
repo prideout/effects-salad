@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
+
 #include "pez/pez.h"
 
 class Texture {
@@ -25,6 +27,11 @@ public:
               unsigned sizeInBytes,
               const GLvoid* data); 
 
+    template <typename T>
+    void Init(GLenum format, std::vector<T> data) {
+        Init(format, sizeof(T) * data.size(), &data[0]);
+    }
+    
     virtual void GenMipmaps();
 };
 
