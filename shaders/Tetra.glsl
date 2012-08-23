@@ -22,12 +22,15 @@ void main()
 -- Solid.VS
 
 layout(location = 0) in vec4 Position;
+uniform mat4 Projection;
+uniform mat4 Modelview;
 
 out vec4 vPosition;
 
 void main()
 {
     vPosition = Position;
+    gl_Position = Projection * Modelview * Position;
 }
 
 -- Solid.GS
@@ -88,7 +91,8 @@ void main()
     vec3 B = vPosition[1].xyz - vPosition[0].xyz;
     gFacetNormal = NormalMatrix * normalize(cross(A, B));
 
-    float hue = randhash(gl_PrimitiveIDIn / 4, 1.0);
+    int seed = gl_PrimitiveIDIn / 4;
+    float hue = randhash(uint(seed), 1.0);
 
     vec3 hsv = vec3(hue, 0.75, 0.75);
 
