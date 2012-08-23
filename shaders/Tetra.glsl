@@ -88,7 +88,7 @@ void main()
     vec3 B = vPosition[1].xyz - vPosition[0].xyz;
     gFacetNormal = NormalMatrix * normalize(cross(A, B));
 
-    float hue = randhash(gl_PrimitiveIDIn / 4, 1.0);
+    float hue = randhash(uint(gl_PrimitiveIDIn) / 4u, 1.0);
 
     vec3 hsv = vec3(hue, 0.75, 0.75);
 
