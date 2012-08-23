@@ -27,6 +27,9 @@ struct ContextType
     mat3 NormalMatrix;
     int CurrentTet;
     float ElapsedTime;
+    GLuint TetsVao;
+    GLuint HullVao;
+    GLsizei HullTriCount;
 } Context;
 
 PezConfig PezGetConfig()
@@ -71,18 +74,10 @@ void PezInitialize()
     Context.PositionSlot = 0;
     Context.Theta = 0;
 
-    // Expand the tet indices into a triangle indices
-    Blob triIndices;
-    TetUtil::TrianglesFromTets(out, &triIndices);
-
-    // Create the VAO
-    {
-        GLuint vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-    }
-
-    // Create a VBO for the points 
+    // Create the Tets VAO
+    glGenVertexArrays(1, &Context.TetsVao);
+    glBindVertexArray(Context.TetsVao);
+    GLuint pointsVbo;
     {
         GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
         GLuint vbo;
@@ -91,11 +86,29 @@ void PezInitialize()
         glBufferData(GL_ARRAY_BUFFER, bufferSize, out.pointlist, GL_STATIC_DRAW);
         glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(Context.PositionSlot);
+        pointsVbo = vbo;
+    }
+    {
+        Blob triIndices;
+        TetUtil::TrianglesFromTets(out, &triIndices);
+        GLsizeiptr bufferSize = triIndices.size();
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize, &triIndices[0], GL_STATIC_DRAW);
     }
 
-    // Create a VBO for the indices
+    // Create the Hull VAO
+    glGenVertexArrays(1, &Context.HullVao);
+    glBindVertexArray(Context.HullVao);
+    glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
+    glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(Context.PositionSlot);
     {
+        Blob triIndices;
+        TetUtil::TrianglesFromHull(in, &triIndices);
         GLsizeiptr bufferSize = triIndices.size();
+        Context.HullTriCount = (triIndices.size() / sizeof(int)) / 3;
         GLuint vbo;
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
@@ -124,7 +137,6 @@ void PezHandleMouse(int x, int y, int action)
 void PezRender()
 {
     Programs& progs = Programs::GetInstance();
-    GLsizei triangleCount = Context.CurrentTet * 4;
 
     glClearColor(0.1,0.2,0.3,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -132,23 +144,38 @@ void PezRender()
 
     const bool drawSolidTriangles = true;
     if (drawSolidTriangles) {
+        GLsizei triangleCount = Context.CurrentTet * 4;
         glUseProgram(progs["Tetra.Solid"]);
-        glUniformMatrix4fv(u("Modelview"), 1, 0, p(Context.Modelview));
-        glUniformMatrix4fv(u("Projection"), 1, 0, p(Context.Projection));
-        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, p(Context.NormalMatrix));
+        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
+        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
+        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+        glBindVertexArray(Context.TetsVao); 
         glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
     }
 
     const bool drawPointCloud = false;
     if (drawPointCloud) {
         glUseProgram(progs["Tetra.Simple"]);
-        glUniformMatrix4fv(u("Modelview"), 1, 0, p(Context.Modelview));
-        glUniformMatrix4fv(u("Projection"), 1, 0, p(Context.Projection));
+        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
+        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
         glEnable(GL_BLEND);
         glDisable(GL_DEPTH_TEST);
+        glBindVertexArray(Context.TetsVao);
         glDrawArrays(GL_POINTS, 0, Context.PointCount);
+    }
+
+    const bool drawHull = true;
+    if (drawHull) {
+        glUseProgram(progs["Tetra.Solid"]);
+        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
+        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
+        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
+        glEnable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+        glBindVertexArray(Context.HullVao);
+        glDrawElements(GL_TRIANGLES, Context.HullTriCount * 3, GL_UNSIGNED_INT, 0);
     }
 }
 

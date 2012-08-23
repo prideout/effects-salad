@@ -35,12 +35,12 @@ TetUtil::HullWheel(glm::vec3 center,
     for (float theta = 0; theta < twopi - dtheta / 2; theta += dtheta) {
         float x = radius * std::cos(theta);
         float y = radius * std::sin(theta);
-        *coord++ = x;
-        *coord++ = y;
         *coord++ = z0;
-        *coord++ = x;
         *coord++ = y;
+        *coord++ = x;
         *coord++ = z1;
+        *coord++ = y;
+        *coord++ = x;
     }
 
     // Facet per rim face + 2 facets for the "caps"
@@ -72,8 +72,11 @@ TetUtil::HullWheel(glm::vec3 center,
         tetgenio::polygon* poly = &facet->polygonlist[0];
         poly->numberofvertices = numQuads + 1;
         poly->vertexlist = new int[poly->numberofvertices];
-        for (int q = 0; q < numQuads + 1; ++q) {
-            poly->vertexlist[q] = (q % numQuads) * 2 + cap;
+        int nq = numQuads;
+        if (cap) {
+            for (int q = 0; q < nq+1; ++q) poly->vertexlist[q] = (q%nq)*2;
+        } else {
+            for (int q = 0; q < nq+1; ++q) poly->vertexlist[nq-q] = (q%nq)*2+1;
         }
     }
 }
@@ -90,8 +93,29 @@ TetUtil::HullDifference(const tetgenio& hullA,
 // Builds an index buffer for drawing the hull of a tetmesh with triangles.
 void
 TetUtil::TrianglesFromHull(const tetgenio& hull,
-                           Blob* points)
+                           Blob* indices)
 {
+    std::vector<int> dest;
+    int numFacets = hull.numberoffacets;
+    const tetgenio::facet* facet = &hull.facetlist[0];
+    for (; numFacets; ++facet, --numFacets) {
+        int numPolys = facet->numberofpolygons;
+        const tetgenio::polygon* poly = &facet->polygonlist[0];
+        for (; numPolys; ++poly, --numPolys) {
+            int numTriangles = poly->numberofvertices - 2;
+            int n = 1;
+            for (; numTriangles; ++n, --numTriangles) {
+                int p = (n+1) % (poly->numberofvertices);
+                dest.push_back(poly->vertexlist[0]);
+                dest.push_back(poly->vertexlist[n]);
+                dest.push_back(poly->vertexlist[p]);
+            }
+        }
+    }
+    indices->resize(sizeof(int) * dest.size());
+    Blob& blob = *indices;
+    unsigned char* front = &(blob[0]);
+    memcpy(front, &(dest[0]), blob.size());
 }
 
 // Builds an index buffer for drawing all tetrahedra with triangles.
