@@ -95,7 +95,7 @@ void main()
 
     vec3 hsv = vec3(hue, 0.75, 0.75);
 
-    gColor = vec4(HSVtoRGB(hsv), 1.0);
+    gColor = vec4(HSVtoRGB(hsv), 0.25);
 
     gl_Position = Projection * Modelview * vPosition[0];
     EmitVertex();
