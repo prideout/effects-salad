@@ -1,9 +1,14 @@
 #pragma once
 
-#include "demoContext.h"
+#include <vector>
+
 #include "pez/pez.h"
 #include "glm/glm.hpp"
 
+class DemoContext;
+
+class Drawable;
+typedef std::vector<Drawable*> DrawableList;
 
 class Drawable {
 public:

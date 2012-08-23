@@ -1,6 +1,7 @@
 #include "lib/pez/pez.h"
 
 #include "common/camera.h"
+#include "common/demoContext.h"
 #include "common/init.h"
 #include "common/instancer.h"
 #include "common/programs.h"
@@ -11,13 +12,14 @@
 #include "jsoncpp/json.h"
 #include <iostream>
 
+DemoContext* context;
 Instancer manyQuads;
 Quad quad;
-PerspCamera cam;
 Texture1D tex;
 
 void PezInitialize()
 {
+    context = DemoContext::SetCurrent(DemoContext::New());
     PezConfig cfg = PezGetConfig();
     // add our shader path
     pezSwAddPath("", ".glsl");
@@ -25,8 +27,8 @@ void PezInitialize()
     manyQuads.vao = quad.vao;
     manyQuads.Init();
 
-    cam.eye.z = 5;
-    cam.aspect= cfg.Width / cfg.Height;
+    context->mainCam.eye.z = 5;
+    context->mainCam.aspect= cfg.Width / cfg.Height;
 
 
     printf("Running!\n");
@@ -72,7 +74,7 @@ void PezRender()
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    cam.Bind(quad.modelMat);
+    context->mainCam.Bind(quad.modelMat);
     //quad.Draw();
     manyQuads.Draw();
     pezCheck(glGetError() == GL_NO_ERROR, "draw failed");
@@ -84,5 +86,5 @@ void PezUpdate(float seconds)
     quad.Update();
     manyQuads.Update();
     t += seconds;
-    cam.eye.x += .1*cos(t*2); 
+    context->mainCam.eye.x += .1*cos(t*2); 
 }

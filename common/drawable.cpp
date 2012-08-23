@@ -1,4 +1,5 @@
 #include "drawable.h"
+#include "demoContext.h"
 
 
 Drawable::Drawable() :

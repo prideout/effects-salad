@@ -6,6 +6,7 @@
 
 using namespace glm;
 
+
 // abstract base 
 class Camera {
 public:
