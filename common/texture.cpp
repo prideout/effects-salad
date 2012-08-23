@@ -41,7 +41,6 @@ BufferTexture::Init(
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data, GL_STATIC_DRAW);
-    std::cout << vbo << std::endl;
 
     glTexBuffer(target, format, vbo);
 

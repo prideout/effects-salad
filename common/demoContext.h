@@ -8,14 +8,13 @@
 
 
 class DemoContext {
-    static const DemoContext* _current;
+    static DemoContext* _current;
 
     DemoContext() {}
 public:
 
     DrawableList drawables;
     PerspCamera mainCam;
-
 
     //
     // Tight control of context instances
@@ -25,7 +24,7 @@ public:
         return new DemoContext();
     }
 
-    static const DemoContext*
+    static DemoContext*
     GetCurrent() { 
         return _current; 
     }

@@ -14,7 +14,7 @@ class Drawable {
 public:
 
     bool visible;
-    const DemoContext* context;
+    DemoContext* context;
     glm::mat4 modelMat;
 
     Drawable();

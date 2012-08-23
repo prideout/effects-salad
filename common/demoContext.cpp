@@ -1,4 +1,4 @@
 #include "demoContext.h"
 
 
-const DemoContext* DemoContext::_current(NULL);
+DemoContext* DemoContext::_current(NULL);
