@@ -2,6 +2,7 @@
 
 
 Drawable::Drawable() :
+    visible(true),
     context(DemoContext::GetCurrent())
 {
 }
