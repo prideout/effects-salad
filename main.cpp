@@ -15,7 +15,7 @@
 DemoContext* context;
 Instancer manyQuads;
 Quad quad;
-Texture1D tex;
+BufferTexture tex;
 
 void PezInitialize()
 {
@@ -38,7 +38,7 @@ void PezInitialize()
     pezCheck(glGetError() == GL_NO_ERROR, "compile failed");
 
     float x[] = {1.5,-1.5,200,300,40,40,40,40,40,40,40,40,40,40,40,40};
-    tex.Init(GL_TEXTURE_BUFFER, 0, GL_RED, 16, 0, GL_R32F, GL_FLOAT, x);
+    tex.Init(GL_R32F, 16*sizeof(float), x);
     pezCheck(glGetError() == GL_NO_ERROR, "Texture init failed");
     glUniform1i(u("Offsets"), 0);
     pezCheck(glGetError() == GL_NO_ERROR, "Texture init failed1");

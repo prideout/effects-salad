@@ -6,36 +6,25 @@
 class Texture {
 public:
     GLuint handle;
+    GLenum target;
 
     Texture();
     virtual ~Texture() {};
 
-    virtual void Bind() = 0;
+    virtual void Bind();
     virtual void GenMipmaps() = 0;
 
 };
 
-class Texture1D : public Texture {
+class BufferTexture : public Texture {
 public:
     
-    Texture1D();
+    BufferTexture();
 
-    void Init(GLenum target,
-              GLint level,
-              GLint internalformat, 
-              GLsizei width,
-              GLint border,
-              GLenum format,
-              GLenum type,
+    void Init(GLenum format,
+              unsigned sizeInBytes,
               const GLvoid* data); 
 
-    void Init(GLint internalformat, 
-              GLsizei width,
-              GLenum format,
-              GLenum type,
-              const GLvoid* data);
-
-    virtual void Bind();
     virtual void GenMipmaps();
 };
 
