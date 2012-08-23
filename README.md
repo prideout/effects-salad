@@ -9,9 +9,9 @@ effects-salad
 Framework Components
 --------------------
 
-### Audio
+**Audio**
 
-### Camera
+**Camera**
 
 ### DemoContext
 
