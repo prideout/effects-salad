@@ -33,9 +33,9 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Width = 512;
-    config.Height = 512;
-    config.Multisampling = false;
+    config.Width = 700;
+    config.Height = 700;
+    config.Multisampling = true;
     config.VerticalSync = true;
     return config;
 }
@@ -93,10 +93,10 @@ void GenerateWheel(glm::vec3 center, float radius, float width,
         facet->numberofholes = 0;
         facet->holelist = NULL;
         tetgenio::polygon* poly = &facet->polygonlist[0];
-        poly->numberofvertices = numQuads;
+        poly->numberofvertices = numQuads + 1;
         poly->vertexlist = new int[poly->numberofvertices];
-        for (int q = 0; q < numQuads; ++q) {
-            poly->vertexlist[q] = q * 2 + cap;
+        for (int q = 0; q < numQuads + 1; ++q) {
+            poly->vertexlist[q] = (q % numQuads) * 2 + cap;
         }
     }
 }
@@ -110,13 +110,13 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
 
     tetgenio in;
-    GenerateWheel(glm::vec3(0), 1.0f, 0.1f, 32, &in);
+    GenerateWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
 
     cout << "Tetrahedralizing a hull defined by " << 
         in.numberofpoints << " points..." << endl;
 
     const float qualityBound = 15;
-    const float maxVolume = 0.005f;
+    const float maxVolume = 0.0001f;
 
     char configString[128];
     sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
@@ -211,7 +211,9 @@ void PezRender()
     Programs& progs = Programs::GetInstance();
     GLsizei triangleCount = Context.CurrentTet * 4;
 
+    glClearColor(0.1,0.2,0.3,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_CULL_FACE);
 
     glUseProgram(progs["Tetra.Solid"]);
     glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
@@ -221,23 +223,27 @@ void PezRender()
     glEnable(GL_DEPTH_TEST);
     glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
 
-    glUseProgram(progs["Tetra.Simple"]);
-    glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
-    glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]);
-    glEnable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glDrawArrays(GL_POINTS, 0, Context.PointCount);
+    const bool drawPointCloud = false;
+    if (drawPointCloud) {
+        glUseProgram(progs["Tetra.Simple"]);
+        glUniformMatrix4fv(u("Modelview"), 1, 0, &Context.Modelview[0][0]);
+        glUniformMatrix4fv(u("Projection"), 1, 0, &Context.Projection[0][0]);
+        glEnable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+        glDrawArrays(GL_POINTS, 0, Context.PointCount);
+    }
 }
 
 void PezUpdate(float seconds)
 {
-    const float TetAppearanceRate = 0.01f;
+    const float TetAppearanceRate = 0.1f;
     const float RotationRate = 100;
 
     Context.Theta += seconds * RotationRate;
     Context.ElapsedTime += seconds;
 
-    float percentage = fmod(Context.ElapsedTime * TetAppearanceRate, 1.0);
+    float percentage = Context.ElapsedTime * TetAppearanceRate;
+    percentage = percentage > 1.0 ? 1.0 : percentage;
     Context.CurrentTet = (int) (percentage * Context.TetCount);
 
     mat4 model;
