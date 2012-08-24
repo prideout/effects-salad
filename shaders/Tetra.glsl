@@ -46,6 +46,8 @@ in vec4 vPosition[3];
 out vec4 gColor;
 out vec3 gFacetNormal;
 
+uniform float CullY = 0;
+
 vec3 HSVtoRGB(vec3 color)
 {
     float f, p, q, t, hueRound;
@@ -87,6 +89,10 @@ float randhash(uint seed, float b)
 
 void main()
 {
+    if (vPosition[0].y > CullY) {
+        return;
+    }
+
     vec3 A = vPosition[2].xyz - vPosition[0].xyz;
     vec3 B = vPosition[1].xyz - vPosition[0].xyz;
     gFacetNormal = NormalMatrix * normalize(cross(A, B));

@@ -6,10 +6,12 @@ void
 TetUtil::TetsFromHull(const tetgenio& hull,
                       tetgenio* dest,
                       float qualityBound,
-                      float maxVolume)
+                      float maxVolume,
+                      bool quiet)
 {
+    const char* formatString = quiet ? "Qpq%.3fa%.7f" : "pq%.3fa%.7f";
     char configString[128];
-    sprintf(configString, "Qpq%.3fa%.7f", qualityBound, maxVolume);
+    sprintf(configString, formatString, qualityBound, maxVolume);
     tetrahedralize(configString, (tetgenio*) &hull, dest);
 }
 
@@ -70,13 +72,35 @@ TetUtil::HullWheel(glm::vec3 center,
         facet->numberofholes = 0;
         facet->holelist = NULL;
         tetgenio::polygon* poly = &facet->polygonlist[0];
-        poly->numberofvertices = numQuads + 1;
+        poly->numberofvertices = numQuads;
         poly->vertexlist = new int[poly->numberofvertices];
         int nq = numQuads;
         if (cap) {
-            for (int q = 0; q < nq+1; ++q) poly->vertexlist[q] = (q%nq)*2;
+            for (int q = 0; q < nq; ++q) poly->vertexlist[q] = q*2;
         } else {
-            for (int q = 0; q < nq+1; ++q) poly->vertexlist[nq-q] = (q%nq)*2+1;
+            for (int q = 0; q < nq; ++q) poly->vertexlist[nq-1-q] = q*2+1;
+        }
+    }
+}
+
+static void
+_CopyPolygons(const tetgenio::facet& source,
+              tetgenio::facet* dest,
+              int offset,
+              bool flipWinding)
+{
+    dest->numberofpolygons = source.numberofpolygons;
+    dest->polygonlist = new tetgenio::polygon[dest->numberofpolygons];
+    dest->numberofholes = 0;
+    dest->holelist = NULL;
+    tetgenio::polygon* destPoly = &dest->polygonlist[0];
+    const tetgenio::polygon* srcPoly = &source.polygonlist[0];
+    for (int pi = 0; pi < dest->numberofpolygons; ++pi, ++destPoly, ++srcPoly) {
+        destPoly->numberofvertices = srcPoly->numberofvertices;
+        destPoly->vertexlist = new int[destPoly->numberofvertices];
+        for (int vi = 0; vi < destPoly->numberofvertices; ++vi) {
+            int vj = flipWinding ? (destPoly->numberofvertices - 1 - vi) : vi;
+            destPoly->vertexlist[vi] = offset + srcPoly->vertexlist[vj];
         }
     }
 }
@@ -88,6 +112,41 @@ TetUtil::HullDifference(const tetgenio& hullA,
                         const tetgenio& hullB,
                         tetgenio* dest)
 {
+    dest->numberofpoints = hullA.numberofpoints + hullB.numberofpoints;
+    dest->pointlist = new float[dest->numberofpoints * 3];
+    for (int i = 0; i < hullA.numberofpoints * 3; i++) {
+        dest->pointlist[i] = hullA.pointlist[i];
+    }
+    for (int i = 0; i < hullB.numberofpoints * 3; i++) {
+        dest->pointlist[i + hullA.numberofpoints * 3] = hullB.pointlist[i];
+    }
+
+    dest->numberoffacets = hullA.numberoffacets + hullB.numberoffacets;
+    dest->facetlist = new tetgenio::facet[dest->numberoffacets];
+    for (int i = 0; i < hullA.numberoffacets; i++) {
+        _CopyPolygons(hullA.facetlist[i],
+                      &dest->facetlist[i],
+                      0,
+                      false);
+    }
+    for (int i = 0; i < hullB.numberoffacets; i++) {
+        _CopyPolygons(hullB.facetlist[i],
+                      &dest->facetlist[i + hullA.numberoffacets],
+                      hullA.numberofpoints,
+                      true);
+    }
+}
+
+// Add a volumetric "hole" to a tetgen structure
+void
+TetUtil::SubtractRegion(tetgenio* dest,
+                        const tetgenio& emptiness)
+{
+    dest->numberofholes = emptiness.numberofpoints;
+    dest->holelist = new float[emptiness.numberofpoints * 3];
+    memcpy(dest->holelist,
+           emptiness.pointlist,
+           sizeof(float) * emptiness.numberofpoints * 3);
 }
 
 // Builds an index buffer for drawing the hull of a tetmesh with triangles.

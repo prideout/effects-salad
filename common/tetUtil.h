@@ -8,7 +8,8 @@ namespace TetUtil
     void TetsFromHull(const tetgenio& hull,
                       tetgenio* dest,
                       float qualityBound,
-                      float maxVolume);
+                      float maxVolume,
+                      bool quiet);
 
     // Creates a circular ribbon, composing the rim out of quads.
     // Each of the two caps is a single facet, and each quad is a facet.
@@ -24,6 +25,10 @@ namespace TetUtil
     void HullDifference(const tetgenio& hullA,
                         const tetgenio& hullB,
                         tetgenio* dest);
+
+    // Add a volumetric "hole" to a tetgen structure
+    void SubtractRegion(tetgenio* dest,
+                        const tetgenio& emptiness);
 
     // Builds an index buffer for drawing the hull of a tetmesh with triangles.
     void TrianglesFromHull(const tetgenio& hull,

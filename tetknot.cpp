@@ -50,16 +50,22 @@ void PezInitialize()
 
     Blob centerlines;
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
-
+ 
     tetgenio in;
     TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-    cout << "Tetrahedralizing a hull defined by " << 
-        in.numberofpoints << " points..." << endl;
+
+    tetgenio innerWheel;
+    TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &innerWheel);
+
+    cout <<
+        "Tetrahedralizing a hull defined by " << 
+        in.numberofpoints << " points and " <<
+        in.numberoffacets << " facets." << endl;
 
     tetgenio out;
     const float qualityBound = 15;
-    const float maxVolume = 0.0001f;
-    TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume);
+    const float maxVolume = 0.00005f;
+    TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
 
     int numTets = out.numberoftetrahedra;
     int numPoints = out.numberofpoints;
@@ -68,7 +74,8 @@ void PezInitialize()
     Context.CurrentTet = 0;
     Context.ElapsedTime = 0;
 
-    cout << numTets << " tets have been generated, defined by " <<
+    cout <<
+        numTets << " tets have been generated, defined by " <<
         numPoints << " points." << endl;
 
     Context.PositionSlot = 0;
@@ -142,17 +149,20 @@ void PezRender()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
+    const bool cuttingPlane = true;
     const bool drawSolidTriangles = true;
     if (drawSolidTriangles) {
-        GLsizei triangleCount = Context.CurrentTet * 4;
+        GLsizei tetCount = cuttingPlane ? Context.TetCount : Context.CurrentTet;
+        float cullY = -1 + 2 * (float) Context.CurrentTet / Context.TetCount;
         glUseProgram(progs["Tetra.Solid"]);
+        glUniform1f(u("CullY"), cuttingPlane ? cullY : 999);
         glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
         glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
         glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glBindVertexArray(Context.TetsVao); 
-        glDrawElements(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, tetCount * 4 * 3, GL_UNSIGNED_INT, 0);
     }
 
     const bool drawPointCloud = false;
@@ -166,9 +176,10 @@ void PezRender()
         glDrawArrays(GL_POINTS, 0, Context.PointCount);
     }
 
-    const bool drawHull = true;
+    const bool drawHull = false;
     if (drawHull) {
         glUseProgram(progs["Tetra.Solid"]);
+        glUniform1f(u("CullY"), 999);
         glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
         glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
         glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
@@ -181,7 +192,7 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
-    const float TetAppearanceRate = 0.1f;
+    const float TetAppearanceRate = 0.2f;
     const float RotationRate = 100;
 
     Context.Theta += seconds * RotationRate;
