@@ -53,9 +53,7 @@ void PezInitialize()
  
     tetgenio in;
     TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-
-    tetgenio innerWheel;
-    TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &innerWheel);
+    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
 
     cout <<
         "Tetrahedralizing a hull defined by " << 

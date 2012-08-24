@@ -26,6 +26,10 @@ namespace TetUtil
                         const tetgenio& hullB,
                         tetgenio* dest);
 
+    // Copy all facets from "hull" to dest
+    void HullCombine(const tetgenio& hull,
+                     tetgenio* dest);
+
     // Add a volumetric "hole" to a tetgen structure
     void SubtractRegion(tetgenio* dest,
                         const tetgenio& emptiness);

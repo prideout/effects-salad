@@ -25,6 +25,14 @@ TetUtil::HullWheel(glm::vec3 center,
                    int numQuads,
                    tetgenio* dest)
 {
+    // If the destination already has facets, append to it:
+    if (dest->numberofpoints) {
+        static tetgenio freshHull;
+        HullWheel(center, radius, width, numQuads, &freshHull);
+        //HullCombine(freshHull, dest);
+        return;
+    }
+
     dest->numberofpoints = numQuads * 2;
     dest->pointlist = new float[dest->numberofpoints * 3];
     const float twopi = 2 * glm::pi<float>();
@@ -48,7 +56,7 @@ TetUtil::HullWheel(glm::vec3 center,
     // Facet per rim face + 2 facets for the "caps"
     dest->numberoffacets = numQuads + 2;
     dest->facetlist = new tetgenio::facet[dest->numberoffacets];
-    tetgenio::facet* facet = &dest->facetlist[0];
+    tetgenio::facet* facet = dest->facetlist;
 
     // Rim faces:
     for (int n = 0; n < numQuads * 2; n += 2, ++facet) {
@@ -93,8 +101,8 @@ _CopyPolygons(const tetgenio::facet& source,
     dest->polygonlist = new tetgenio::polygon[dest->numberofpolygons];
     dest->numberofholes = 0;
     dest->holelist = NULL;
-    tetgenio::polygon* destPoly = &dest->polygonlist[0];
-    const tetgenio::polygon* srcPoly = &source.polygonlist[0];
+    tetgenio::polygon* destPoly = dest->polygonlist;
+    const tetgenio::polygon* srcPoly = source.polygonlist;
     for (int pi = 0; pi < dest->numberofpolygons; ++pi, ++destPoly, ++srcPoly) {
         destPoly->numberofvertices = srcPoly->numberofvertices;
         destPoly->vertexlist = new int[destPoly->numberofvertices];
@@ -135,6 +143,43 @@ TetUtil::HullDifference(const tetgenio& hullA,
                       hullA.numberofpoints,
                       true);
     }
+}
+
+// Copy all facets from "hull" to dest
+void
+TetUtil::HullCombine(const tetgenio& second,
+                     tetgenio* dest)
+{
+    float* firstPoints = dest->pointlist;
+    int firstPointCount = dest->numberofpoints;
+    tetgenio::facet* firstFacets = dest->facetlist;
+    int firstFacetCount = dest->numberoffacets;
+
+    dest->numberofpoints += second.numberofpoints;
+    dest->numberoffacets += second.numberoffacets;
+    dest->pointlist = new float[dest->numberofpoints];
+    dest->facetlist = new tetgenio::facet[dest->numberoffacets];
+
+    for (int i = 0; i < firstPointCount * 3; i++) {
+        dest->pointlist[i] = firstPoints[i];
+    }
+    for (int i = 0; i < second.numberofpoints * 3; i++) {
+        dest->pointlist[i + firstPointCount * 3] = second.pointlist[i];
+    }
+    for (int i = 0; i < firstFacetCount; i++) {
+        _CopyPolygons(firstFacets[i],
+                      dest->facetlist + i,
+                      0,
+                      false);
+    }
+    for (int i = 0; i < second.numberoffacets; i++) {
+        _CopyPolygons(second.facetlist[i],
+                      dest->facetlist + i + firstFacetCount,
+                      firstPointCount,
+                      false);
+    }
+    //delete[] firstPoints;
+    //delete[] firstFacets; // TODO <-- leaky: needs to be deeper
 }
 
 // Add a volumetric "hole" to a tetgen structure
