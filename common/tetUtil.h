@@ -41,4 +41,12 @@ namespace TetUtil
     // Builds an index buffer for drawing all tetrahedra with triangles.
     void TrianglesFromTets(const tetgenio& tets,
                            Blob* indices);
+
+    // Add "regions", which are defined by seed points that flood until hitting a facet.
+    void AddRegions(const Vec3List& points,
+                    tetgenio* dest);
+
+    // Averages the corners of each tet and dumps the result into an array.
+    void ComputeCentroids(Vec3List* centroids,
+                          const tetgenio& tets);
 }

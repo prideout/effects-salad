@@ -9,7 +9,7 @@ TetUtil::TetsFromHull(const tetgenio& hull,
                       float maxVolume,
                       bool quiet)
 {
-    const char* formatString = quiet ? "Qpq%.3fa%.7f" : "pq%.3fa%.7f";
+    const char* formatString = quiet ? "AQpq%.3fa%.7f" : "Apq%.3fa%.7f";
     char configString[128];
     sprintf(configString, formatString, qualityBound, maxVolume);
     tetrahedralize(configString, (tetgenio*) &hull, dest);
@@ -178,8 +178,24 @@ TetUtil::HullCombine(const tetgenio& second,
                       firstPointCount,
                       false);
     }
-    //delete[] firstPoints;
-    //delete[] firstFacets; // TODO <-- leaky: needs to be deeper
+    delete[] firstPoints;
+    delete[] firstFacets; // TODO <-- leaky: needs to be deeper
+}
+
+// Add "regions", which are defined by seed points that flood until hitting a facet.
+void
+TetUtil::AddRegions(const Vec3List& points,
+                    tetgenio* dest)
+{
+    dest->numberofregions = points.size();
+    float* r = dest->regionlist = new float[5 * dest->numberofregions];
+    for (int i = 0; i < dest->numberofregions; ++i) {
+        *r++ = points[i].x;
+        *r++ = points[i].y;
+        *r++ = points[i].z;
+        *r++ = (float) i;
+        *r++ = -1.0f;
+    }
 }
 
 // Add a volumetric "hole" to a tetgen structure
@@ -247,5 +263,23 @@ TetUtil::TrianglesFromTets(const tetgenio& hull,
         *index++ = currentTet[2];
         *index++ = currentTet[0];
         *index++ = currentTet[3];
+    }
+}
+
+// Averages the corners of each tet and dumps the result into an array.
+void
+TetUtil::ComputeCentroids(Vec3List* centroids,
+                          const tetgenio& tets)
+{
+    centroids->resize(tets.numberoftetrahedra);
+    glm::vec3* dest = &((*centroids)[0]);
+    const int* currentTet = tets.tetrahedronlist;
+    const glm::vec3* points = (const glm::vec3*) tets.pointlist;
+    for (int i = 0; i < tets.numberoftetrahedra; ++i, currentTet += 4) {
+        glm::vec3 a = points[currentTet[0]];
+        glm::vec3 b = points[currentTet[1]];
+        glm::vec3 c = points[currentTet[2]];
+        glm::vec3 d = points[currentTet[3]];
+        *dest++ = (a + b + c + d) / 4.0f;
     }
 }

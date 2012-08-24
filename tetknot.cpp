@@ -38,7 +38,7 @@ PezConfig PezGetConfig()
     config.Title = __FILE__;
     config.Width = 700;
     config.Height = 700;
-    config.Multisampling = true;
+    config.Multisampling = false;
     config.VerticalSync = true;
     return config;
 }
@@ -53,7 +53,12 @@ void PezInitialize()
  
     tetgenio in;
     TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
+    TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
+
+    Vec3List regionPoints;
+    regionPoints.push_back(vec3(0, 0, 0));
+    regionPoints.push_back(vec3(0.5, 0, 0));
+    TetUtil::AddRegions(regionPoints, &in);
 
     cout <<
         "Tetrahedralizing a hull defined by " << 
@@ -74,7 +79,12 @@ void PezInitialize()
 
     cout <<
         numTets << " tets have been generated, defined by " <<
-        numPoints << " points." << endl;
+        numPoints << " points." << endl <<
+        "Each tet has " << out.numberoftetrahedronattributes <<
+        " attributes." << endl;
+
+    Vec3List centroids;
+    TetUtil::ComputeCentroids(&centroids, out);
 
     Context.PositionSlot = 0;
     Context.Theta = 0;
@@ -190,8 +200,8 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
-    const float TetAppearanceRate = 0.2f;
-    const float RotationRate = 100;
+    const float TetAppearanceRate = 0.1f;
+    const float RotationRate = 50;
 
     Context.Theta += seconds * RotationRate;
     Context.ElapsedTime += seconds;
