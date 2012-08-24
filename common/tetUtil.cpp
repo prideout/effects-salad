@@ -27,9 +27,9 @@ TetUtil::HullWheel(glm::vec3 center,
 {
     // If the destination already has facets, append to it:
     if (dest->numberofpoints) {
-        static tetgenio freshHull;
+        tetgenio freshHull;
         HullWheel(center, radius, width, numQuads, &freshHull);
-        //HullCombine(freshHull, dest);
+        HullCombine(freshHull, dest);
         return;
     }
 

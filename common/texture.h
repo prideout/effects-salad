@@ -14,7 +14,7 @@ public:
     Texture();
     virtual ~Texture() {};
 
-    virtual void Bind();
+    virtual void Bind(int stage = 0);
     virtual void GenMipmaps() = 0;
 
 };

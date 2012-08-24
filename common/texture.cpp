@@ -7,7 +7,8 @@ Texture::Texture() :
 }
 
 void
-Texture::Bind() {
+Texture::Bind(int stage) {
+    glActiveTexture(stage + GL_TEXTURE0);
     glBindTexture(target, handle);
 }
 
