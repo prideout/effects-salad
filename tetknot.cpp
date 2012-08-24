@@ -55,8 +55,8 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
  
     tetgenio in;
-    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 32, &in);
-    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 32, &in);
+    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
+    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
 
     Vec3List regionPoints;
     regionPoints.push_back(vec3(0, 0, 0));
