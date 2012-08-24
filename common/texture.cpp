@@ -49,6 +49,84 @@ BufferTexture::Init(
 
 void
 BufferTexture::GenMipmaps() {
-    pezCheck(false, "GenMipmaps failed: BufferTexture cannot have mipmaps");
+    pezFatal("GenMipmaps failed: BufferTexture cannot have mipmaps");
 }
 
+//
+// Rect Texture
+//
+
+RectTexture::RectTexture() :
+    Texture()
+{
+    target = GL_TEXTURE_RECTANGLE;
+}
+
+void
+RectTexture::Init(const FloatList& data)
+{
+    glGenTextures(1, &handle);
+    glBindTexture(target, handle);
+    GLenum internalFormat = GL_R32F;
+    GLenum format = GL_RED;
+    _width = data.size() > 1024 ? 1024 : data.size();
+    _height = (data.size() + 1023) / 1024;
+    glTexImage2D(target,
+                 0,
+                 internalFormat,
+                 _width,
+                 _height,
+                 0,
+                 format,
+                 GL_FLOAT,
+                 (const GLvoid*) &(data[0]));
+    pezCheck(glGetError() == GL_NO_ERROR, "RectTexture::Init Float failed");
+}
+
+void
+RectTexture::Init(const Vec3List& data)
+{
+    glGenTextures(1, &handle);
+    glBindTexture(target, handle);
+    GLenum internalFormat = GL_RGB32F;
+    GLenum format = GL_RGB;
+    _width = data.size() > 1024 ? 1024 : data.size();
+    _height = (data.size() + 1023) / 1024;
+    glTexImage2D(target,
+                 0,
+                 internalFormat,
+                 _width,
+                 _height,
+                 0,
+                 format,
+                 GL_FLOAT,
+                 (const GLvoid*) &(data[0]));
+    pezCheck(glGetError() == GL_NO_ERROR, "RectTexture::Init Vec3 failed");
+}
+
+void
+RectTexture::Init(const Vec4List& data)
+{
+    glGenTextures(1, &handle);
+    glBindTexture(target, handle);
+    GLenum internalFormat = GL_RGBA32F;
+    GLenum format = GL_RGBA;
+    _width = data.size() > 1024 ? 1024 : data.size();
+    _height = (data.size() + 1023) / 1024;
+    glTexImage2D(target,
+                 0,
+                 internalFormat,
+                 _width,
+                 _height,
+                 0,
+                 format,
+                 GL_FLOAT,
+                 (const GLvoid*) &(data[0]));
+    pezCheck(glGetError() == GL_NO_ERROR, "RectTexture::Init Vec4 failed");
+}
+
+void
+RectTexture::GenMipmaps()
+{
+    pezFatal("GenMipmaps failed: RectTexture cannot have mipmaps");
+}

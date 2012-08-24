@@ -4,6 +4,7 @@
 #include "common/programs.h"
 #include "common/tube.h"
 #include "common/tetUtil.h"
+#include "common/texture.h"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/glm.hpp"
@@ -30,6 +31,8 @@ struct ContextType
     GLuint TetsVao;
     GLuint HullVao;
     GLsizei HullTriCount;
+    RectTexture CentroidTexture;
+    RectTexture RegionTexture;
 } Context;
 
 PezConfig PezGetConfig()
@@ -38,7 +41,7 @@ PezConfig PezGetConfig()
     config.Title = __FILE__;
     config.Width = 700;
     config.Height = 700;
-    config.Multisampling = false;
+    config.Multisampling = true;
     config.VerticalSync = true;
     return config;
 }
@@ -70,12 +73,12 @@ void PezInitialize()
     const float maxVolume = 0.00005f;
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
 
-    int numTets = out.numberoftetrahedra;
-    int numPoints = out.numberofpoints;
-    Context.PointCount = numPoints;
-    Context.TetCount = numTets;
+    int numTets = Context.TetCount = out.numberoftetrahedra;
+    int numPoints = Context.PointCount = out.numberofpoints;
     Context.CurrentTet = 0;
     Context.ElapsedTime = 0;
+    Context.PositionSlot = 0;
+    Context.Theta = 0;
 
     cout <<
         numTets << " tets have been generated, defined by " <<
@@ -83,11 +86,13 @@ void PezInitialize()
         "Each tet has " << out.numberoftetrahedronattributes <<
         " attributes." << endl;
 
+    // Populate the two per-tet textures
     Vec3List centroids;
     TetUtil::ComputeCentroids(&centroids, out);
-
-    Context.PositionSlot = 0;
-    Context.Theta = 0;
+    Context.CentroidTexture.Init(centroids);
+    FloatList regionData(out.tetrahedronattributelist, 
+                         out.tetrahedronattributelist + out.numberoftetrahedra);
+    Context.RegionTexture.Init(regionData);
 
     // Create the Tets VAO
     glGenVertexArrays(1, &Context.TetsVao);

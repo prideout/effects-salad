@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "pez/pez.h"
+#include "common/typedefs.h"
 
 class Texture {
 public:
@@ -35,4 +36,13 @@ public:
     virtual void GenMipmaps();
 };
 
-
+class RectTexture : public Texture {
+    int _width;
+    int _height;
+public:
+    RectTexture();
+    void Init(const FloatList& data);
+    void Init(const Vec3List& data);
+    void Init(const Vec4List& data);
+    virtual void GenMipmaps();
+};
