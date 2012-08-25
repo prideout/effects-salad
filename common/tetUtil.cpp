@@ -1,3 +1,4 @@
+#include <algorithm>X
 #include "common/init.h"
 #include "common/tetUtil.h"
 #include "glm/gtx/constants.inl"
