@@ -1,0 +1,22 @@
+
+Picture-in-picture (comic-panel) effect:
+
+    - Make a new Effect called Panel (Portal, PiP, whatever)
+
+    Init:
+        - Construct a new DemoContext
+        - Setup the viewport on the demo context
+        - Copy the DrawableList from the current context
+            - if new geometry is desired, this isn't necessary
+
+    Update:
+        - Save the current context pointer (DemoContext::GetCurrent())
+        - Set the current context (DemoContext::SetCurrent(...))
+        - Call context->Update()
+        - Restore the old context pointer
+    
+    Draw:
+        - Same as update, but call Draw()
+
+
+In the main program, add this new Panel effect to the current context's drawable list
