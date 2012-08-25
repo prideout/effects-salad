@@ -55,12 +55,12 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
  
     tetgenio in;
-    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
+    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 4, &in);
+    TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 4, &in);
 
     Vec3List regionPoints;
-    regionPoints.push_back(vec3(0, 0, 0));
-    regionPoints.push_back(vec3(0.5, 0, 0));
+    regionPoints.push_back(vec3(0.1, 0, 0));
+    regionPoints.push_back(vec3(0.3, 0.2, 0));
     TetUtil::AddRegions(regionPoints, &in);
 
     cout <<
@@ -86,13 +86,18 @@ void PezInitialize()
         "Each tet has " << out.numberoftetrahedronattributes <<
         " attributes." << endl;
 
+    for (int i = 0; i < out.numberoftetrahedra; ++i) {
+        if (out.tetrahedronattributelist[i])
+            cout << out.tetrahedronattributelist[i] << ' ';
+    }
+    cout << endl;
+
     // Populate the two per-tet textures
     Vec3List centroids;
     TetUtil::ComputeCentroids(&centroids, out);
     Context.CentroidTexture.Init(centroids);
     FloatList regionData(out.tetrahedronattributelist, 
                          out.tetrahedronattributelist + out.numberoftetrahedra);
-    for (int i = 0; i < out.numberoftetrahedra; ++i) { if (out.tetrahedronattributelist[i]) cout << out.tetrahedronattributelist[i] << ' '; }
     Context.RegionTexture.Init(regionData);
 
     // Create the Tets VAO
@@ -138,7 +143,7 @@ void PezInitialize()
 
     Programs& progs = Programs::GetInstance();
     progs.Load("Tetra.Simple", false);
-    progs.Load("Tetra.Solid", true);
+    progs.Load("Tetra.Solid", false);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

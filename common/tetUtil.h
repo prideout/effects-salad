@@ -42,6 +42,11 @@ namespace TetUtil
     void TrianglesFromTets(const tetgenio& tets,
                            Blob* indices);
 
+    // Builds a non-indexed, interleaved VBO from a set of tetrahedra.
+    void PointsFromTets(const tetgenio& tets,
+                        VertexAttribMask requestedAttribs,
+                        Blob* vbo);
+
     // Add "regions", which are defined by seed points that flood until hitting a facet.
     void AddRegions(const Vec3List& points,
                     tetgenio* dest);

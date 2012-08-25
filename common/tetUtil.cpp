@@ -9,7 +9,7 @@ TetUtil::TetsFromHull(const tetgenio& hull,
                       float maxVolume,
                       bool quiet)
 {
-    const char* formatString = quiet ? "AQpq%.3fa%.7f" : "Apq%.3fa%.7f";
+    const char* formatString = quiet ? "AQpq%.3fa%.7f" : "VVApq%.3fa%.7f";
     char configString[128];
     sprintf(configString, formatString, qualityBound, maxVolume);
     tetrahedralize(configString, (tetgenio*) &hull, dest);
@@ -177,7 +177,7 @@ TetUtil::HullCombine(const tetgenio& second,
         _CopyPolygons(second.facetlist[i],
                       dest->facetlist + i + firstFacetCount,
                       firstPointCount,
-                      false);
+                      true);
     }
 
     delete[] firstPoints;
@@ -266,6 +266,14 @@ TetUtil::TrianglesFromTets(const tetgenio& hull,
         *index++ = currentTet[0];
         *index++ = currentTet[3];
     }
+}
+
+// Builds a non-indexed, interleaved VBO from a set of tetrahedra.
+void
+TetUtil::PointsFromTets(const tetgenio& tets,
+                        VertexAttribMask requestedAttribs,
+                        Blob* vbo)
+{
 }
 
 // Averages the corners of each tet and dumps the result into an array.

@@ -22,34 +22,16 @@ void main()
 -- Solid.VS
 
 layout(location = 0) in vec4 Position;
-uniform mat4 Projection;
-uniform mat4 Modelview;
-
-out vec4 vPosition;
-
-void main()
-{
-    vPosition = Position;
-    gl_Position = Projection * Modelview * Position;
-}
-
--- Solid.GS
-
-layout(triangles) in;
-layout(triangle_strip, max_vertices = 3) out;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
-
 uniform sampler2DRect CentroidTexture;
 uniform sampler2DRect RegionTexture;
-
-in vec4 vPosition[3];
-out vec4 gColor;
-out vec3 gFacetNormal;
-
 uniform float CullY = 0;
+
+out vec4 vColor;
+out vec3 vFacetNormal;
 
 vec3 HSVtoRGB(vec3 color)
 {
@@ -92,42 +74,30 @@ float randhash(uint seed, float b)
 
 void main()
 {
-    uint tetid = uint(gl_PrimitiveIDIn) / 4u;
+    uint tetid = uint(gl_VertexID) / 3u;
     ivec2 coord = ivec2(int(tetid) % 1024, int(tetid) / 1024);
+    float region = texelFetch(RegionTexture, coord).r;
+    float hue = randhash(tetid, 1.0);
+    vec3 hsv = vec3(hue, 0.75, 0.75);
+    vColor = vec4(HSVtoRGB(hsv), 0.25);
+    vColor.rgb = mix(vColor.rgb, vec3(0,0.4,0.7), region);
 
+/*
     vec3 tetcenter = texelFetch(CentroidTexture, coord).rgb;
     if (tetcenter.y > CullY) {
-        return;
+        vColor.a = 0;
     }
+*/
 
-    float region = texelFetch(RegionTexture, coord).r;
+    vFacetNormal = vec3(1, 1, 1);
 
-    vec3 A = vPosition[2].xyz - vPosition[0].xyz;
-    vec3 B = vPosition[1].xyz - vPosition[0].xyz;
-    gFacetNormal = NormalMatrix * normalize(cross(A, B));
-
-    float hue = randhash(tetid, 1.0);
-
-    vec3 hsv = vec3(hue, 0.75, 0.75);
-
-    gColor = vec4(HSVtoRGB(hsv), 0.25);
-    gColor.rgb = mix(gColor.rgb, vec3(0,0.4,0.7), region);
-
-    gl_Position = Projection * Modelview * vPosition[0];
-    EmitVertex();
-
-    gl_Position = Projection * Modelview * vPosition[1];
-    EmitVertex();
-
-    gl_Position = Projection * Modelview * vPosition[2];
-    EmitVertex();
-    EndPrimitive();
+    gl_Position = Projection * Modelview * Position;
 }
 
 -- Solid.FS
 
-in vec4 gColor;
-in vec3 gFacetNormal;
+in vec4 vColor;
+in vec3 vFacetNormal;
 out vec4 FragColor;
 
 uniform vec3 LightPosition = vec3(0, 0, 1);
@@ -135,10 +105,10 @@ uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 
 void main()
 {
-    vec3 N = normalize(gFacetNormal);
+    vec3 N = normalize(vFacetNormal);
     vec3 L = LightPosition;
     float df = abs(dot(N, L));
-    vec3 color = AmbientMaterial + df * gColor.rgb;
+    vec3 color = AmbientMaterial + df * vColor.rgb;
 
-    FragColor = vec4(color, gColor.a);
+    FragColor = vec4(color, vColor.a);
 }

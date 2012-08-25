@@ -13,13 +13,15 @@ using namespace std;
 enum VertexAttribs {
     AttrPosition,
     AttrNormal,
-    AttrTexCoord
+    AttrTexCoord,
+    AttrTetId
 };
 
 // Bit flags useful for argument passing
 #define AttrPositionFlag   (1 << 0)
 #define AttrNormalFlag     (1 << 1)
 #define AttrTexCoordFlag   (1 << 2)
+#define AttrTetId          (1 << 3)
 
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);
 GLuint InitVao(int componentCount, const FloatList& verts);
