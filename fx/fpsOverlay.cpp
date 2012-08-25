@@ -1,7 +1,9 @@
+#include "glm/gtc/type_ptr.hpp"
 #include "fx/fpsOverlay.h"
 #include "common/programs.h"
 #include "common/init.h"
-#include "string.h"
+#include "common/demoContext.h"
+#include <string.h>
 
 using namespace std;
 using namespace glm;
@@ -94,12 +96,19 @@ FpsOverlay::Draw()
     Programs& progs = Programs::GetInstance();
     glUseProgram(progs.Load("Fps"));
 
+    vec2 viewport = vec2(this->context->viewport.width,
+                         this->context->viewport.height);
+
+    vec2 invViewport = 2.0f / viewport;
+    glUniform2fv(u("InverseViewport"), 1, ptr(invViewport));
+    glUniform1i(u("Numerals"), 0);
+
     float fps = round(_timer.GetFPS());
 
     char digits[MaxNumDigits + 1] = {0};
     sprintf(digits, "%d", (int) fps);
     int numDigits = strlen(digits);
-    vec2 pos(5, 10);
+    vec2 pos(-viewport.x / 2 + 5, -viewport.y / 2 + 10);
 
     vector<float> vbo(numDigits * FloatsPerDigit);
     float* vertex = &vbo[0];
