@@ -374,7 +374,7 @@ TetUtil::ComputeCentroids(Vec3List* centroids,
                           const tetgenio& tets)
 {
     centroids->resize(tets.numberoftetrahedra);
-    vec3* dest = &((*centroids)[0]);
+    vec3* dest = &centroids->front();
     const int* currentTet = tets.tetrahedronlist;
     const vec3* points = (const vec3*) tets.pointlist;
     for (int i = 0; i < tets.numberoftetrahedra; ++i, currentTet += 4) {
@@ -383,5 +383,22 @@ TetUtil::ComputeCentroids(Vec3List* centroids,
         vec3 c = points[currentTet[2]];
         vec3 d = points[currentTet[3]];
         *dest++ = (a + b + c + d) / 4.0f;
+    }
+}
+
+void
+TetUtil::ComputeCentroids(Vec4List* centroids,
+                          const tetgenio& tets)
+{
+    centroids->resize(tets.numberoftetrahedra);
+    vec4* dest = &centroids->front();
+    const int* currentTet = tets.tetrahedronlist;
+    const vec3* points = (const vec3*) tets.pointlist;
+    for (int i = 0; i < tets.numberoftetrahedra; ++i, currentTet += 4) {
+        vec3 a = points[currentTet[0]];
+        vec3 b = points[currentTet[1]];
+        vec3 c = points[currentTet[2]];
+        vec3 d = points[currentTet[3]];
+        *dest++ = vec4((a + b + c + d) / 4.0f, 1.0f);
     }
 }

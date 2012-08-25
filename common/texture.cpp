@@ -24,26 +24,24 @@ BufferTexture::BufferTexture() :
 }
 
 void
-BufferTexture::Init(
-          GLenum format,
-          unsigned sizeInBytes,
-          const GLvoid* data) {
+BufferTexture::Init(GLenum internalFormat,
+                    unsigned int sizeInBytes,
+                    const GLvoid* data)
+{
     glGenTextures(1, &handle);
     pezCheck(glGetError() == GL_NO_ERROR, "BufferTexture gen failed");
 
     glBindTexture(target, handle);
     pezCheck(glGetError() == GL_NO_ERROR, "Bind BufferTexture failed");
 
-    pezCheck(glGetError() == GL_NO_ERROR, "Set TexParam failed");
-
     GLuint vbo;
     glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data, GL_STATIC_DRAW);
+    glBindBuffer(target, vbo);
+    glBufferData(target, sizeInBytes, data, GL_STATIC_DRAW);
+    pezCheck(glGetError() == GL_NO_ERROR, "TEXTURE_BUFFER population failed");
 
-    glTexBuffer(target, format, vbo);
-
-    pezCheck(glGetError() == GL_NO_ERROR, "TexImage1D failed");
+    glTexBuffer(target, internalFormat, vbo);
+    pezCheck(glGetError() == GL_NO_ERROR, "glTexBuffer failed");
 }
 
 void
@@ -55,13 +53,13 @@ BufferTexture::Init(const FloatList& data)
 void
 BufferTexture::Init(const Vec3List& data)
 {
-    Init(GL_RGB32F, data.size() * 12, &data[0]);
+    Init(GL_RGB32F, data.size() * 12, &data[0].x);
 }
 
 void
 BufferTexture::Init(const Vec4List& data)
 {
-    Init(GL_RGBA32F, data.size() * 16, &data[0]);
+    Init(GL_RGBA32F, data.size() * 16, &data[0].x);
 }
 
 void

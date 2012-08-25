@@ -32,7 +32,7 @@ struct ContextType
     GLuint HullVao;
     GLuint ExpandedVao;
     GLsizei HullTriCount;
-    RectTexture CentroidTexture;
+    BufferTexture CentroidTexture;
 } Context;
 
 PezConfig PezGetConfig()
@@ -87,7 +87,7 @@ void PezInitialize()
         " attributes." << endl;
 
     // Populate the two per-tet textures
-    Vec3List centroids;
+    Vec4List centroids;
     TetUtil::ComputeCentroids(&centroids, out);
     Context.CentroidTexture.Init(centroids);
 

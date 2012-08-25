@@ -27,7 +27,7 @@ layout(location = 1) in vec3 Normal;
 uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
-uniform sampler2DRect CentroidTexture;
+uniform samplerBuffer CentroidTexture;
 uniform float CullY;
 
 out vec4 vColor;
@@ -75,13 +75,11 @@ float randhash(uint seed, float b)
 void main()
 {
     uint tetid = uint(gl_VertexID) / 12u;
-    ivec2 coord = ivec2(int(tetid) % 1024, int(tetid) / 1024);
     float hue = randhash(tetid, 1.0);
     vec3 hsv = vec3(hue, 0.75, 0.75);
     vColor = vec4(HSVtoRGB(hsv), 1.0);
 
-    vec3 tetcenter = texelFetch(CentroidTexture, coord).rgb;
-    //tetcenter = Position.xyz;
+    vec3 tetcenter = texelFetch(CentroidTexture, int(tetid)).rgb;
     if (tetcenter.y > CullY) {
         vColor.a = 0;
     } else {

@@ -60,4 +60,6 @@ namespace TetUtil
     // Averages the corners of each tet and dumps the result into an array.
     void ComputeCentroids(Vec3List* centroids,
                           const tetgenio& tets);
+    void ComputeCentroids(Vec4List* centroids,
+                          const tetgenio& tets);
 }
