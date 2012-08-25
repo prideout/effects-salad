@@ -1,5 +1,8 @@
+#include "common/init.h"
 #include "common/tetUtil.h"
 #include "glm/gtx/constants.inl"
+
+using namespace glm;
 
 // Thin wrapper for tetgen's "tetrahedralize" function.
 void
@@ -19,7 +22,7 @@ TetUtil::TetsFromHull(const tetgenio& hull,
 // Each of the two caps is a single facet, and each quad is a facet.
 // (tetgen defines a facet as a coplanar set of polygons)
 void
-TetUtil::HullWheel(glm::vec3 center,
+TetUtil::HullWheel(vec3 center,
                    float radius,
                    float width,
                    int numQuads,
@@ -35,7 +38,7 @@ TetUtil::HullWheel(glm::vec3 center,
 
     dest->numberofpoints = numQuads * 2;
     dest->pointlist = new float[dest->numberofpoints * 3];
-    const float twopi = 2 * glm::pi<float>();
+    const float twopi = 2 * pi<float>();
     const float dtheta = twopi / numQuads;
     float* coord = dest->pointlist;
     const float z0 = -width / 2;
@@ -145,7 +148,7 @@ TetUtil::HullDifference(const tetgenio& hullA,
     }
 }
 
-// Copy all facets from "hull" to dest
+// Copy all facets from "hull" to dest, reallocating memory as necessary.
 void
 TetUtil::HullCombine(const tetgenio& second,
                      tetgenio* dest)
@@ -177,11 +180,17 @@ TetUtil::HullCombine(const tetgenio& second,
         _CopyPolygons(second.facetlist[i],
                       dest->facetlist + i + firstFacetCount,
                       firstPointCount,
-                      false);
+                      true);
     }
 
     delete[] firstPoints;
-    delete[] firstFacets; // TODO <-- leaky: needs to be deeper
+    for (int f = 0; f < firstFacetCount; ++f) {
+        for (int p = 0; p < firstFacets[f].numberofpolygons; ++p) {
+            delete[] firstFacets[f].polygonlist[p].vertexlist;
+        }
+        delete[] firstFacets[f].polygonlist;
+    }
+    delete[] firstFacets;
 }
 
 // Add "regions", which are defined by seed points that flood until hitting a facet.
@@ -197,6 +206,21 @@ TetUtil::AddRegions(const Vec3List& points,
         *r++ = points[i].z;
         *r++ = (float) i;
         *r++ = -1.0f;
+    }
+}
+
+// Add "holes", which are defined by seed points that flood until hitting a facet.
+// The tetgen implementation seem to handle holes more robustly than regions.
+void
+TetUtil::AddHoles(const Vec3List& points,
+                  tetgenio* dest)
+{
+    dest->numberofholes = points.size();
+    float* r = dest->holelist = new float[3 * dest->numberofholes];
+    for (int i = 0; i < dest->numberofholes; ++i) {
+        *r++ = points[i].x;
+        *r++ = points[i].y;
+        *r++ = points[i].z;
     }
 }
 
@@ -268,20 +292,96 @@ TetUtil::TrianglesFromTets(const tetgenio& hull,
     }
 }
 
+static unsigned char*
+_WriteTriangle(unsigned char* offset,
+               VertexAttribMask requestedAttribs,
+               vec3* pa, vec3* pb, vec3* pc,
+               int id = 0)
+{
+    vec3 p[] = {*pa, *pb, *pc};
+    vec3 n;
+    if (requestedAttribs & AttrNormalFlag) {
+        n = normalize(cross(p[1] - p[0], p[2] - p[0]));
+    }
+    for (int i = 0; i < 3; ++i) {
+        if (requestedAttribs & AttrPositionFlag) {
+            vec3* pposition = (vec3*) offset;
+            *pposition = p[i];
+            offset += AttrPositionWidth;
+        }
+        if (requestedAttribs & AttrNormalFlag) {
+            vec3* pnormal = (vec3*) offset;
+            *pnormal = n;
+            offset += AttrNormalWidth;
+        }
+        if (requestedAttribs & AttrTetId) {
+            int* pid = (int*) offset;
+            *pid = id;
+            offset += AttrTetIdWidth;
+        }
+    }
+    return offset;
+}
+
+// Builds a non-indexed, interleaved VBO from a set of tetrahedra.
+void
+TetUtil::PointsFromTets(const tetgenio& tets,
+                        VertexAttribMask requestedAttribs,
+                        Blob* vbo)
+{
+    if (requestedAttribs & AttrTexCoordFlag) {
+        pezFatal("Tets can't be textured");
+    }
+    int stride = 0;
+    if (requestedAttribs & AttrPositionFlag) {
+        stride += AttrPositionWidth;
+    }
+    if (requestedAttribs & AttrNormalFlag) {
+        stride += AttrNormalWidth;
+    }
+    if (requestedAttribs & AttrTetId) {
+        stride += AttrTetIdWidth;
+    }
+    int triangleCount = tets.numberoftetrahedra * 4;
+    int vertexCount = triangleCount * 3;
+    vbo->resize(stride * vertexCount);
+    unsigned char* p = &(vbo->front());
+    const int* tet = tets.tetrahedronlist;
+    vec3 *a, *b, *c;
+    for (int i = 0; i < tets.numberoftetrahedra; ++i, tet += 4) {
+        a = (vec3*) (tets.pointlist + 3*tet[1]);
+        b = (vec3*) (tets.pointlist + 3*tet[0]);
+        c = (vec3*) (tets.pointlist + 3*tet[2]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+        a = (vec3*) (tets.pointlist + 3*tet[0]);
+        b = (vec3*) (tets.pointlist + 3*tet[1]);
+        c = (vec3*) (tets.pointlist + 3*tet[3]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+        a = (vec3*) (tets.pointlist + 3*tet[1]);
+        b = (vec3*) (tets.pointlist + 3*tet[2]);
+        c = (vec3*) (tets.pointlist + 3*tet[3]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+        a = (vec3*) (tets.pointlist + 3*tet[2]);
+        b = (vec3*) (tets.pointlist + 3*tet[0]);
+        c = (vec3*) (tets.pointlist + 3*tet[3]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+    }    
+}
+
 // Averages the corners of each tet and dumps the result into an array.
 void
 TetUtil::ComputeCentroids(Vec3List* centroids,
                           const tetgenio& tets)
 {
     centroids->resize(tets.numberoftetrahedra);
-    glm::vec3* dest = &((*centroids)[0]);
+    vec3* dest = &((*centroids)[0]);
     const int* currentTet = tets.tetrahedronlist;
-    const glm::vec3* points = (const glm::vec3*) tets.pointlist;
+    const vec3* points = (const vec3*) tets.pointlist;
     for (int i = 0; i < tets.numberoftetrahedra; ++i, currentTet += 4) {
-        glm::vec3 a = points[currentTet[0]];
-        glm::vec3 b = points[currentTet[1]];
-        glm::vec3 c = points[currentTet[2]];
-        glm::vec3 d = points[currentTet[3]];
+        vec3 a = points[currentTet[0]];
+        vec3 b = points[currentTet[1]];
+        vec3 c = points[currentTet[2]];
+        vec3 d = points[currentTet[3]];
         *dest++ = (a + b + c + d) / 4.0f;
     }
 }
