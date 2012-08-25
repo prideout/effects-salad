@@ -19,6 +19,7 @@ void PezInitialize()
     // add our shader path
     pezSwAddPath("", ".glsl");
 
+    context->Init();
     context->mainCam.eye.z = 5;
     context->mainCam.aspect= cfg.Width / cfg.Height;
 
@@ -51,6 +52,8 @@ void PezHandleMouse(int x, int y, int action)
 
 void PezRender()
 {
+    context->Render();
+    /*
     PezConfig cfg = PezGetConfig();
     glViewport(0, 0, cfg.Width, cfg.Height);
     glClearColor(0,0,0,1);
@@ -60,14 +63,18 @@ void PezRender()
 
     // render active effects
     quads.Draw();
+    */
 }
 
 float t;
 void PezUpdate(float seconds)
 {
+    /*
     t += seconds;
     context->mainCam.eye.x += .1*cos(t*2); 
 
     // update active effects
     quads.Update();
+    */
+    context->Update(seconds);
 }

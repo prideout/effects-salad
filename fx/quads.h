@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/effect.h"
+#include "common/init.h"
 #include "common/instancer.h"
 #include "common/texture.h"
 #include "common/quad.h"

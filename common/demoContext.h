@@ -3,18 +3,31 @@
 #include "glm/glm.hpp"
 #include "pez/pez.h"
 
+
 #include "camera.h"
 #include "drawable.h"
+#include "effect.h"
+#include "programs.h"
+#include "viewport.h"
 
 
 class DemoContext {
     static DemoContext* _current;
 
-    DemoContext() {}
+    float t;
+    DemoContext();
+    Effect* quads;
+
 public:
 
     DrawableList drawables;
     PerspCamera mainCam;
+    Viewport viewport;
+    glm::vec4 clearColor;
+
+    void Init();
+    void Render();
+    void Update(float seconds);
 
     //
     // Tight control of context instances
