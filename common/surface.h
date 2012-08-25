@@ -1,8 +1,7 @@
-
-
 #pragma once
 
 #include "glm/glm.hpp"
+#include "pez/pez.h"
 
 class Surface {
 public:
@@ -14,10 +13,9 @@ public:
     GLuint depth;
     GLuint fbo;
 
-    
-    Surface() {};
-    ~Surface() {};
+    Surface();
 
+    void Init();
     void Clear();
     void Verify();
 };

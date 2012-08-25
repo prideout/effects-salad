@@ -293,6 +293,48 @@ void pezCheck(int condition, ...)
     _pezFatal(pStr, a);
 }
 
+void pezCheckGL(const char *call)
+{
+    char enums[][20] =
+    {
+        "invalid enumeration", // GL_INVALID_ENUM
+        "invalid value",       // GL_INVALID_VALUE
+        "invalid operation",   // GL_INVALID_OPERATION
+        "stack overflow",      // GL_STACK_OVERFLOW
+        "stack underflow",     // GL_STACK_UNDERFLOW
+        "out of memory"        // GL_OUT_OF_MEMORY
+    };
+
+    GLenum errcode = glGetError();
+    if (errcode == GL_NO_ERROR)
+        return;
+
+    errcode -= GL_INVALID_ENUM;
+    pezCheck(0, "OpenGL %s in '%s'", enums[errcode], call);
+}
+
+void pezCheckFBO()
+{
+    char enums[][20] =
+    {
+        "attachment",         // GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT........... All framebuffer attachment points are 'framebuffer attachment complete'.
+        "missing attachment", // GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT....There is at least one image attached to the framebuffer.
+        "",                   //
+        "dimensions",         // GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT............All attached images have the same width and height.
+        "formats",            // GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT...............All images attached to the attachment points COLOR_ATTACHMENT0_EXT through COLOR_ATTACHMENTn_EXT must have the same internal format.
+        "draw buffer",        // GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT...........The value of FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE_EXT must not be NONE for any color attachment point(s) named by DRAW_BUFFERi.
+        "read buffer",        // GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT...........If READ_BUFFER is not NONE, then the value of FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE_EXT must not be NONE for the color attachment point named by READ_BUFFER.
+        "unsupported format"  // GL_FRAMEBUFFER_UNSUPPORTED_EXT......................The combination of internal formats of the attached images does not violate an implementation-dependent set of restrictions.
+    };
+
+    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+    if (status == GL_FRAMEBUFFER_COMPLETE_EXT)
+        return;
+
+    status -= GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT;
+    pezCheck(0, "incomplete framebuffer object due to %s", enums[status]);
+}
+
 void pezCheckW(int condition, ...)
 {
     va_list a;

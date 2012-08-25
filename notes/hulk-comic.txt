@@ -1,3 +1,8 @@
+from prideout:
+ I think it would be cool to have two viewports that slide around, like in Ang Lee's "Hulk".  
+ Maybe one viewport shows an industrial world with straight lines and gray tones, the other 
+ shows an organic world with soft growing shapes and varying hues.  The music could leverage 
+ this too.
 
 Picture-in-picture (comic-panel) effect:
 

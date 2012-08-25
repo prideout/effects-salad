@@ -54,6 +54,9 @@ void pezPrintString(const char* pStr, ...);
 void pezFatal(const char* pStr, ...);
 void pezCheck(int condition, ...);
 void pezCheckPointer(void*, ...);
+void pezCheckGL(const char *call);
+void pezCheckFBO();
+
 int pezIsPressing(char key);
 const char* pezResourcePath();
 const char* pezOpenFileDialog();
