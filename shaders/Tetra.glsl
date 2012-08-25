@@ -74,7 +74,7 @@ float randhash(uint seed, float b)
 
 void main()
 {
-    uint tetid = gl_VertexID / 12u;
+    uint tetid = uint(gl_VertexID) / 12u;
     ivec2 coord = ivec2(int(tetid) % 1024, int(tetid) / 1024);
     float hue = randhash(tetid, 1.0);
     vec3 hsv = vec3(hue, 0.75, 0.75);
