@@ -48,8 +48,12 @@ namespace TetUtil
                         Blob* vbo);
 
     // Add "regions", which are defined by seed points that flood until hitting a facet.
+    // Regions annotate the resulting tets with region id's.
     void AddRegions(const Vec3List& points,
                     tetgenio* dest);
+
+    // Add "holes", which are defined by seed points that flood until hitting a facet.
+    // The tetgen implementation seem to handle holes more robustly than regions.
     void AddHoles(const Vec3List& points,
                   tetgenio* dest);
 

@@ -23,6 +23,12 @@ enum VertexAttribs {
 #define AttrTexCoordFlag   (1 << 2)
 #define AttrTetId          (1 << 3)
 
+// Byte Counts for attributes
+#define AttrPositionWidth 12
+#define AttrNormalWidth   12
+#define AttrTexCoordWidth 8
+#define AttrTetIdWidth    4
+
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);
 GLuint InitVao(int componentCount, const FloatList& verts);
 GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices);

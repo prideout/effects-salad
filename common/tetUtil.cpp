@@ -147,7 +147,7 @@ TetUtil::HullDifference(const tetgenio& hullA,
     }
 }
 
-// Copy all facets from "hull" to dest
+// Copy all facets from "hull" to dest, reallocating memory as necessary.
 void
 TetUtil::HullCombine(const tetgenio& second,
                      tetgenio* dest)
@@ -183,7 +183,13 @@ TetUtil::HullCombine(const tetgenio& second,
     }
 
     delete[] firstPoints;
-    delete[] firstFacets; // TODO <-- leaky: needs to be deeper
+    for (int f = 0; f < firstFacetCount; ++f) {
+        for (int p = 0; p < firstFacets[f].numberofpolygons; ++p) {
+            delete[] firstFacets[f].polygonlist[p].vertexlist;
+        }
+        delete[] firstFacets[f].polygonlist;
+    }
+    delete[] firstFacets;
 }
 
 // Add "regions", which are defined by seed points that flood until hitting a facet.
@@ -202,6 +208,8 @@ TetUtil::AddRegions(const Vec3List& points,
     }
 }
 
+// Add "holes", which are defined by seed points that flood until hitting a facet.
+// The tetgen implementation seem to handle holes more robustly than regions.
 void
 TetUtil::AddHoles(const Vec3List& points,
                   tetgenio* dest)
@@ -283,12 +291,73 @@ TetUtil::TrianglesFromTets(const tetgenio& hull,
     }
 }
 
+static unsigned char*
+_WriteTriangle(unsigned char* offset,
+               vec3* a, vec3* b, vec* c,
+               VertexAttribMask requestedAttribs,
+               int id)
+{
+    vec3* position = 0;
+    vec3* normal = 0;
+    int* tetId = 0;
+    if (requestedAttribs & AttrPositionFlag) {
+        position = (vec3*) offset;
+        offset += AttrPositionWidth;
+    }
+    if (requestedAttribs & AttrNormalFlag) {
+        normal = (vec3*) offset;
+        offset += AttrNormalWidth;
+    }
+    if (requestedAttribs & AttrTetId) {
+        tetId = (int*) offset;
+        offset += AttrTetIdWidth;
+    }
+    // TODO
+}
+
 // Builds a non-indexed, interleaved VBO from a set of tetrahedra.
 void
 TetUtil::PointsFromTets(const tetgenio& tets,
                         VertexAttribMask requestedAttribs,
                         Blob* vbo)
 {
+    if (requestedAttribs & AttrTexCoordFlag) {
+        pezFatal("Tets can't be textured");
+    }
+    int stride = 0;
+    if (requestedAttribs & AttrPositionFlag) {
+        stride += AttrPositionWidth;
+    }
+    if (requestedAttribs & AttrNormalFlag) {
+        stride += AttrNormalWidth;
+    }
+    if (requestedAttribs & AttrTetId) {
+        stride += AttrTetIdWidth;
+    }
+    int triangleCount = tets.numberoftetrahedra * 4;
+    int vertexCount = triangleCount * 3;
+    vbo->resize(stride * vertexCount);
+    unsigned char* p = &(vbo->front());
+    const int* tet = tets.tetrahedronlist;
+    vec3 *a, *b, *c;
+    for (int i = 0; i < tets.numberoftetrahedra; ++i, tet += 4) {
+        a = (vec3*) (tets.pointlist + 3*tet[1]);
+        b = (vec3*) (tets.pointlist + 3*tet[0]);
+        c = (vec3*) (tets.pointlist + 3*tet[2]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+        a = (vec3*) (tets.pointlist + 3*tet[0]);
+        b = (vec3*) (tets.pointlist + 3*tet[1]);
+        c = (vec3*) (tets.pointlist + 3*tet[3]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+        a = (vec3*) (tets.pointlist + 3*tet[1]);
+        b = (vec3*) (tets.pointlist + 3*tet[2]);
+        c = (vec3*) (tets.pointlist + 3*tet[3]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+        a = (vec3*) (tets.pointlist + 3*tet[2]);
+        b = (vec3*) (tets.pointlist + 3*tet[0]);
+        c = (vec3*) (tets.pointlist + 3*tet[3]);
+        p = _WriteTriangle(p, requestedAttribs, a, b, c, i);
+    }    
 }
 
 // Averages the corners of each tet and dumps the result into an array.
