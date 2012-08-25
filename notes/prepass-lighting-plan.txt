@@ -1,0 +1,29 @@
+
+Rasterizer:
+
+    - Loop over all opaque geometry
+    - Extracting depth buffer and normal
+    - Loop over every light, render: L(r,g,b)*dot(N,L)*Attenuation, specular
+    - Render geometry, reading from pre-light pass texture for light component
+
+
+DemoContext.Render:
+    - Bind pre-pass shader
+        - Set depth test to LESS
+        - Bind the depth buffer to the FBO
+        - Bind the pre-pass texture as the render target
+        - Pre-Z, normals
+    - Bind lighting shader
+        - Disable the depth test
+        - Bind the pre-pass texture
+        - Bind the light-output texture as the render target
+        For each light:
+            - Render light geometry
+            - Where the geometry exists, the buffer is populated
+    For each object:
+        - Bind the material shader
+        - Set depth test to EQUAL
+        - Bind the light-ouput texture
+        - Render the geometry
+
+
