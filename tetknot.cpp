@@ -43,7 +43,7 @@ PezConfig PezGetConfig()
     config.Width = 700;
     config.Height = 700;
     config.Multisampling = true;
-    config.VerticalSync = true;
+    config.VerticalSync = false;
     return config;
 }
 
@@ -154,7 +154,13 @@ void PezRender()
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glBindVertexArray(Context.ExpandedVao); 
-        glDrawArrays(GL_TRIANGLES, 0, tetCount * 4 * 3);
+
+        // Optimization: don't draw interior tets after completely filling the volume
+        if (Context.CurrentTet >= Context.TetCount) {
+            glDrawArrays(GL_TRIANGLES, 0, Context.BoundaryTets * 4 * 3);
+        } else {
+            glDrawArrays(GL_TRIANGLES, 0, tetCount * 4 * 3);
+        }
     }
 }
 
