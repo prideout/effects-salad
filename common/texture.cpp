@@ -213,3 +213,9 @@ Texture2D::GenMipmaps()
 {
     glGenerateMipmap(target);
 }
+
+glm::ivec2
+Texture2D::GetSize()
+{
+    return glm::ivec2(_width, _height);
+}

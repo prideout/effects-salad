@@ -5,6 +5,7 @@
 
 #include "pez/pez.h"
 #include "common/typedefs.h"
+#include "glm/glm.hpp"
 
 class Texture {
 public:
@@ -69,4 +70,5 @@ public:
     Texture2D();
     void Init(const std::string& pngFilename);
     virtual void GenMipmaps();
+    glm::ivec2 GetSize();
 };
