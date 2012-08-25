@@ -32,7 +32,10 @@ public:
     void Init(GLenum format, std::vector<T> data) {
         Init(format, sizeof(T) * data.size(), &data[0]);
     }
-    
+
+    void Init(const FloatList& data);
+    void Init(const Vec3List& data);
+    void Init(const Vec4List& data);
     virtual void GenMipmaps();
 };
 
@@ -41,6 +44,17 @@ class RectTexture : public Texture {
     int _height;
 public:
     RectTexture();
+
+    void Init(GLenum format,
+              GLenum internalFormat,
+              unsigned int numTexels,
+              const GLvoid* data);
+
+    template <typename T>
+    void Init(GLenum format, std::vector<T> data) {
+        Init(format, sizeof(T) * data.size(), &data[0]);
+    }
+
     void Init(const FloatList& data);
     void Init(const Vec3List& data);
     void Init(const Vec4List& data);

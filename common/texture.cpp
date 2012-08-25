@@ -23,8 +23,6 @@ BufferTexture::BufferTexture() :
     target = GL_TEXTURE_BUFFER;
 }
 
-
-
 void
 BufferTexture::Init(
           GLenum format,
@@ -49,6 +47,24 @@ BufferTexture::Init(
 }
 
 void
+BufferTexture::Init(const FloatList& data)
+{
+    Init(GL_R32F, data.size() * 4, &data[0]);
+}
+
+void
+BufferTexture::Init(const Vec3List& data)
+{
+    Init(GL_RGB32F, data.size() * 12, &data[0]);
+}
+
+void
+BufferTexture::Init(const Vec4List& data)
+{
+    Init(GL_RGBA32F, data.size() * 16, &data[0]);
+}
+
+void
 BufferTexture::GenMipmaps() {
     pezFatal("GenMipmaps failed: BufferTexture cannot have mipmaps");
 }
@@ -64,14 +80,15 @@ RectTexture::RectTexture() :
 }
 
 void
-RectTexture::Init(const FloatList& data)
+RectTexture::Init(GLenum format,
+                  GLenum internalFormat,
+                  unsigned int numTexels,
+                  const GLvoid* data)
 {
     glGenTextures(1, &handle);
     glBindTexture(target, handle);
-    GLenum internalFormat = GL_R32F;
-    GLenum format = GL_RED;
-    _width = data.size() > 1024 ? 1024 : data.size();
-    _height = (data.size() + 1023) / 1024;
+    _width = numTexels > 1024 ? 1024 : numTexels;
+    _height = (numTexels + 1023) / 1024;
     glTexImage2D(target,
                  0,
                  internalFormat,
@@ -80,50 +97,26 @@ RectTexture::Init(const FloatList& data)
                  0,
                  format,
                  GL_FLOAT,
-                 (const GLvoid*) &(data[0]));
+                 (const GLvoid*) data);
     pezCheck(glGetError() == GL_NO_ERROR, "RectTexture::Init Float failed");
+}
+
+void
+RectTexture::Init(const FloatList& data)
+{
+    Init(GL_RED, GL_R32F, data.size(), &data[0]);
 }
 
 void
 RectTexture::Init(const Vec3List& data)
 {
-    glGenTextures(1, &handle);
-    glBindTexture(target, handle);
-    GLenum internalFormat = GL_RGB32F;
-    GLenum format = GL_RGB;
-    _width = data.size() > 1024 ? 1024 : data.size();
-    _height = (data.size() + 1023) / 1024;
-    glTexImage2D(target,
-                 0,
-                 internalFormat,
-                 _width,
-                 _height,
-                 0,
-                 format,
-                 GL_FLOAT,
-                 (const GLvoid*) &(data[0]));
-    pezCheck(glGetError() == GL_NO_ERROR, "RectTexture::Init Vec3 failed");
+    Init(GL_RGB, GL_RGB32F, data.size(), &data[0]);
 }
 
 void
 RectTexture::Init(const Vec4List& data)
 {
-    glGenTextures(1, &handle);
-    glBindTexture(target, handle);
-    GLenum internalFormat = GL_RGBA32F;
-    GLenum format = GL_RGBA;
-    _width = data.size() > 1024 ? 1024 : data.size();
-    _height = (data.size() + 1023) / 1024;
-    glTexImage2D(target,
-                 0,
-                 internalFormat,
-                 _width,
-                 _height,
-                 0,
-                 format,
-                 GL_FLOAT,
-                 (const GLvoid*) &(data[0]));
-    pezCheck(glGetError() == GL_NO_ERROR, "RectTexture::Init Vec4 failed");
+    Init(GL_RGBA, GL_RGBA32F, data.size(), &data[0]);
 }
 
 void
