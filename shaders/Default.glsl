@@ -44,6 +44,22 @@ void main()
     //vNormal = Normal;
 }
 
+-- SimpleTex.FS
+
+//in vec3 vNormal;
+in vec3 vPosition;
+in vec2 vUvCoord;
+out vec4 FragColor;
+
+uniform sampler2D Tex;
+
+void main()
+{
+    vec4 tval = texture( Tex, vUvCoord );
+    float s = vUvCoord.x + vUvCoord.y;
+    FragColor = tval;// * vec4(.1, .4, .9, 1.0);
+}
+
 -- Instanced.VS
 
 layout(location = 0) in vec2 Position;

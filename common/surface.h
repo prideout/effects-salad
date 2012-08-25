@@ -16,6 +16,7 @@ public:
 
     void Init();
     void Bind();
+    void Unbind();
     void Verify();
 };
 

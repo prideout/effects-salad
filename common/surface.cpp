@@ -10,17 +10,25 @@ Surface::Init() {
     // TODO: We should parameterize this, just doing this quick and dirty for now to get it up and running
     //       Also, should we just take a Texture object?
 
-    GLenum internalFormat = GL_RGBA16F;
-    GLenum type = GL_HALF_FLOAT;
+    width = 256;
+    height = 256;
+    GLenum internalFormat = GL_RGB16;
+    GLenum type = GL_FLOAT;
     GLenum filter = GL_NEAREST;
     bool createDepth = true;
+
+    // beware of mac limitations:
+    // http://developer.apple.com/library/mac/#documentation/Darwin/Reference/Manpages/man3/glTexImage2D.3.html
 
     // create a color texture
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, type, 0);
+    // XXX: on OSX, params *must* be set first
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, type, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Creation of the color texture for the FBO");
 
@@ -52,6 +60,11 @@ void
 Surface::Bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     pezCheckGL("Frambuffer bind failed");
+}
+
+void
+Surface::Unbind() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void
