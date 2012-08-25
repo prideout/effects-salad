@@ -21,6 +21,7 @@ struct ContextType
 {
     int PointCount;
     int PositionSlot;
+    int NormalSlot;
     int TetCount;
     float Theta;
     mat4 Projection;
@@ -28,11 +29,10 @@ struct ContextType
     mat3 NormalMatrix;
     int CurrentTet;
     float ElapsedTime;
-    GLuint TetsVao;
     GLuint HullVao;
+    GLuint ExpandedVao;
     GLsizei HullTriCount;
     RectTexture CentroidTexture;
-    RectTexture RegionTexture;
 } Context;
 
 PezConfig PezGetConfig()
@@ -55,13 +55,12 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
  
     tetgenio in;
-    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
+    TetUtil::HullWheel(glm::vec3(0), 25.0f, 10.0f, 32, &in);
+    TetUtil::HullWheel(glm::vec3(0), 20.0f, 8.5f, 32, &in);
 
-    Vec3List regionPoints;
-    regionPoints.push_back(vec3(0, 0, 0));
-    regionPoints.push_back(vec3(0.5, 0, 0));
-    TetUtil::AddRegions(regionPoints, &in);
+    Vec3List holePoints;
+    holePoints.push_back(vec3(0, 0, 0));
+    TetUtil::AddHoles(holePoints, &in);
 
     cout <<
         "Tetrahedralizing a hull defined by " << 
@@ -69,15 +68,16 @@ void PezInitialize()
         in.numberoffacets << " facets." << endl;
 
     tetgenio out;
-    const float qualityBound = 15;
-    const float maxVolume = 0.00005f;
+    const float qualityBound = 1.414;
+    const float maxVolume = 1.0f;
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
 
     int numTets = Context.TetCount = out.numberoftetrahedra;
     int numPoints = Context.PointCount = out.numberofpoints;
     Context.CurrentTet = 0;
     Context.ElapsedTime = 0;
-    Context.PositionSlot = 0;
+    Context.PositionSlot = (int) AttrPosition;
+    Context.NormalSlot =  (int) AttrNormal;
     Context.Theta = 0;
 
     cout <<
@@ -90,55 +90,30 @@ void PezInitialize()
     Vec3List centroids;
     TetUtil::ComputeCentroids(&centroids, out);
     Context.CentroidTexture.Init(centroids);
-    FloatList regionData(out.tetrahedronattributelist, 
-                         out.tetrahedronattributelist + out.numberoftetrahedra);
-    for (int i = 0; i < out.numberoftetrahedra; ++i) { if (out.tetrahedronattributelist[i]) cout << out.tetrahedronattributelist[i] << ' '; }
-    Context.RegionTexture.Init(regionData);
 
-    // Create the Tets VAO
-    glGenVertexArrays(1, &Context.TetsVao);
-    glBindVertexArray(Context.TetsVao);
-    GLuint pointsVbo;
+    // Create the 'Expanded' VAO
+    glGenVertexArrays(1, &Context.ExpandedVao);
+    glBindVertexArray(Context.ExpandedVao);
     {
-        GLsizeiptr bufferSize = numPoints * sizeof(float) * 3;
+        Blob massive;
+        TetUtil::PointsFromTets(out,
+                                AttrPositionFlag | AttrNormalFlag,
+                                &massive);
         GLuint vbo;
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, bufferSize, out.pointlist, GL_STATIC_DRAW);
-        glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(Context.PositionSlot);
-        pointsVbo = vbo;
-    }
-    {
-        Blob triIndices;
-        TetUtil::TrianglesFromTets(out, &triIndices);
-        GLsizeiptr bufferSize = triIndices.size();
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize, &triIndices[0], GL_STATIC_DRAW);
-    }
+        glBufferData(GL_ARRAY_BUFFER, massive.size(), &massive[0], GL_STATIC_DRAW);
 
-    // Create the Hull VAO
-    glGenVertexArrays(1, &Context.HullVao);
-    glBindVertexArray(Context.HullVao);
-    glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-    glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(Context.PositionSlot);
-    {
-        Blob triIndices;
-        TetUtil::TrianglesFromHull(in, &triIndices);
-        GLsizeiptr bufferSize = triIndices.size();
-        Context.HullTriCount = (triIndices.size() / sizeof(int)) / 3;
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize, &triIndices[0], GL_STATIC_DRAW);
+        glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 24, 0);
+        glEnableVertexAttribArray(Context.PositionSlot);
+
+        glVertexAttribPointer(Context.NormalSlot, 3, GL_FLOAT, GL_FALSE, 24, offset(12));
+        glEnableVertexAttribArray(Context.NormalSlot);
     }
 
     Programs& progs = Programs::GetInstance();
     progs.Load("Tetra.Simple", false);
-    progs.Load("Tetra.Solid", true);
+    progs.Load("Tetra.Solid", false);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -167,53 +142,25 @@ void PezRender()
     const bool drawSolidTriangles = true;
     if (drawSolidTriangles) {
         GLsizei tetCount = cuttingPlane ? Context.TetCount : Context.CurrentTet;
-        float cullY = -1 + 2 * (float) Context.CurrentTet / Context.TetCount;
+        float cullY = -25 + 50 * (float) Context.CurrentTet / Context.TetCount;
         glUseProgram(progs["Tetra.Solid"]);
         glUniform1f(u("CullY"), cuttingPlane ? cullY : 999);
         glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
         glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
         glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
-
         Context.CentroidTexture.Bind(0);
         glUniform1i(u("CentroidTexture"), 0);
-        Context.RegionTexture.Bind(1);
-        glUniform1i(u("RegionTexture"), 1);
-
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        glBindVertexArray(Context.TetsVao); 
-        glDrawElements(GL_TRIANGLES, tetCount * 4 * 3, GL_UNSIGNED_INT, 0);
-    }
-
-    const bool drawPointCloud = false;
-    if (drawPointCloud) {
-        glUseProgram(progs["Tetra.Simple"]);
-        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
-        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
-        glEnable(GL_BLEND);
-        glDisable(GL_DEPTH_TEST);
-        glBindVertexArray(Context.TetsVao);
-        glDrawArrays(GL_POINTS, 0, Context.PointCount);
-    }
-
-    const bool drawHull = false;
-    if (drawHull) {
-        glUseProgram(progs["Tetra.Solid"]);
-        glUniform1f(u("CullY"), 999);
-        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
-        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
-        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
-        glEnable(GL_BLEND);
-        glDisable(GL_DEPTH_TEST);
-        glBindVertexArray(Context.HullVao);
-        glDrawElements(GL_TRIANGLES, Context.HullTriCount * 3, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(Context.ExpandedVao); 
+        glDrawArrays(GL_TRIANGLES, 0, tetCount * 4 * 3);
     }
 }
 
 void PezUpdate(float seconds)
 {
     const float TetAppearanceRate = 0.1f;
-    const float RotationRate = 50;
+    const float RotationRate = 10;
 
     Context.Theta += seconds * RotationRate;
     Context.ElapsedTime += seconds;
@@ -226,7 +173,7 @@ void PezUpdate(float seconds)
     vec3 axis = glm::normalize(vec3(1, 1, 0));
     model = glm::rotate(model, Context.Theta, axis);
 
-    vec3 eye = vec3(0,0,3);
+    vec3 eye = vec3(0,0,60);
     vec3 center = vec3(0,0,0);
     vec3 up = vec3(0,1,0);
     mat4 view = glm::lookAt(eye, center, up);
