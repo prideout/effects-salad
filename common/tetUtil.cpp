@@ -12,7 +12,7 @@ TetUtil::TetsFromHull(const tetgenio& hull,
                       float maxVolume,
                       bool quiet)
 {
-    const char* formatString = quiet ? "AQpq%.3fa%.7f" : "Apq%.3fa%.7f";
+    const char* formatString = quiet ? "nAQpq%.3fa%.7f" : "nApq%.3fa%.7f";
     char configString[128];
     sprintf(configString, formatString, qualityBound, maxVolume);
     tetrahedralize(configString, (tetgenio*) &hull, dest);
@@ -395,10 +395,22 @@ TetUtil::ComputeCentroids(Vec4List* centroids,
     const int* currentTet = tets.tetrahedronlist;
     const vec3* points = (const vec3*) tets.pointlist;
     for (int i = 0; i < tets.numberoftetrahedra; ++i, currentTet += 4) {
+
         vec3 a = points[currentTet[0]];
         vec3 b = points[currentTet[1]];
         vec3 c = points[currentTet[2]];
         vec3 d = points[currentTet[3]];
-        *dest++ = vec4((a + b + c + d) / 4.0f, 1.0f);
+        vec3 center = (a + b + c + d) / 4.0f;
+
+        float neighborCount = 0;
+        if (tets.neighborlist) {
+            vec4 neighbors = *((vec4*) (tets.neighborlist + i*4));
+            if (neighbors.x > -1) ++neighborCount;
+            if (neighbors.y > -1) ++neighborCount;
+            if (neighbors.z > -1) ++neighborCount;
+            if (neighbors.w > -1) ++neighborCount;
+        }
+
+        *dest++ = vec4(center, neighborCount);
     }
 }

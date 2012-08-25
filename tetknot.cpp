@@ -55,7 +55,7 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
  
     tetgenio in;
-    TetUtil::HullWheel(glm::vec3(0), 25.0f, 10.0f, 32, &in);
+    TetUtil::HullWheel(glm::vec3(0), 25.0f, 13.0f, 32, &in);
     TetUtil::HullWheel(glm::vec3(0), 20.0f, 8.5f, 32, &in);
 
     Vec3List holePoints;
@@ -69,7 +69,7 @@ void PezInitialize()
 
     tetgenio out;
     const float qualityBound = 1.414;
-    const float maxVolume = 1.0f;
+    const float maxVolume = 0.5f;
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
 
     int numTets = Context.TetCount = out.numberoftetrahedra;
@@ -86,7 +86,7 @@ void PezInitialize()
         "Each tet has " << out.numberoftetrahedronattributes <<
         " attributes." << endl;
 
-    // Populate the two per-tet textures
+    // Populate the per-tet texture data
     Vec4List centroids;
     TetUtil::ComputeCentroids(&centroids, out);
     Context.CentroidTexture.Init(centroids);

@@ -75,15 +75,18 @@ float randhash(uint seed, float b)
 void main()
 {
     uint tetid = uint(gl_VertexID) / 12u;
-    float hue = randhash(tetid, 1.0);
-    vec3 hsv = vec3(hue, 0.75, 0.75);
-    vColor = vec4(HSVtoRGB(hsv), 1.0);
-
-    vec3 tetcenter = texelFetch(CentroidTexture, int(tetid)).rgb;
+    vec4 tetdata = texelFetch(CentroidTexture, int(tetid));
+    vec3 tetcenter = tetdata.rgb;
+    int neighbors = int(tetdata.a);
     if (tetcenter.y > CullY) {
-        vColor.a = 0;
+        vColor = vec4(0);
     } else {
         vFacetNormal = NormalMatrix * Normal;
+        float hue   = (neighbors == 4) ? 0.6 : randhash(tetid, 1.0);
+        float sat   = (neighbors == 4) ? 1.0 : 0.75;
+        float value = (neighbors == 4) ? 0.7 : 1.0;
+        vec3 hsv = vec3(hue, sat, value);
+        vColor =  vec4(HSVtoRGB(hsv), 1.0);
     }
 
     gl_Position = Projection * Modelview * Position;
