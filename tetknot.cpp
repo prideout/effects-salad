@@ -21,6 +21,8 @@ struct ContextType
 {
     int PointCount;
     int PositionSlot;
+    int NormalSlot;
+    int TetIdSlot;
     int TetCount;
     float Theta;
     mat4 Projection;
@@ -30,6 +32,7 @@ struct ContextType
     float ElapsedTime;
     GLuint TetsVao;
     GLuint HullVao;
+    GLuint ExpandedVao;
     GLsizei HullTriCount;
     RectTexture CentroidTexture;
     RectTexture RegionTexture;
@@ -76,7 +79,9 @@ void PezInitialize()
     int numPoints = Context.PointCount = out.numberofpoints;
     Context.CurrentTet = 0;
     Context.ElapsedTime = 0;
-    Context.PositionSlot = 0;
+    Context.PositionSlot = (int) AttrPosition;
+    Context.NormalSlot =  (int) AttrNormal;
+    Context.TetIdSlot =  (int) AttrTetId;
     Context.Theta = 0;
 
     cout <<
@@ -134,6 +139,29 @@ void PezInitialize()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize, &triIndices[0], GL_STATIC_DRAW);
     }
 
+    // Create the 'Expanded' VAO
+    glGenVertexArrays(1, &Context.ExpandedVao);
+    glBindVertexArray(Context.ExpandedVao);
+    {
+        Blob massive;
+        TetUtil::PointsFromTets(out,
+                                AttrPositionFlag | AttrNormalFlag | AttrTetId,
+                                &massive);
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, massive.size(), &massive[0], GL_STATIC_DRAW);
+
+        glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 28, 0);
+        glEnableVertexAttribArray(Context.PositionSlot);
+
+        glVertexAttribPointer(Context.NormalSlot, 3, GL_FLOAT, GL_FALSE, 28, offset(12));
+        glEnableVertexAttribArray(Context.NormalSlot);
+
+        glVertexAttribIPointer(Context.TetIdSlot, 1, GL_UNSIGNED_INT, 28, offset(24));
+        glEnableVertexAttribArray(Context.TetIdSlot);
+    }
+
     Programs& progs = Programs::GetInstance();
     progs.Load("Tetra.Simple", false);
     progs.Load("Tetra.Solid", false);
@@ -163,6 +191,7 @@ void PezRender()
 
     const bool cuttingPlane = false;
     const bool drawSolidTriangles = true;
+    /*
     if (drawSolidTriangles) {
         GLsizei tetCount = cuttingPlane ? Context.TetCount : Context.CurrentTet;
         float cullY = -1 + 2 * (float) Context.CurrentTet / Context.TetCount;
@@ -181,6 +210,25 @@ void PezRender()
         glEnable(GL_DEPTH_TEST);
         glBindVertexArray(Context.TetsVao); 
         glDrawElements(GL_TRIANGLES, tetCount * 4 * 3, GL_UNSIGNED_INT, 0);
+    }
+    */
+    if (drawSolidTriangles) {
+        GLsizei tetCount = Context.CurrentTet;
+        glUseProgram(progs["Tetra.Solid"]);
+        glUniform1f(u("CullY"), 999);
+        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
+        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
+        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
+
+        Context.CentroidTexture.Bind(0);
+        glUniform1i(u("CentroidTexture"), 0);
+        Context.RegionTexture.Bind(1);
+        glUniform1i(u("RegionTexture"), 1);
+
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glBindVertexArray(Context.ExpandedVao); 
+        glDrawArrays(GL_TRIANGLES, 0, tetCount * 4 * 3);
     }
 
     const bool drawPointCloud = false;

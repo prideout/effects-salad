@@ -22,6 +22,8 @@ void main()
 -- Solid.VS
 
 layout(location = 0) in vec4 Position;
+layout(location = 1) in vec3 Normal;
+layout(location = 3) in uint TetId;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -74,7 +76,7 @@ float randhash(uint seed, float b)
 
 void main()
 {
-    uint tetid = uint(gl_VertexID) / 3u;
+    uint tetid = uint(TetId);
     ivec2 coord = ivec2(int(tetid) % 1024, int(tetid) / 1024);
     float region = texelFetch(RegionTexture, coord).r;
     float hue = randhash(tetid, 1.0);
@@ -89,7 +91,7 @@ void main()
     }
 */
 
-    vFacetNormal = vec3(1, 1, 1);
+    vFacetNormal = NormalMatrix * Normal;
 
     gl_Position = Projection * Modelview * Position;
 }
