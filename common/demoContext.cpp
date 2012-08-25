@@ -1,5 +1,7 @@
 #include "demoContext.h"
 
+#include "typedefs.h"
+
 #include "fx/quads.h"
 
 
@@ -10,8 +12,11 @@ DemoContext::DemoContext() : clearColor(0,0,0,1) {
 
 void 
 DemoContext::Init() {
-    quads = new Quads();
-    quads->Init();
+    drawables.push_back(new Quads());
+    FOR_EACH(drawable, drawables) {
+        (*drawable)->Init();
+        cout << "init" << endl;
+    }
 }
 
 void 
@@ -26,7 +31,9 @@ DemoContext::Render() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     // render active effects
-    quads->Draw();
+    FOR_EACH(drawable, drawables) {
+        (*drawable)->Draw();
+    }
 
 }
 
@@ -36,7 +43,9 @@ DemoContext::Update(float seconds) {
     mainCam.eye.x += .1*cos(t*2); 
 
     // update active effects
-    quads->Update();
+    FOR_EACH(drawable, drawables) {
+        (*drawable)->Update();
+    }
 }
 
 

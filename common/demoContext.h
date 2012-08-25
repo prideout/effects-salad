@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "drawable.h"
 #include "effect.h"
+#include "light.h"
 #include "programs.h"
 #include "viewport.h"
 
@@ -16,11 +17,12 @@ class DemoContext {
 
     float t;
     DemoContext();
-    Effect* quads;
 
 public:
 
     DrawableList drawables;
+    LightList lights;
+
     PerspCamera mainCam;
     Viewport viewport;
     glm::vec4 clearColor;

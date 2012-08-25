@@ -12,3 +12,9 @@ typedef std::vector<unsigned int> IndexList;
 typedef std::vector<float> FloatList;
 
 typedef unsigned int VertexAttribMask;
+
+#define FOR_EACH(var, container)                                \
+  for(typeof((container).begin()) var = (container).begin();    \
+      var != (container).end();                                 \
+      ++var)
+
