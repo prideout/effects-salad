@@ -23,14 +23,12 @@ void main()
 
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec3 Normal;
-layout(location = 3) in uint TetId;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
 uniform sampler2DRect CentroidTexture;
-uniform sampler2DRect RegionTexture;
-uniform float CullY = 0;
+uniform float CullY;
 
 out vec4 vColor;
 out vec3 vFacetNormal;
@@ -76,22 +74,19 @@ float randhash(uint seed, float b)
 
 void main()
 {
-    uint tetid = uint(TetId);
+    uint tetid = gl_VertexID / 12u;
     ivec2 coord = ivec2(int(tetid) % 1024, int(tetid) / 1024);
-    float region = texelFetch(RegionTexture, coord).r;
     float hue = randhash(tetid, 1.0);
     vec3 hsv = vec3(hue, 0.75, 0.75);
-    vColor = vec4(HSVtoRGB(hsv), 0.25);
-    vColor.rgb = mix(vColor.rgb, vec3(0,0.4,0.7), region);
+    vColor = vec4(HSVtoRGB(hsv), 1.0);
 
-/*
     vec3 tetcenter = texelFetch(CentroidTexture, coord).rgb;
+    //tetcenter = Position.xyz;
     if (tetcenter.y > CullY) {
         vColor.a = 0;
+    } else {
+        vFacetNormal = NormalMatrix * Normal;
     }
-*/
-
-    vFacetNormal = NormalMatrix * Normal;
 
     gl_Position = Projection * Modelview * Position;
 }
@@ -107,6 +102,10 @@ uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 
 void main()
 {
+    if (vColor.a == 0) {
+        discard;
+    }
+
     vec3 N = normalize(vFacetNormal);
     vec3 L = LightPosition;
     float df = abs(dot(N, L));
