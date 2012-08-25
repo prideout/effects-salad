@@ -60,3 +60,13 @@ public:
     void Init(const Vec4List& data);
     virtual void GenMipmaps();
 };
+
+class Texture2D : public Texture {
+    int _width;
+    int _height;
+    void _Init(GLenum format, GLenum internalFormat, const GLvoid* data);
+public:
+    Texture2D();
+    void Init(const std::string& pngFilename);
+    virtual void GenMipmaps();
+};

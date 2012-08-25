@@ -28,7 +28,7 @@ freely, subject to the following restrictions:
 
 #include <string.h> /*for size_t*/
 
-#ifdef __cplusplus
+#ifdef __cplusplus_prideout
 #include <vector>
 #include <string>
 #endif /*__cplusplus*/
@@ -181,7 +181,7 @@ unsigned LodePNG_encode24_file(const char* filename, const unsigned char* image,
 #endif /*LODEPNG_COMPILE_DISK*/
 #endif /*LODEPNG_COMPILE_ENCODER*/
 
-#ifdef __cplusplus
+#ifdef __cplusplus_prideout
 namespace LodePNG
 {
 
@@ -865,7 +865,7 @@ return value: error code (0 means ok)
 unsigned LodePNG_saveFile(const unsigned char* buffer, size_t buffersize, const char* filename);
 #endif /*LODEPNG_COMPILE_DISK*/
 
-#ifdef __cplusplus
+#ifdef __cplusplus_prideout
 /* ////////////////////////////////////////////////////////////////////////// */
 /* LodePNG C++ wrapper                                                        */
 /* ////////////////////////////////////////////////////////////////////////// */

@@ -21,6 +21,7 @@ SHARED := \
 	$(OBJDIR)/common/timer.o \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
+	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
 	$(OBJDIR)/lib/pez/pez.o
@@ -50,6 +51,7 @@ tetknot:  $(OBJDIR)/tetknot.o $(SHARED)
 
 $(OBJDIR):
 	@mkdir -p $@/common
+	@mkdir -p $@/fx
 	@mkdir -p $@/lib/pez
 	@mkdir -p $@/lib/lodepng
 	@mkdir -p $@/lib/tetgen
@@ -124,11 +126,18 @@ build/main.o: lib/glm/glm.hpp lib/glm/gtc/matrix_transform.inl
 build/main.o: common/demoContext.h lib/pez/pez.h common/camera.h
 build/main.o: common/drawable.h common/effect.h common/timer.h common/light.h
 build/main.o: common/programs.h common/viewport.h common/init.h
-build/main.o: common/typedefs.h lib/tetgen/tetgen.h common/programs.h
+build/main.o: common/typedefs.h lib/jsoncpp/json.h lib/jsoncpp/autolink.h
+build/main.o: lib/jsoncpp/config.h lib/jsoncpp/value.h lib/jsoncpp/forwards.h
+build/main.o: lib/jsoncpp/reader.h lib/jsoncpp/features.h
+build/main.o: lib/jsoncpp/writer.h lib/tetgen/tetgen.h common/programs.h
 build/main.o: common/surface.h fx/all.h fx/quads.h common/effect.h
 build/main.o: common/instancer.h common/vao.h common/texture.h
 build/main.o: common/typedefs.h common/quad.h
-build/tetknot.o: lib/pez/pez.h lib/pez/gl3.h common/init.h common/typedefs.h
+build/tetknot.o: lib/pez/pez.h lib/pez/gl3.h lib/jsoncpp/json.h
+build/tetknot.o: lib/jsoncpp/autolink.h lib/jsoncpp/config.h
+build/tetknot.o: lib/jsoncpp/value.h lib/jsoncpp/forwards.h
+build/tetknot.o: lib/jsoncpp/reader.h lib/jsoncpp/features.h
+build/tetknot.o: lib/jsoncpp/writer.h common/init.h common/typedefs.h
 build/tetknot.o: lib/glm/glm.hpp lib/glm/core/_fixes.hpp
 build/tetknot.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
 build/tetknot.o: lib/glm/./core/setup.hpp lib/glm/./core/type.hpp
@@ -249,6 +258,10 @@ build/common/camera.o: lib/glm/./core/_swizzle.hpp
 build/common/camera.o: lib/glm/gtc/matrix_transform.hpp lib/glm/glm.hpp
 build/common/camera.o: lib/glm/gtc/matrix_transform.inl lib/pez/pez.h
 build/common/camera.o: lib/pez/gl3.h common/init.h common/typedefs.h
+build/common/camera.o: lib/jsoncpp/json.h lib/jsoncpp/autolink.h
+build/common/camera.o: lib/jsoncpp/config.h lib/jsoncpp/value.h
+build/common/camera.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
+build/common/camera.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
 build/common/camera.o: lib/tetgen/tetgen.h
 build/common/demoContext.o: common/demoContext.h lib/glm/glm.hpp
 build/common/demoContext.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
@@ -318,9 +331,14 @@ build/common/demoContext.o: lib/glm/gtc/matrix_transform.inl
 build/common/demoContext.o: common/drawable.h common/effect.h common/timer.h
 build/common/demoContext.o: common/light.h common/programs.h
 build/common/demoContext.o: common/viewport.h common/typedefs.h fx/quads.h
-build/common/demoContext.o: common/effect.h common/init.h lib/tetgen/tetgen.h
-build/common/demoContext.o: common/instancer.h common/vao.h common/texture.h
-build/common/demoContext.o: common/typedefs.h common/quad.h
+build/common/demoContext.o: common/camera.h common/effect.h common/init.h
+build/common/demoContext.o: lib/jsoncpp/json.h lib/jsoncpp/autolink.h
+build/common/demoContext.o: lib/jsoncpp/config.h lib/jsoncpp/value.h
+build/common/demoContext.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
+build/common/demoContext.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
+build/common/demoContext.o: lib/tetgen/tetgen.h common/instancer.h
+build/common/demoContext.o: common/vao.h common/surface.h common/texture.h
+build/common/demoContext.o: common/typedefs.h common/quad.h fx/fpsOverlay.h
 build/common/drawable.o: common/drawable.h lib/pez/pez.h lib/pez/gl3.h
 build/common/drawable.o: lib/glm/glm.hpp lib/glm/core/_fixes.hpp
 build/common/drawable.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
@@ -507,6 +525,10 @@ build/common/init.o: lib/glm/./core/func_integer.inl
 build/common/init.o: lib/glm/./core/func_noise.hpp
 build/common/init.o: lib/glm/./core/func_noise.inl
 build/common/init.o: lib/glm/./core/_swizzle.hpp lib/pez/pez.h lib/pez/gl3.h
+build/common/init.o: lib/jsoncpp/json.h lib/jsoncpp/autolink.h
+build/common/init.o: lib/jsoncpp/config.h lib/jsoncpp/value.h
+build/common/init.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
+build/common/init.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
 build/common/init.o: lib/tetgen/tetgen.h
 build/common/instancer.o: common/instancer.h lib/pez/pez.h lib/pez/gl3.h
 build/common/instancer.o: common/drawable.h lib/glm/glm.hpp
@@ -693,7 +715,11 @@ build/common/programs.o: lib/glm/./core/func_integer.hpp
 build/common/programs.o: lib/glm/./core/func_integer.inl
 build/common/programs.o: lib/glm/./core/func_noise.hpp
 build/common/programs.o: lib/glm/./core/func_noise.inl
-build/common/programs.o: lib/glm/./core/_swizzle.hpp lib/tetgen/tetgen.h
+build/common/programs.o: lib/glm/./core/_swizzle.hpp lib/jsoncpp/json.h
+build/common/programs.o: lib/jsoncpp/autolink.h lib/jsoncpp/config.h
+build/common/programs.o: lib/jsoncpp/value.h lib/jsoncpp/forwards.h
+build/common/programs.o: lib/jsoncpp/reader.h lib/jsoncpp/features.h
+build/common/programs.o: lib/jsoncpp/writer.h lib/tetgen/tetgen.h
 build/common/quad.o: common/quad.h common/drawable.h lib/pez/pez.h
 build/common/quad.o: lib/pez/gl3.h lib/glm/glm.hpp lib/glm/core/_fixes.hpp
 build/common/quad.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
@@ -753,7 +779,73 @@ build/common/quad.o: lib/glm/./core/func_integer.inl
 build/common/quad.o: lib/glm/./core/func_noise.hpp
 build/common/quad.o: lib/glm/./core/func_noise.inl
 build/common/quad.o: lib/glm/./core/_swizzle.hpp common/vao.h
-build/common/quad.o: common/typedefs.h
+build/common/quad.o: common/typedefs.h common/init.h lib/jsoncpp/json.h
+build/common/quad.o: lib/jsoncpp/autolink.h lib/jsoncpp/config.h
+build/common/quad.o: lib/jsoncpp/value.h lib/jsoncpp/forwards.h
+build/common/quad.o: lib/jsoncpp/reader.h lib/jsoncpp/features.h
+build/common/quad.o: lib/jsoncpp/writer.h lib/tetgen/tetgen.h
+build/common/surface.o: common/surface.h lib/glm/glm.hpp
+build/common/surface.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
+build/common/surface.o: lib/glm/./core/_detail.hpp lib/glm/./core/setup.hpp
+build/common/surface.o: lib/glm/./core/type.hpp lib/glm/./core/type_half.hpp
+build/common/surface.o: lib/glm/./core/type_half.inl
+build/common/surface.o: lib/glm/./core/_detail.hpp
+build/common/surface.o: lib/glm/./core/type_float.hpp
+build/common/surface.o: lib/glm/./core/type_int.hpp
+build/common/surface.o: lib/glm/./core/type_gentype.hpp
+build/common/surface.o: lib/glm/./core/type_size.hpp
+build/common/surface.o: lib/glm/./core/type_vec1.hpp
+build/common/surface.o: lib/glm/./core/type_vec.hpp
+build/common/surface.o: lib/glm/./core/_swizzle.hpp
+build/common/surface.o: lib/glm/./core/_swizzle_func.hpp
+build/common/surface.o: lib/glm/./core/type_vec1.inl
+build/common/surface.o: lib/glm/./core/type_vec2.hpp
+build/common/surface.o: lib/glm/./core/type_vec2.inl
+build/common/surface.o: lib/glm/./core/type_vec3.hpp
+build/common/surface.o: lib/glm/./core/type_vec3.inl
+build/common/surface.o: lib/glm/./core/type_vec4.hpp
+build/common/surface.o: lib/glm/./core/type_vec4.inl
+build/common/surface.o: lib/glm/./core/type_mat2x2.hpp
+build/common/surface.o: lib/glm/./core/type_mat.hpp
+build/common/surface.o: lib/glm/./core/type_mat2x2.inl
+build/common/surface.o: lib/glm/./core/type_mat2x3.hpp
+build/common/surface.o: lib/glm/./core/type_mat2x3.inl
+build/common/surface.o: lib/glm/./core/type_mat2x4.hpp
+build/common/surface.o: lib/glm/./core/type_mat2x4.inl
+build/common/surface.o: lib/glm/./core/type_mat3x2.hpp
+build/common/surface.o: lib/glm/./core/type_mat3x2.inl
+build/common/surface.o: lib/glm/./core/type_mat3x3.hpp
+build/common/surface.o: lib/glm/./core/type_mat3x3.inl
+build/common/surface.o: lib/glm/./core/type_mat3x4.hpp
+build/common/surface.o: lib/glm/./core/type_mat3x4.inl
+build/common/surface.o: lib/glm/./core/type_mat4x2.hpp
+build/common/surface.o: lib/glm/./core/type_mat4x2.inl
+build/common/surface.o: lib/glm/./core/type_mat4x3.hpp
+build/common/surface.o: lib/glm/./core/type_mat4x3.inl
+build/common/surface.o: lib/glm/./core/type_mat4x4.hpp
+build/common/surface.o: lib/glm/./core/type_mat4x4.inl
+build/common/surface.o: lib/glm/./core/func_trigonometric.hpp
+build/common/surface.o: lib/glm/./core/func_trigonometric.inl
+build/common/surface.o: lib/glm/./core/_vectorize.hpp
+build/common/surface.o: lib/glm/./core/func_exponential.hpp
+build/common/surface.o: lib/glm/./core/func_exponential.inl
+build/common/surface.o: lib/glm/./core/func_common.hpp
+build/common/surface.o: lib/glm/./core/_fixes.hpp
+build/common/surface.o: lib/glm/./core/func_common.inl
+build/common/surface.o: lib/glm/./core/func_packing.hpp
+build/common/surface.o: lib/glm/./core/func_packing.inl
+build/common/surface.o: lib/glm/./core/func_geometric.hpp
+build/common/surface.o: lib/glm/./core/func_geometric.inl
+build/common/surface.o: lib/glm/./core/func_matrix.hpp
+build/common/surface.o: lib/glm/./core/func_matrix.inl
+build/common/surface.o: lib/glm/./core/func_vector_relational.hpp
+build/common/surface.o: lib/glm/./core/func_vector_relational.inl
+build/common/surface.o: lib/glm/./core/func_integer.hpp
+build/common/surface.o: lib/glm/./core/func_integer.inl
+build/common/surface.o: lib/glm/./core/func_noise.hpp
+build/common/surface.o: lib/glm/./core/func_noise.inl
+build/common/surface.o: lib/glm/./core/_swizzle.hpp lib/pez/pez.h
+build/common/surface.o: lib/pez/gl3.h
 build/common/tetUtil.o: common/init.h common/typedefs.h lib/glm/glm.hpp
 build/common/tetUtil.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
 build/common/tetUtil.o: lib/glm/./core/_detail.hpp lib/glm/./core/setup.hpp
@@ -815,8 +907,13 @@ build/common/tetUtil.o: lib/glm/./core/func_integer.inl
 build/common/tetUtil.o: lib/glm/./core/func_noise.hpp
 build/common/tetUtil.o: lib/glm/./core/func_noise.inl
 build/common/tetUtil.o: lib/glm/./core/_swizzle.hpp lib/pez/pez.h
-build/common/tetUtil.o: lib/pez/gl3.h lib/tetgen/tetgen.h common/tetUtil.h
-build/common/tetUtil.o: common/typedefs.h lib/glm/gtx/constants.inl
+build/common/tetUtil.o: lib/pez/gl3.h lib/jsoncpp/json.h
+build/common/tetUtil.o: lib/jsoncpp/autolink.h lib/jsoncpp/config.h
+build/common/tetUtil.o: lib/jsoncpp/value.h lib/jsoncpp/forwards.h
+build/common/tetUtil.o: lib/jsoncpp/reader.h lib/jsoncpp/features.h
+build/common/tetUtil.o: lib/jsoncpp/writer.h lib/tetgen/tetgen.h
+build/common/tetUtil.o: common/tetUtil.h common/typedefs.h
+build/common/tetUtil.o: lib/glm/gtx/constants.inl
 build/common/texture.o: common/texture.h lib/pez/pez.h lib/pez/gl3.h
 build/common/texture.o: common/typedefs.h lib/glm/glm.hpp
 build/common/texture.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
@@ -878,7 +975,7 @@ build/common/texture.o: lib/glm/./core/func_integer.hpp
 build/common/texture.o: lib/glm/./core/func_integer.inl
 build/common/texture.o: lib/glm/./core/func_noise.hpp
 build/common/texture.o: lib/glm/./core/func_noise.inl
-build/common/texture.o: lib/glm/./core/_swizzle.hpp
+build/common/texture.o: lib/glm/./core/_swizzle.hpp lib/lodepng/lodepng.h
 build/common/timer.o: common/timer.h common/drawable.h lib/pez/pez.h
 build/common/timer.o: lib/pez/gl3.h lib/glm/glm.hpp lib/glm/core/_fixes.hpp
 build/common/timer.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
@@ -1051,5 +1148,72 @@ build/common/vao.o: lib/glm/./core/func_integer.inl
 build/common/vao.o: lib/glm/./core/func_noise.hpp
 build/common/vao.o: lib/glm/./core/func_noise.inl lib/glm/./core/_swizzle.hpp
 build/common/vao.o: lib/pez/pez.h lib/pez/gl3.h common/typedefs.h
-build/common/vao.o: common/init.h lib/tetgen/tetgen.h
+build/common/vao.o: common/init.h lib/jsoncpp/json.h lib/jsoncpp/autolink.h
+build/common/vao.o: lib/jsoncpp/config.h lib/jsoncpp/value.h
+build/common/vao.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
+build/common/vao.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
+build/common/vao.o: lib/tetgen/tetgen.h
 build/common/viewport.o: common/viewport.h lib/pez/pez.h lib/pez/gl3.h
+build/fx/fpsOverlay.o: fx/fpsOverlay.h common/effect.h common/drawable.h
+build/fx/fpsOverlay.o: lib/pez/pez.h lib/pez/gl3.h lib/glm/glm.hpp
+build/fx/fpsOverlay.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/_detail.hpp lib/glm/./core/setup.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type.hpp lib/glm/./core/type_half.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_half.inl
+build/fx/fpsOverlay.o: lib/glm/./core/_detail.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_float.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_int.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_gentype.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_size.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec1.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/_swizzle.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/_swizzle_func.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec1.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec2.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec2.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec3.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec3.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec4.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_vec4.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat2x2.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat2x2.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat2x3.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat2x3.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat2x4.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat2x4.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat3x2.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat3x2.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat3x3.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat3x3.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat3x4.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat3x4.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat4x2.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat4x2.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat4x3.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat4x3.inl
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat4x4.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_mat4x4.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_trigonometric.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_trigonometric.inl
+build/fx/fpsOverlay.o: lib/glm/./core/_vectorize.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_exponential.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_exponential.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_common.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/_fixes.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_common.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_packing.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_packing.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_geometric.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_geometric.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_matrix.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_matrix.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_vector_relational.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_vector_relational.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_integer.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_integer.inl
+build/fx/fpsOverlay.o: lib/glm/./core/func_noise.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/func_noise.inl
+build/fx/fpsOverlay.o: lib/glm/./core/_swizzle.hpp common/timer.h
+build/fx/fpsOverlay.o: common/texture.h common/typedefs.h common/programs.h

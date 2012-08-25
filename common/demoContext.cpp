@@ -3,7 +3,7 @@
 #include "typedefs.h"
 
 #include "fx/quads.h"
-
+#include "fx/fpsOverlay.h"
 
 DemoContext* DemoContext::_current(NULL);
 
@@ -12,10 +12,13 @@ DemoContext::DemoContext() : clearColor(0,0,0,1) {
 
 void 
 DemoContext::Init() {
+
+    // TODO : specify this list in JSON
     drawables.push_back(new Quads());
+    drawables.push_back(new FpsOverlay());
+
     FOR_EACH(drawable, drawables) {
         (*drawable)->Init();
-        cout << "init" << endl;
     }
 }
 
