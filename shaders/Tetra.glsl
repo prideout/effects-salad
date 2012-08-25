@@ -42,6 +42,9 @@ uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
 
+uniform sampler2DRect CentroidTexture;
+uniform sampler2DRect RegionTexture;
+
 in vec4 vPosition[3];
 out vec4 gColor;
 out vec3 gFacetNormal;
@@ -89,19 +92,26 @@ float randhash(uint seed, float b)
 
 void main()
 {
-    if (vPosition[0].y > CullY) {
+    uint tetid = uint(gl_PrimitiveIDIn) / 4u;
+    ivec2 coord = ivec2(int(tetid) % 1024, int(tetid) / 1024);
+
+    vec3 tetcenter = texelFetch(CentroidTexture, coord).rgb;
+    if (tetcenter.y > CullY) {
         return;
     }
+
+    float region = texelFetch(RegionTexture, coord).r;
 
     vec3 A = vPosition[2].xyz - vPosition[0].xyz;
     vec3 B = vPosition[1].xyz - vPosition[0].xyz;
     gFacetNormal = NormalMatrix * normalize(cross(A, B));
 
-    float hue = randhash(uint(gl_PrimitiveIDIn) / 4u, 1.0);
+    float hue = randhash(tetid, 1.0);
 
     vec3 hsv = vec3(hue, 0.75, 0.75);
 
     gColor = vec4(HSVtoRGB(hsv), 0.25);
+    gColor.rgb = mix(gColor.rgb, vec3(0,0.4,0.7), region);
 
     gl_Position = Projection * Modelview * vPosition[0];
     EmitVertex();

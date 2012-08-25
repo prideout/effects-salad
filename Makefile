@@ -77,6 +77,7 @@ clean:
 depend:
 	makedepend -Y -pbuild/ -- $(CFLAGS) -- *.cpp common/*.cpp fx/*.cpp 
 
+
 # DO NOT DELETE
 
 build/main.o: lib/pez/pez.h lib/pez/gl3.h common/camera.h lib/glm/glm.hpp

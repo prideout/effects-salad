@@ -56,7 +56,7 @@ void PezInitialize()
  
     tetgenio in;
     TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 16, &in);
-    TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
+    //TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 16, &in);
 
     Vec3List regionPoints;
     regionPoints.push_back(vec3(0, 0, 0));
@@ -92,6 +92,7 @@ void PezInitialize()
     Context.CentroidTexture.Init(centroids);
     FloatList regionData(out.tetrahedronattributelist, 
                          out.tetrahedronattributelist + out.numberoftetrahedra);
+    for (int i = 0; i < out.numberoftetrahedra; ++i) { if (out.tetrahedronattributelist[i]) cout << out.tetrahedronattributelist[i] << ' '; }
     Context.RegionTexture.Init(regionData);
 
     // Create the Tets VAO
@@ -172,6 +173,12 @@ void PezRender()
         glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
         glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
         glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
+
+        Context.CentroidTexture.Bind(0);
+        glUniform1i(u("CentroidTexture"), 0);
+        Context.RegionTexture.Bind(1);
+        glUniform1i(u("RegionTexture"), 1);
+
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glBindVertexArray(Context.TetsVao); 

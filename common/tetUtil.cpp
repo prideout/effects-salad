@@ -27,9 +27,9 @@ TetUtil::HullWheel(glm::vec3 center,
 {
     // If the destination already has facets, append to it:
     if (dest->numberofpoints) {
-        static tetgenio freshHull;
+        tetgenio freshHull;
         HullWheel(center, radius, width, numQuads, &freshHull);
-        //HullCombine(freshHull, dest);
+        HullCombine(freshHull, dest);
         return;
     }
 
@@ -64,7 +64,7 @@ TetUtil::HullWheel(glm::vec3 center,
         facet->polygonlist = new tetgenio::polygon[facet->numberofpolygons];
         facet->numberofholes = 0;
         facet->holelist = NULL;
-        tetgenio::polygon* poly = &facet->polygonlist[0];
+        tetgenio::polygon* poly = facet->polygonlist;
         poly->numberofvertices = 4;
         poly->vertexlist = new int[poly->numberofvertices];
         poly->vertexlist[0] = n;
@@ -79,7 +79,7 @@ TetUtil::HullWheel(glm::vec3 center,
         facet->polygonlist = new tetgenio::polygon[facet->numberofpolygons];
         facet->numberofholes = 0;
         facet->holelist = NULL;
-        tetgenio::polygon* poly = &facet->polygonlist[0];
+        tetgenio::polygon* poly = facet->polygonlist;
         poly->numberofvertices = numQuads;
         poly->vertexlist = new int[poly->numberofvertices];
         int nq = numQuads;
@@ -157,7 +157,7 @@ TetUtil::HullCombine(const tetgenio& second,
 
     dest->numberofpoints += second.numberofpoints;
     dest->numberoffacets += second.numberoffacets;
-    dest->pointlist = new float[dest->numberofpoints];
+    dest->pointlist = new float[dest->numberofpoints * 3];
     dest->facetlist = new tetgenio::facet[dest->numberoffacets];
 
     for (int i = 0; i < firstPointCount * 3; i++) {
@@ -166,6 +166,7 @@ TetUtil::HullCombine(const tetgenio& second,
     for (int i = 0; i < second.numberofpoints * 3; i++) {
         dest->pointlist[i + firstPointCount * 3] = second.pointlist[i];
     }
+
     for (int i = 0; i < firstFacetCount; i++) {
         _CopyPolygons(firstFacets[i],
                       dest->facetlist + i,
@@ -178,6 +179,7 @@ TetUtil::HullCombine(const tetgenio& second,
                       firstPointCount,
                       false);
     }
+
     delete[] firstPoints;
     delete[] firstFacets; // TODO <-- leaky: needs to be deeper
 }
