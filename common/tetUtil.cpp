@@ -386,31 +386,68 @@ TetUtil::ComputeCentroids(Vec3List* centroids,
     }
 }
 
-void
-TetUtil::ComputeCentroids(Vec4List* centroids,
-                          const tetgenio& tets)
+struct SortableTet
 {
-    centroids->resize(tets.numberoftetrahedra);
-    vec4* dest = &centroids->front();
-    const int* currentTet = tets.tetrahedronlist;
+    ivec4 Corners;
+    vec3 Centroid;
+    int NeighborCount;
+};
+
+typedef std::vector<SortableTet> SortableTetList;
+
+struct _CompareTets : public std::binary_function<SortableTet,SortableTet,bool>
+{
+	inline bool operator()(const SortableTet& a, const SortableTet& b)
+	{
+        return a.NeighborCount < b.NeighborCount;
+	}
+};
+
+void
+TetUtil::SortTetrahedra(Vec4List* tetData,
+                        tetgenio& tets,
+                        int* pBoundaryTets)
+{
+    // Compute a list of centroids and valences.
+    const ivec4* currentTet = (const ivec4*) tets.tetrahedronlist;
     const vec3* points = (const vec3*) tets.pointlist;
-    for (int i = 0; i < tets.numberoftetrahedra; ++i, currentTet += 4) {
-
-        vec3 a = points[currentTet[0]];
-        vec3 b = points[currentTet[1]];
-        vec3 c = points[currentTet[2]];
-        vec3 d = points[currentTet[3]];
+    int boundaryTets = 0;
+    SortableTetList sortableList(tets.numberoftetrahedra);
+    for (int i = 0; i < tets.numberoftetrahedra; ++i, ++currentTet) {
+        ivec4 corners = *currentTet;
+        vec3 a = points[corners.x];
+        vec3 b = points[corners.y];
+        vec3 c = points[corners.z];
+        vec3 d = points[corners.w];
         vec3 center = (a + b + c + d) / 4.0f;
-
         float neighborCount = 0;
-        if (tets.neighborlist) {
-            vec4 neighbors = *((vec4*) (tets.neighborlist + i*4));
-            if (neighbors.x > -1) ++neighborCount;
-            if (neighbors.y > -1) ++neighborCount;
-            if (neighbors.z > -1) ++neighborCount;
-            if (neighbors.w > -1) ++neighborCount;
+        vec4 neighbors = *((vec4*) (tets.neighborlist + i*4));
+        if (neighbors.x > -1) ++neighborCount;
+        if (neighbors.y > -1) ++neighborCount;
+        if (neighbors.z > -1) ++neighborCount;
+        if (neighbors.w > -1) ++neighborCount;
+        if (neighborCount < 4) {
+            ++boundaryTets;
         }
+        sortableList[i].Centroid = center;
+        sortableList[i].NeighborCount = neighborCount;
+        sortableList[i].Corners = corners;
+    }
 
-        *dest++ = vec4(center, neighborCount);
+    // Move boundary tets to the front.
+    std::sort(sortableList.begin(), sortableList.end(), _CompareTets());
+
+    // Populate the tetData array and re-write the tet list.
+    tetData->resize(tets.numberoftetrahedra);
+    Vec4List::iterator data = tetData->begin();
+    ivec4* tetList = (ivec4*) tets.tetrahedronlist;
+    for (int i = 0; i < tets.numberoftetrahedra; ++i) {
+        *tetList++ = sortableList[i].Corners;
+        *data++ = vec4(sortableList[i].Centroid, sortableList[i].NeighborCount);
+    }
+
+    // Return a count of boundary tets if requested.
+    if (pBoundaryTets) {
+        *pBoundaryTets = boundaryTets;
     }
 }

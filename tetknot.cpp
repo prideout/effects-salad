@@ -33,6 +33,7 @@ struct ContextType
     GLuint ExpandedVao;
     GLsizei HullTriCount;
     BufferTexture CentroidTexture;
+    int BoundaryTets;
 } Context;
 
 PezConfig PezGetConfig()
@@ -88,7 +89,7 @@ void PezInitialize()
 
     // Populate the per-tet texture data
     Vec4List centroids;
-    TetUtil::ComputeCentroids(&centroids, out);
+    TetUtil::SortTetrahedra(&centroids, out, &Context.BoundaryTets);
     Context.CentroidTexture.Init(centroids);
 
     // Create the 'Expanded' VAO
