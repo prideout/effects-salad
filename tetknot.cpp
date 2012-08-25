@@ -20,8 +20,6 @@ using glm::vec3;
 struct ContextType
 {
     int PointCount;
-    int PositionSlot;
-    int NormalSlot;
     int TetCount;
     float Theta;
     mat4 Projection;
@@ -77,8 +75,6 @@ void PezInitialize()
     int numPoints = Context.PointCount = out.numberofpoints;
     Context.CurrentTet = 0;
     Context.ElapsedTime = 0;
-    Context.PositionSlot = (int) AttrPosition;
-    Context.NormalSlot =  (int) AttrNormal;
     Context.Theta = 0;
 
     cout <<
@@ -105,11 +101,11 @@ void PezInitialize()
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, massive.size(), &massive[0], GL_STATIC_DRAW);
 
-        glVertexAttribPointer(Context.PositionSlot, 3, GL_FLOAT, GL_FALSE, 24, 0);
-        glEnableVertexAttribArray(Context.PositionSlot);
+        glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 24, 0);
+        glEnableVertexAttribArray(AttrPosition);
 
-        glVertexAttribPointer(Context.NormalSlot, 3, GL_FLOAT, GL_FALSE, 24, offset(12));
-        glEnableVertexAttribArray(Context.NormalSlot);
+        glVertexAttribPointer(AttrNormal, 3, GL_FLOAT, GL_FALSE, 24, offset(12));
+        glEnableVertexAttribArray(AttrNormal);
     }
 
     Programs& progs = Programs::GetInstance();
