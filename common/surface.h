@@ -5,7 +5,6 @@
 
 class Surface {
 public:
-    
     GLsizei width;
     GLsizei height;
     glm::vec4 clearColor;
@@ -16,7 +15,7 @@ public:
     Surface();
 
     void Init();
-    void Clear();
+    void Bind();
     void Verify();
 };
 
