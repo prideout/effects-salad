@@ -53,6 +53,9 @@ void
 Vao::AddVertexAttribute(GLuint attrib, 
                             int componentCount, 
                             const FloatList& values) {
+
+    // XXX: This always makes a new VBO, which really isn't necessary...
+
     if (!vao) {
         std::cerr << "Array object was not initialized" << std::endl;
     }

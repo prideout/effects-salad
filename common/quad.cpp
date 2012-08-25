@@ -1,5 +1,6 @@
 
 #include "quad.h"
+#include "init.h"
 
 
 Quad::Quad() { 
@@ -41,11 +42,21 @@ Quad::Quad() {
 
 /* vitural */
 void Quad::Init() {
+
+    // XXX: We should pack these guys into one single VBO
+
     float v[] = { -1, -1,
                    1, -1,
                   -1,  1,
                    1,  1 };
+
+    float t[] = {  0,  1,
+                   1,  1,
+                   0,  0,
+                   1,  0 };
+
     vao = Vao(2, &v[0], 8);
+    vao.AddVertexAttribute(AttrTexCoord, 2, FloatList(t, t+8));
 }
 
 

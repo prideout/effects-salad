@@ -2,19 +2,23 @@
 
 //in vec3 vNormal;
 in vec3 vPosition;
+in vec2 vUvCoord;
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(.1, .4, .9, 1.0);
+    float s = vUvCoord.x + vUvCoord.y;
+    FragColor = .25*s + vec4(.1, .4, .9, 1.0);
 }
 
 
 -- Simple.VS
 layout(location = 0) in vec2 Position;
 //layout(location = 1) in vec3 Normal;
+layout(location = 2) in vec2 UvCoord;
 
 out vec4 vPosition;
+out vec2 vUvCoord;
 //out vec3 vNormal;
 
 uniform mat4 Projection;
@@ -36,15 +40,18 @@ void main()
     vPosition.z = -3;
     vPosition.w = 1;
     gl_Position = Projection * Modelview * vPosition;
+    vUvCoord = UvCoord;
     //vNormal = Normal;
 }
 
 -- Instanced.VS
 
 layout(location = 0) in vec2 Position;
+layout(location = 2) in vec2 UvCoord;
 uniform samplerBuffer Offsets;
 
 out vec4 vPosition;
+out vec2 vUvCoord;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -58,6 +65,7 @@ void main()
     vPosition.x += offset;
     vPosition.z = -3;
     vPosition.w = 1;
+    vUvCoord = UvCoord;
     gl_Position = Projection * Modelview * vPosition;
 }
 
