@@ -50,6 +50,8 @@ namespace TetUtil
     // Add "regions", which are defined by seed points that flood until hitting a facet.
     void AddRegions(const Vec3List& points,
                     tetgenio* dest);
+    void AddHoles(const Vec3List& points,
+                  tetgenio* dest);
 
     // Averages the corners of each tet and dumps the result into an array.
     void ComputeCentroids(Vec3List* centroids,

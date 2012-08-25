@@ -55,13 +55,12 @@ void PezInitialize()
     ::ReadBinaryFile("data/centerlines.bin", &centerlines);
  
     tetgenio in;
-    TetUtil::HullWheel(glm::vec3(0), 1.0f, 0.3f, 4, &in);
-    TetUtil::HullWheel(glm::vec3(0), 0.25f, 0.15f, 4, &in);
+    TetUtil::HullWheel(glm::vec3(0), 25.0f, 10.0f, 16, &in);
+    TetUtil::HullWheel(glm::vec3(0), 10.0f, 8.0f, 16, &in);
 
-    Vec3List regionPoints;
-    regionPoints.push_back(vec3(0.1, 0, 0));
-    regionPoints.push_back(vec3(0.3, 0.2, 0));
-    TetUtil::AddRegions(regionPoints, &in);
+    Vec3List holePoints;
+    holePoints.push_back(vec3(0, 0, 0));
+    TetUtil::AddHoles(holePoints, &in);
 
     cout <<
         "Tetrahedralizing a hull defined by " << 
@@ -69,8 +68,8 @@ void PezInitialize()
         in.numberoffacets << " facets." << endl;
 
     tetgenio out;
-    const float qualityBound = 15;
-    const float maxVolume = 0.00005f;
+    const float qualityBound = 1.414;
+    const float maxVolume = 1.0f;
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
 
     int numTets = Context.TetCount = out.numberoftetrahedra;
@@ -85,12 +84,6 @@ void PezInitialize()
         numPoints << " points." << endl <<
         "Each tet has " << out.numberoftetrahedronattributes <<
         " attributes." << endl;
-
-    for (int i = 0; i < out.numberoftetrahedra; ++i) {
-        if (out.tetrahedronattributelist[i])
-            cout << out.tetrahedronattributelist[i] << ' ';
-    }
-    cout << endl;
 
     // Populate the two per-tet textures
     Vec3List centroids;
@@ -168,7 +161,7 @@ void PezRender()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
-    const bool cuttingPlane = true;
+    const bool cuttingPlane = false;
     const bool drawSolidTriangles = true;
     if (drawSolidTriangles) {
         GLsizei tetCount = cuttingPlane ? Context.TetCount : Context.CurrentTet;
@@ -231,7 +224,7 @@ void PezUpdate(float seconds)
     vec3 axis = glm::normalize(vec3(1, 1, 0));
     model = glm::rotate(model, Context.Theta, axis);
 
-    vec3 eye = vec3(0,0,3);
+    vec3 eye = vec3(0,0,60);
     vec3 center = vec3(0,0,0);
     vec3 up = vec3(0,1,0);
     mat4 view = glm::lookAt(eye, center, up);

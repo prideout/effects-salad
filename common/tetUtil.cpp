@@ -9,9 +9,11 @@ TetUtil::TetsFromHull(const tetgenio& hull,
                       float maxVolume,
                       bool quiet)
 {
-    const char* formatString = quiet ? "AQpq%.3fa%.7f" : "VVApq%.3fa%.7f";
+    const char* formatString = quiet ? "AQpq%.3fa%.7f" : "VApq%.3fa%.7f";
     char configString[128];
     sprintf(configString, formatString, qualityBound, maxVolume);
+    printf(formatString, qualityBound, maxVolume);
+    printf("\n");
     tetrahedralize(configString, (tetgenio*) &hull, dest);
 }
 
@@ -197,6 +199,19 @@ TetUtil::AddRegions(const Vec3List& points,
         *r++ = points[i].z;
         *r++ = (float) i;
         *r++ = -1.0f;
+    }
+}
+
+void
+TetUtil::AddHoles(const Vec3List& points,
+                  tetgenio* dest)
+{
+    dest->numberofholes = points.size();
+    float* r = dest->holelist = new float[3 * dest->numberofholes];
+    for (int i = 0; i < dest->numberofholes; ++i) {
+        *r++ = points[i].x;
+        *r++ = points[i].y;
+        *r++ = points[i].z;
     }
 }
 
