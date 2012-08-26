@@ -1,6 +1,7 @@
 #include "lib/pez/pez.h"
 #include "jsoncpp/json.h"
 #include "common/init.h"
+#include "common/camera.h"
 #include "common/programs.h"
 #include "common/tube.h"
 #include "common/vao.h"
@@ -23,9 +24,8 @@ struct ContextType
     int PointCount;
     int TetCount;
     float Theta;
-    mat4 Projection;
-    mat4 Modelview;
-    mat3 NormalMatrix;
+    PerspCamera Cam;
+    mat4 ModelMatrix;
     int CurrentTet;
     float ElapsedTime;
     Vao ExpandedVao;
@@ -100,13 +100,13 @@ void PezInitialize()
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    float fov(60);
-    float aspect(1.0);
-    float near(1.0);
-    float far(100);
-    Context.Projection = glm::perspective(fov, aspect, near, far);
-
-    pezCheck(glGetError() == GL_NO_ERROR, "OpenGL Error.");
+    Context.Cam.fov = 60;
+    Context.Cam.aspect = 1.0;
+    Context.Cam.near = 1.0;
+    Context.Cam.far = 100;
+    Context.Cam.eye = vec3(0,0,60);
+    Context.Cam.center = vec3(0,0,0);
+    Context.Cam.up = vec3(0,1,0);
 }
 
 void PezHandleMouse(int x, int y, int action)
@@ -128,9 +128,7 @@ void PezRender()
         float cullY = -25 + 50 * (float) Context.CurrentTet / Context.TetCount;
         glUseProgram(progs["Tetra.Solid"]);
         glUniform1f(u("CullY"), cuttingPlane ? cullY : 999);
-        glUniformMatrix4fv(u("Modelview"), 1, 0, ptr(Context.Modelview));
-        glUniformMatrix4fv(u("Projection"), 1, 0, ptr(Context.Projection));
-        glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(Context.NormalMatrix));
+        Context.Cam.Bind(Context.ModelMatrix);
         Context.CentroidTexture.Bind(0);
         glUniform1i(u("CentroidTexture"), 0);
         glDisable(GL_BLEND);
@@ -160,13 +158,5 @@ void PezUpdate(float seconds)
 
     mat4 model;
     vec3 axis = glm::normalize(vec3(1, 1, 0));
-    model = glm::rotate(model, Context.Theta, axis);
-
-    vec3 eye = vec3(0,0,60);
-    vec3 center = vec3(0,0,0);
-    vec3 up = vec3(0,1,0);
-    mat4 view = glm::lookAt(eye, center, up);
-    Context.Modelview = view * model;
-
-    Context.NormalMatrix = mat3(Context.Modelview);
+    Context.ModelMatrix = glm::rotate(model, Context.Theta, axis);
 }

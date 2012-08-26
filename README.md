@@ -9,7 +9,7 @@ Inspiration
 -----------
 Videos:
   * [Sol 740 blowing off Tetsuo's arm](http://www.youtube.com/watch?feature=player_detailpage&v=LALsuMWv2ps#t=178s)
-
+  * [Many Viewports from 'Life on Mars'](http://www.youtube.com/watch?v=yIMP6-KBSCs#t=17s)
 
 Stills:
   * [Knot Tubes](http://www.originalsoundversion.com/wp-content/uploads/2008/12/badloop_luo.jpg)
