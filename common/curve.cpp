@@ -1,6 +1,7 @@
 #include "curve.h"
 #include <iostream>
 
+#if 0
 //
 // Curve, abstract base class
 //
@@ -49,7 +50,8 @@ BSpline::BSpline(float lod, const Vec3List& cvs) : Curve(lod, cvs) {
 
 
 void
-BSpline::_Eval(FloatList* points) {
+BSpline::_Eval(FloatList* points) 
+{
     points->clear();
     if (_cvs.size() < 4) return;
 
@@ -123,3 +125,4 @@ double fact(int n){
     }
     return res;
 }
+#endif

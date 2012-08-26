@@ -2,11 +2,130 @@
 
 #include <vector>
 #include <cmath>
+#include <iostream>
 
 #include "drawable.h"
 #include "typedefs.h"
 #include "vao.h"
 
+//
+// B-Spline
+//
+
+namespace BSpline {
+
+    template<typename VEC> VEC
+    _EvalHelper(VEC p1, VEC p2, VEC p3, VEC p4, float u) {
+        // deCastlejau evaluation
+        float u3 = u*u*u;
+        float u2 = u*u;
+        return (p1*(-u3 + 3*u2 - 3*u + 1)
+                +  p2*(3*u3 - 6*u2 + 4)
+                +  p3*(-3*u3 + 3*u2 + 3*u + 1)
+                +  p4*(u3));
+    }
+
+    template <typename VEC>
+    std::vector<VEC> Eval(float samplesPerCurve, std::vector<VEC> cvs) {
+        pezCheck(samplesPerCurve > 1, "Error: numSamples must be 2 or greater");
+        pezCheck(cvs.size() > 3, "Error: 2 or more CVs required");
+
+        // the number of samples is internally 1-numSamples
+        samplesPerCurve -= 1;
+
+        typename std::vector<VEC> points;
+        if (cvs.size() < 4) return points;
+
+        typename std::vector<VEC>::iterator cvi = cvs.begin();
+        while(cvi+3 != cvs.end()) {
+            float scale = 1.0/6.0;
+
+            for(float i = 0; i <= samplesPerCurve ; i += 1){
+                // walk the parameter space based on LOD
+                float u = 1.0 * i / samplesPerCurve;
+                
+                // Evaluate the X,Y,Z coords, convert to homogeneous coords
+                VEC out(scale * _EvalHelper(cvi[0], cvi[1], cvi[2], cvi[3], u));
+               
+                /*
+                std::cout << "Curve Point: " 
+                     << out.x << ", "
+                     << out.y << ", "
+                     << out.z <<  std::endl;
+                */
+                points.push_back(out);
+            }
+            cvi++;
+        }
+
+        return points;
+    }
+
+}
+
+//
+// Bezier
+//
+
+namespace Bezier {
+    inline
+    double fact(int n){
+        double res = 1;
+        for (int i = 2; i <= n; i++) {
+                res = res * i;
+        }
+        return res;
+    }
+
+    template <typename VEC> VEC
+    _EvalHelper(VEC p, float u, float n, float k) {
+        float b = (fact(n)/(fact(k)*fact(n - k))) 
+                     * pow(1-u, n-k) * pow(u,k);
+        return b * p;
+    }
+
+    template <typename VEC>
+    std::vector<VEC>
+    Eval(float numSamples, std::vector<VEC> cvs)
+    {
+        pezCheck(numSamples > 1, "Error: numSamples must be 2 or greater");
+        pezCheck(cvs.size() > 1, "Error: 2 or more CVs required");
+
+        // the number of samples is internally 1-numSamples
+        numSamples -= 1;
+
+        typename std::vector<VEC> points;
+
+        int k;
+        typename std::vector<VEC>::iterator p;
+        
+        int pcount = cvs.size() - 1;
+
+        for(float i = 0; i <= numSamples; i++) {
+                float u = 1.0 * (i / numSamples);
+                k = 0;
+                VEC pt;
+                for(p = cvs.begin(); p != cvs.end(); ++p) {
+                        pt += _EvalHelper(*p, u, pcount, k);
+                        k++;
+                }
+                points.push_back(pt);
+
+                /*
+                std::cout << "Curve Point: " 
+                     << pt.x << ", "
+                     << pt.y << ", "
+                     << pt.z <<  std::endl;
+                 */
+        }
+
+        return points;
+    }
+
+}
+
+
+/*
 class Curve : public Drawable {
 protected:
     Vec3List _cvs;
@@ -104,3 +223,4 @@ Bezier::_EvalHelper(VEC p, float u, float n, float k) {
                  * pow(1-u, n-k) * pow(u,k);
     return b * p;
 }
+*/
