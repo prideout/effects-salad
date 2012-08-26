@@ -5,11 +5,15 @@
 
 Portal::Portal()
 {
+    portalContext = 0;
 }
 
 void
 Portal::Init()
 {
+    if (portalContext) {
+        return;
+    }
     name = "Portal";
     Effect::Init();
     portalContext = DemoContext::New();

@@ -22,6 +22,7 @@ SHARED := \
 	$(OBJDIR)/common/timer.o \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
+	$(OBJDIR)/fx/background.o \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \

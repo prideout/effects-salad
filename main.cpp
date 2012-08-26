@@ -20,10 +20,11 @@ static void _constructScene()
 
     Portal* portal = new Portal();
     portal->Init();
-    portal->portalContext->viewport.x = 200;
-    portal->portalContext->viewport.y = 200;
-    portal->portalContext->viewport.width = 100;
+    portal->portalContext->viewport.x = 50;
+    portal->portalContext->viewport.y = 250;
+    portal->portalContext->viewport.width = 200;
     portal->portalContext->viewport.height = 100;
+    portal->portalContext->drawables.push_back(new Background(vec4(0.6,.2,0.2,1)));
     portal->portalContext->drawables.push_back(new Quads());
     portal->portalContext->Init();
     context->drawables.push_back(portal);
