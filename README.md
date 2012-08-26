@@ -8,7 +8,7 @@ effects-salad
 Inspiration
 -----------
 Videos:
-  *
+  * [Sol 740 blowing off Tetsuo's arm](http://www.youtube.com/watch?feature=player_detailpage&v=LALsuMWv2ps#t=178s)
 
 
 Stills:
