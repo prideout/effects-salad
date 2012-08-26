@@ -32,16 +32,16 @@ public:
         const unsigned* indices,
         unsigned indexCount);
 
-
+    void Init();
 
     void AddVertexAttribute(GLuint attrib, 
                             int componentCount, 
                             const FloatList& values);
 
+    void AddInterleaved(VertexAttribMask attribs,
+                        const Blob& data);
 
     void Bind();
-
-    
 };
 
 

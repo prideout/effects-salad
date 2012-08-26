@@ -3,6 +3,7 @@
 #include "common/init.h"
 #include "common/programs.h"
 #include "common/tube.h"
+#include "common/vao.h"
 #include "common/tetUtil.h"
 #include "common/texture.h"
 #include "glm/gtc/matrix_transform.hpp"
@@ -27,8 +28,7 @@ struct ContextType
     mat3 NormalMatrix;
     int CurrentTet;
     float ElapsedTime;
-    GLuint HullVao;
-    GLuint ExpandedVao;
+    Vao ExpandedVao;
     GLsizei HullTriCount;
     BufferTexture CentroidTexture;
     int BoundaryTets;
@@ -79,9 +79,7 @@ void PezInitialize()
 
     cout <<
         numTets << " tets have been generated, defined by " <<
-        numPoints << " points." << endl <<
-        "Each tet has " << out.numberoftetrahedronattributes <<
-        " attributes." << endl;
+        numPoints << " points." << endl;
 
     // Populate the per-tet texture data
     Vec4List centroids;
@@ -89,24 +87,12 @@ void PezInitialize()
     Context.CentroidTexture.Init(centroids);
 
     // Create the 'Expanded' VAO
-    glGenVertexArrays(1, &Context.ExpandedVao);
-    glBindVertexArray(Context.ExpandedVao);
-    {
-        Blob massive;
-        TetUtil::PointsFromTets(out,
-                                AttrPositionFlag | AttrNormalFlag,
-                                &massive);
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, massive.size(), &massive[0], GL_STATIC_DRAW);
-
-        glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 24, 0);
-        glEnableVertexAttribArray(AttrPosition);
-
-        glVertexAttribPointer(AttrNormal, 3, GL_FLOAT, GL_FALSE, 24, offset(12));
-        glEnableVertexAttribArray(AttrNormal);
-    }
+    Blob massive;
+    VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
+    TetUtil::PointsFromTets(out, attribs, &massive);
+    
+    Context.ExpandedVao.Init();
+    Context.ExpandedVao.AddInterleaved(attribs, massive);
 
     Programs& progs = Programs::GetInstance();
     progs.Load("Tetra.Simple", false);
@@ -149,7 +135,7 @@ void PezRender()
         glUniform1i(u("CentroidTexture"), 0);
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        glBindVertexArray(Context.ExpandedVao); 
+        Context.ExpandedVao.Bind();
 
         // Optimization: don't draw interior tets after completely filling the volume
         if (Context.CurrentTet >= Context.TetCount) {

@@ -315,7 +315,7 @@ _WriteTriangle(unsigned char* offset,
             *pnormal = n;
             offset += AttrNormalWidth;
         }
-        if (requestedAttribs & AttrTetId) {
+        if (requestedAttribs & AttrTetIdFlag) {
             int* pid = (int*) offset;
             *pid = id;
             offset += AttrTetIdWidth;
@@ -340,7 +340,7 @@ TetUtil::PointsFromTets(const tetgenio& tets,
     if (requestedAttribs & AttrNormalFlag) {
         stride += AttrNormalWidth;
     }
-    if (requestedAttribs & AttrTetId) {
+    if (requestedAttribs & AttrTetIdFlag) {
         stride += AttrTetIdWidth;
     }
     int triangleCount = tets.numberoftetrahedra * 4;
