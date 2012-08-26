@@ -30,6 +30,12 @@ Neo-Tokyo:
 Interactive:
   * http://phong.com/astro/hexasis/
 
+Possible Sound + Music Stuff
+----------------------------
+  * [libsndfile](http://www.mega-nerd.com/libsndfile)
+  * [portaudio](http://www.portaudio.com)
+  * [flstudio](http://www.image-line.com/documents/flstudio.html)
+
 Framework Components
 --------------------
 
