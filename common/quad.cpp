@@ -65,6 +65,7 @@ void Quad::Draw() {
     vao.Bind();
     //glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, NULL);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    pezCheckGL("Quad::Draw");
 }
 
 

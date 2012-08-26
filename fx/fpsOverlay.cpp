@@ -4,6 +4,7 @@
 #include "common/init.h"
 #include "common/demoContext.h"
 #include <string.h>
+#include <sys/time.h>
 
 using namespace std;
 using namespace glm;
@@ -29,15 +30,24 @@ const Glyph FpsOverlay::NumeralGlyphs[] = {
     {{ 186, 0 }, { 0, -17, 19, 24, 20, 0 }},
 };
 
+static unsigned int
+_GetMilliseconds()
+{
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return tp.tv_sec * 1000000000 + tp.tv_usec;
+}
+
 void
 FpsOverlay::Init()
 {
+    _filterConstant = 0.01;
+    _previousTime = 0;
     name = "FpsOverlay";
     Effect::Init();
     Programs& progs = Programs::GetInstance();
     glUseProgram(progs.Load("Fps"));
     _numerals.Init("numerals.png");
-    _timer.Init();
 
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
@@ -58,7 +68,6 @@ void
 FpsOverlay::Update()
 {
     Effect::Update();
-    _timer.Update();
 }
 
 float*
@@ -103,10 +112,16 @@ FpsOverlay::Draw()
     glUniform2fv(u("InverseViewport"), 1, ptr(invViewport));
     glUniform1i(u("Numerals"), 0);
 
-    float fps = round(_timer.GetFPS());
+    unsigned int time = _GetMilliseconds();
+    float deltaTime = (time - _previousTime) / 1000000.0f;
+    _previousTime = time;
+
+    double fps = 1.0f / deltaTime;
+    double alpha = _filterConstant;
+    _fps = fps * alpha + _fps * (1.0 - alpha);
 
     char digits[MaxNumDigits + 1] = {0};
-    sprintf(digits, "%d", (int) fps);
+    sprintf(digits, "%d", (int) round(_fps));
     int numDigits = strlen(digits);
     vec2 pos(-viewport.x / 2 + 5, -viewport.y / 2 + 10);
 

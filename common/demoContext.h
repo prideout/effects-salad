@@ -16,6 +16,7 @@ class DemoContext {
     static DemoContext* _current;
 
     float t;
+
     DemoContext();
 
 public:
@@ -26,6 +27,7 @@ public:
     PerspCamera mainCam;
     Viewport viewport;
     glm::vec4 clearColor;
+    float deltaTime;
 
     void Init();
     void Render();
@@ -45,10 +47,6 @@ public:
     }
 
     static DemoContext* 
-    SetCurrent(DemoContext* cur) {
-        _current = cur;
-        return cur;
-    }
-
+    SetCurrent(DemoContext* cur);
 };
 
