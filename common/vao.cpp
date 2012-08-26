@@ -10,7 +10,7 @@ Vao::Vao() :
 }
 
 Vao::Vao(int componentCount, const FloatList& verts) :
-    vertexCount(verts.size()),
+    vertexCount(verts.size() / componentCount),
     indexCount(0) 
 {    
     vao = ::InitVao(componentCount, verts);
@@ -19,7 +19,7 @@ Vao::Vao(int componentCount, const FloatList& verts) :
 Vao::Vao(int componentCount, 
             const FloatList& verts, 
             const IndexList& indices) :
-    vertexCount(verts.size()),
+    vertexCount(verts.size() / componentCount),
     indexCount(indices.size()) 
 {
     vao = ::InitVao(componentCount, verts, indices);
@@ -28,11 +28,11 @@ Vao::Vao(int componentCount,
 Vao::Vao(int componentCount, 
             const float* verts,
             unsigned vertCount) : 
-    vertexCount(vertCount),
+    vertexCount(vertCount / componentCount),
     indexCount(0) 
 {
     // TODO: we shouldn't be copying the buffer like this, we should just pass it raw
-    vao = ::InitVao(componentCount, FloatList(verts, verts+vertCount));
+    vao = ::InitVao(componentCount, FloatList(verts, verts+vertCount*componentCount));
 }
 
 Vao::Vao(int componentCount, 
@@ -45,7 +45,7 @@ Vao::Vao(int componentCount,
 {
     // TODO: we shouldn't be copying the buffer like this, we should just pass it raw
     vao = ::InitVao(componentCount, 
-                    FloatList(verts, verts+vertCount),
+                    FloatList(verts, verts+vertCount*componentCount),
                     IndexList(indices, indices+indexCount));
 }
 

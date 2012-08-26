@@ -6,6 +6,7 @@ OBJDIR=build
 
 SHARED := \
 	$(OBJDIR)/common/camera.o \
+	$(OBJDIR)/common/curve.o \
 	$(OBJDIR)/common/demoContext.o \
 	$(OBJDIR)/common/tetUtil.o \
 	$(OBJDIR)/common/drawable.o \
@@ -188,12 +189,13 @@ build/tetknot.o: lib/glm/./core/func_integer.inl
 build/tetknot.o: lib/glm/./core/func_noise.hpp lib/glm/./core/func_noise.inl
 build/tetknot.o: lib/glm/./core/_swizzle.hpp lib/pez/pez.h
 build/tetknot.o: lib/tetgen/tetgen.h common/programs.h common/tube.h
-build/tetknot.o: common/drawable.h common/tetUtil.h common/typedefs.h
-build/tetknot.o: common/texture.h lib/glm/gtc/matrix_transform.hpp
-build/tetknot.o: lib/glm/glm.hpp lib/glm/gtc/matrix_transform.inl
-build/tetknot.o: lib/glm/gtc/type_ptr.hpp lib/glm/gtc/half_float.hpp
-build/tetknot.o: lib/glm/gtc/half_float.inl lib/glm/gtc/quaternion.hpp
-build/tetknot.o: lib/glm/gtc/quaternion.inl lib/glm/gtc/type_ptr.inl
+build/tetknot.o: common/drawable.h common/vao.h common/tetUtil.h
+build/tetknot.o: common/typedefs.h common/texture.h
+build/tetknot.o: lib/glm/gtc/matrix_transform.hpp lib/glm/glm.hpp
+build/tetknot.o: lib/glm/gtc/matrix_transform.inl lib/glm/gtc/type_ptr.hpp
+build/tetknot.o: lib/glm/gtc/half_float.hpp lib/glm/gtc/half_float.inl
+build/tetknot.o: lib/glm/gtc/quaternion.hpp lib/glm/gtc/quaternion.inl
+build/tetknot.o: lib/glm/gtc/type_ptr.inl
 build/common/camera.o: common/camera.h lib/glm/glm.hpp
 build/common/camera.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
 build/common/camera.o: lib/glm/./core/_detail.hpp lib/glm/./core/setup.hpp
@@ -263,6 +265,67 @@ build/common/camera.o: lib/jsoncpp/config.h lib/jsoncpp/value.h
 build/common/camera.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
 build/common/camera.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
 build/common/camera.o: lib/tetgen/tetgen.h
+build/common/curve.o: common/curve.h common/drawable.h lib/pez/pez.h
+build/common/curve.o: lib/pez/gl3.h lib/glm/glm.hpp lib/glm/core/_fixes.hpp
+build/common/curve.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
+build/common/curve.o: lib/glm/./core/setup.hpp lib/glm/./core/type.hpp
+build/common/curve.o: lib/glm/./core/type_half.hpp
+build/common/curve.o: lib/glm/./core/type_half.inl lib/glm/./core/_detail.hpp
+build/common/curve.o: lib/glm/./core/type_float.hpp
+build/common/curve.o: lib/glm/./core/type_int.hpp
+build/common/curve.o: lib/glm/./core/type_gentype.hpp
+build/common/curve.o: lib/glm/./core/type_size.hpp
+build/common/curve.o: lib/glm/./core/type_vec1.hpp
+build/common/curve.o: lib/glm/./core/type_vec.hpp lib/glm/./core/_swizzle.hpp
+build/common/curve.o: lib/glm/./core/_swizzle_func.hpp
+build/common/curve.o: lib/glm/./core/type_vec1.inl
+build/common/curve.o: lib/glm/./core/type_vec2.hpp
+build/common/curve.o: lib/glm/./core/type_vec2.inl
+build/common/curve.o: lib/glm/./core/type_vec3.hpp
+build/common/curve.o: lib/glm/./core/type_vec3.inl
+build/common/curve.o: lib/glm/./core/type_vec4.hpp
+build/common/curve.o: lib/glm/./core/type_vec4.inl
+build/common/curve.o: lib/glm/./core/type_mat2x2.hpp
+build/common/curve.o: lib/glm/./core/type_mat.hpp
+build/common/curve.o: lib/glm/./core/type_mat2x2.inl
+build/common/curve.o: lib/glm/./core/type_mat2x3.hpp
+build/common/curve.o: lib/glm/./core/type_mat2x3.inl
+build/common/curve.o: lib/glm/./core/type_mat2x4.hpp
+build/common/curve.o: lib/glm/./core/type_mat2x4.inl
+build/common/curve.o: lib/glm/./core/type_mat3x2.hpp
+build/common/curve.o: lib/glm/./core/type_mat3x2.inl
+build/common/curve.o: lib/glm/./core/type_mat3x3.hpp
+build/common/curve.o: lib/glm/./core/type_mat3x3.inl
+build/common/curve.o: lib/glm/./core/type_mat3x4.hpp
+build/common/curve.o: lib/glm/./core/type_mat3x4.inl
+build/common/curve.o: lib/glm/./core/type_mat4x2.hpp
+build/common/curve.o: lib/glm/./core/type_mat4x2.inl
+build/common/curve.o: lib/glm/./core/type_mat4x3.hpp
+build/common/curve.o: lib/glm/./core/type_mat4x3.inl
+build/common/curve.o: lib/glm/./core/type_mat4x4.hpp
+build/common/curve.o: lib/glm/./core/type_mat4x4.inl
+build/common/curve.o: lib/glm/./core/func_trigonometric.hpp
+build/common/curve.o: lib/glm/./core/func_trigonometric.inl
+build/common/curve.o: lib/glm/./core/_vectorize.hpp
+build/common/curve.o: lib/glm/./core/func_exponential.hpp
+build/common/curve.o: lib/glm/./core/func_exponential.inl
+build/common/curve.o: lib/glm/./core/func_common.hpp
+build/common/curve.o: lib/glm/./core/_fixes.hpp
+build/common/curve.o: lib/glm/./core/func_common.inl
+build/common/curve.o: lib/glm/./core/func_packing.hpp
+build/common/curve.o: lib/glm/./core/func_packing.inl
+build/common/curve.o: lib/glm/./core/func_geometric.hpp
+build/common/curve.o: lib/glm/./core/func_geometric.inl
+build/common/curve.o: lib/glm/./core/func_matrix.hpp
+build/common/curve.o: lib/glm/./core/func_matrix.inl
+build/common/curve.o: lib/glm/./core/func_vector_relational.hpp
+build/common/curve.o: lib/glm/./core/func_vector_relational.inl
+build/common/curve.o: lib/glm/./core/func_integer.hpp
+build/common/curve.o: lib/glm/./core/func_integer.inl
+build/common/curve.o: lib/glm/./core/func_noise.hpp
+build/common/curve.o: lib/glm/./core/func_noise.inl
+build/common/curve.o: lib/glm/./core/_swizzle.hpp common/typedefs.h
+build/common/curve.o: common/vao.h
 build/common/demoContext.o: common/demoContext.h lib/glm/glm.hpp
 build/common/demoContext.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
 build/common/demoContext.o: lib/glm/./core/_detail.hpp
@@ -339,6 +402,7 @@ build/common/demoContext.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
 build/common/demoContext.o: lib/tetgen/tetgen.h common/instancer.h
 build/common/demoContext.o: common/vao.h common/surface.h common/texture.h
 build/common/demoContext.o: common/typedefs.h common/quad.h fx/fpsOverlay.h
+build/common/demoContext.o: common/timer.h
 build/common/drawable.o: common/drawable.h lib/pez/pez.h lib/pez/gl3.h
 build/common/drawable.o: lib/glm/glm.hpp lib/glm/core/_fixes.hpp
 build/common/drawable.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
@@ -1154,11 +1218,15 @@ build/common/vao.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
 build/common/vao.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
 build/common/vao.o: lib/tetgen/tetgen.h
 build/common/viewport.o: common/viewport.h lib/pez/pez.h lib/pez/gl3.h
+build/fx/fpsOverlay.o: lib/glm/gtc/type_ptr.hpp lib/glm/glm.hpp
+build/fx/fpsOverlay.o: lib/glm/core/_fixes.hpp lib/glm/gtc/half_float.hpp
+build/fx/fpsOverlay.o: lib/glm/gtc/half_float.inl lib/glm/gtc/quaternion.hpp
+build/fx/fpsOverlay.o: lib/glm/gtc/quaternion.inl lib/glm/gtc/type_ptr.inl
 build/fx/fpsOverlay.o: fx/fpsOverlay.h common/effect.h common/drawable.h
 build/fx/fpsOverlay.o: lib/pez/pez.h lib/pez/gl3.h lib/glm/glm.hpp
-build/fx/fpsOverlay.o: lib/glm/core/_fixes.hpp lib/glm/core/setup.hpp
-build/fx/fpsOverlay.o: lib/glm/./core/_detail.hpp lib/glm/./core/setup.hpp
-build/fx/fpsOverlay.o: lib/glm/./core/type.hpp lib/glm/./core/type_half.hpp
+build/fx/fpsOverlay.o: lib/glm/core/setup.hpp lib/glm/./core/_detail.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/setup.hpp lib/glm/./core/type.hpp
+build/fx/fpsOverlay.o: lib/glm/./core/type_half.hpp
 build/fx/fpsOverlay.o: lib/glm/./core/type_half.inl
 build/fx/fpsOverlay.o: lib/glm/./core/_detail.hpp
 build/fx/fpsOverlay.o: lib/glm/./core/type_float.hpp
@@ -1216,4 +1284,13 @@ build/fx/fpsOverlay.o: lib/glm/./core/func_integer.inl
 build/fx/fpsOverlay.o: lib/glm/./core/func_noise.hpp
 build/fx/fpsOverlay.o: lib/glm/./core/func_noise.inl
 build/fx/fpsOverlay.o: lib/glm/./core/_swizzle.hpp common/timer.h
-build/fx/fpsOverlay.o: common/texture.h common/typedefs.h common/programs.h
+build/fx/fpsOverlay.o: common/texture.h common/typedefs.h common/timer.h
+build/fx/fpsOverlay.o: common/programs.h common/init.h common/typedefs.h
+build/fx/fpsOverlay.o: lib/jsoncpp/json.h lib/jsoncpp/autolink.h
+build/fx/fpsOverlay.o: lib/jsoncpp/config.h lib/jsoncpp/value.h
+build/fx/fpsOverlay.o: lib/jsoncpp/forwards.h lib/jsoncpp/reader.h
+build/fx/fpsOverlay.o: lib/jsoncpp/features.h lib/jsoncpp/writer.h
+build/fx/fpsOverlay.o: lib/tetgen/tetgen.h common/demoContext.h
+build/fx/fpsOverlay.o: common/camera.h lib/glm/gtc/matrix_transform.hpp
+build/fx/fpsOverlay.o: lib/glm/gtc/matrix_transform.inl common/effect.h
+build/fx/fpsOverlay.o: common/light.h common/programs.h common/viewport.h
