@@ -55,7 +55,7 @@ void Quad::Init() {
                    0,  0,
                    1,  0 };
 
-    vao = Vao(2, &v[0], 8);
+    vao = Vao(2, &v[0], 4);
     vao.AddVertexAttribute(AttrTexCoord, 2, FloatList(t, t+8));
 }
 

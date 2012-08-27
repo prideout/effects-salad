@@ -28,7 +28,7 @@ Vao::Vao(int componentCount,
 Vao::Vao(int componentCount, 
             const float* verts,
             unsigned vertCount) : 
-    vertexCount(vertCount / componentCount),
+    vertexCount(vertCount),
     indexCount(0) 
 {
     // TODO: we shouldn't be copying the buffer like this, we should just pass it raw
