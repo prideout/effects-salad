@@ -13,3 +13,7 @@
 
 # Library that generate build artifacts
 lib/jsoncpp/*
+
+salad
+tetknot
+build/
