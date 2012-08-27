@@ -21,7 +21,6 @@ Viewport::Viewport(GLint x, GLint y, GLsizei width, GLsizei height) :
     height(height) { 
 }
 
-
 void 
 Viewport::Bind() {
     glViewport(x, y, width, height);

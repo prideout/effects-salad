@@ -22,8 +22,10 @@ SHARED := \
 	$(OBJDIR)/common/timer.o \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
+	$(OBJDIR)/fx/background.o \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/fireFlies.o \
+	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
 	$(OBJDIR)/lib/pez/pez.o

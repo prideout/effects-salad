@@ -2,7 +2,6 @@
 
 #include "common/effect.h"
 #include "common/texture.h"
-#include "common/timer.h"
 #include "glm/glm.hpp"
 
 struct GlyphPosition {
@@ -26,10 +25,12 @@ struct Glyph {
 
 class FpsOverlay : public Effect {
     Texture2D _numerals;
-    Timer _timer;
+    unsigned int _previousTime;
     GLuint _vbo;
     GLuint _vao;
     float* _WriteGlyphVertex(const Glyph& glyph, glm::vec2 position, int corner, float* vertex);
+    float _filterConstant;
+    float _fps;
 public:
     FpsOverlay() : Effect() {}
     virtual ~FpsOverlay() {}

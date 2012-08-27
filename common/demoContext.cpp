@@ -12,11 +12,6 @@ DemoContext::DemoContext() : clearColor(0,0,0,1) {
 
 void 
 DemoContext::Init() {
-
-    // TODO : specify this list in JSON
-    drawables.push_back(new Quads());
-    drawables.push_back(new FpsOverlay());
-
     FOR_EACH(drawable, drawables) {
         (*drawable)->Init();
     }
@@ -42,6 +37,7 @@ DemoContext::Render() {
 
 void 
 DemoContext::Update(float seconds) {
+    deltaTime = seconds;
     t += seconds;
     mainCam.eye.x += .1*cos(t*2); 
 
@@ -51,4 +47,10 @@ DemoContext::Update(float seconds) {
     }
 }
 
+DemoContext*
+DemoContext::SetCurrent(DemoContext* cur) {
+    _current = cur;
+    cur->viewport.Bind();
+    return cur;
+}
 
