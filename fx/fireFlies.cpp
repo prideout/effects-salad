@@ -1,4 +1,4 @@
-#include "fireflies.h"
+#include "fireFlies.h"
 #include "common/programs.h"
 #include "common/demoContext.h"
 
