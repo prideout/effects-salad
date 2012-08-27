@@ -18,6 +18,8 @@ public:
     void Bind();
     void Unbind();
     void Verify();
+
+    float GetAspect() const { return (float) width / height; }
 };
 
 

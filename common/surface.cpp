@@ -59,11 +59,13 @@ Surface::Init() {
 void
 Surface::Bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glViewport(0, 0, width, height);
     pezCheckGL("Frambuffer bind failed");
 }
 
 void
 Surface::Unbind() {
+    glViewport(0, 0, PezGetConfig().Width, PezGetConfig().Height);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

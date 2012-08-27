@@ -20,28 +20,31 @@ static void _constructScene()
 
     Portal* portal = new Portal();
     portal->Init();
-    portal->portalContext->viewport.x = 50;
-    portal->portalContext->viewport.y = 250;
-    portal->portalContext->viewport.width = 200;
-    portal->portalContext->viewport.height = 100;
+    portal->portalContext->viewport.x = 10;
+    portal->portalContext->viewport.y = 316;
+    portal->portalContext->viewport.width = 150;
+    portal->portalContext->viewport.height = 75;
     portal->portalContext->drawables.push_back(new Background(vec4(0.6,.2,0.2,1)));
     portal->portalContext->drawables.push_back(new Quads());
     portal->portalContext->Init();
+    portal->portalContext->mainCam = context->mainCam;
     context->drawables.push_back(portal);
+    DemoContext::SetCurrent(context);
 
     context->drawables.push_back(new FpsOverlay());
 }
 
 void PezInitialize()
 {
-    context = DemoContext::SetCurrent(DemoContext::New());
     PezConfig cfg = PezGetConfig();
+
+    context = DemoContext::SetCurrent(DemoContext::New());
+    context->mainCam.eye.z = 5;
+
     // add our shader path
     pezSwAddPath("", ".glsl");
     _constructScene();
     context->Init();
-    context->mainCam.eye.z = 5;
-    context->mainCam.aspect = cfg.Width / cfg.Height;
 }
 
 PezConfig PezGetConfig()

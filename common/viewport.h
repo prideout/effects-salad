@@ -16,4 +16,6 @@ public:
 
     // Set the GL viewport
     void Bind();
+
+    float GetAspect() const { return (float) width / height; }
 };

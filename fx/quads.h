@@ -40,7 +40,7 @@ public:
                                 "Default.Instanced.VS"));
 
 
-        pezCheck(glGetError() == GL_NO_ERROR, "compile failed");
+        pezCheckGL("Quad::init compile failed");
 
         surface.Init();
         quad.Init();
@@ -67,11 +67,7 @@ public:
         Effect::Draw();
         surface.Bind();
         surfaceCam = context->mainCam;
-        surfaceCam.eye.y += 1.9;
-        surfaceCam.center.y += 1.9;
-        surfaceCam.eye.x += 4.5;
-        surfaceCam.center.x += 4.5;
-        surfaceCam.fov = 90;
+        surfaceCam.aspect = surface.GetAspect();
         glUseProgram(progs["Default.Instanced"]);
         surfaceCam.Bind(quad.modelMat);
 
@@ -84,11 +80,12 @@ public:
         glUniform1i(u("Tex"), 1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, surface.texture);
-        pezCheck(glGetError() == GL_NO_ERROR, "Texture bind failed4");
+        pezCheckGL("Quads::Draw Texture bind failed");
 
+        context->viewport.Bind();
         context->mainCam.Bind(quad.modelMat);
         manyQuads.Draw();
-        pezCheck(glGetError() == GL_NO_ERROR, "draw failed"); 
+        pezCheckGL("Quads::Draw draw failed"); 
         glBindTexture(GL_TEXTURE_2D, 0);
     };
 };

@@ -4,8 +4,8 @@
 #include "glm/gtc/type_ptr.hpp"
 
 Camera::Camera() :
-    eye(vec3(0,0,0)),
-    center(vec3(0,0,-1)),
+    eye(vec3(0,0,1)),
+    center(vec3(0,0,0)),
     up(vec3(0,1,0)) { 
 }
 
@@ -24,7 +24,7 @@ void
 Camera::Bind(const mat4& model) {
     // XXX: could cache this, but waiting until the need arises
     mat4 projection = GetProjection();
-    mat4 view = GetView(); 
+    mat4 view = GetView();
     mat4 modelView = view * model;
     glUniformMatrix4fv(u("Projection"), 1, 0, ptr(projection));
     glUniformMatrix4fv(u("ViewMatrix"), 1, 0, ptr(view));

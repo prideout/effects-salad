@@ -40,6 +40,7 @@ DemoContext::Update(float seconds) {
     deltaTime = seconds;
     t += seconds;
     mainCam.eye.x += .1*cos(t*2); 
+    mainCam.aspect = viewport.GetAspect();
 
     // update active effects
     FOR_EACH(drawable, drawables) {
