@@ -1,11 +1,13 @@
 #include "fireFlies.h"
 #include "common/programs.h"
 #include "common/demoContext.h"
+#include "noise/perlin.h"
 
 #include <cstdlib>
 
 void FireFlies::Init() 
 {
+    Perlin noise(2, .1, 1, 0);
     name = "FireFlies";
     Effect::Init();
     Programs& progs = Programs::GetInstance();
@@ -23,14 +25,16 @@ void FireFlies::Init()
         float x = 10*(rand() / float(RAND_MAX)) - 5; 
         float y = 10*(rand() / float(RAND_MAX)) - 5; 
         float z = 10*(rand() / float(RAND_MAX)) - 5; 
+        //n = noise.Get(
         //std::cout << x << ", " << y << ", " << z << "\n";
         _fliesCpu.push_back(x);
-        _fliesCpu.push_back(y);
+        _fliesCpu.push_back(noise.Get(x,z));
         _fliesCpu.push_back(z);
         _fliesCpu.push_back(1.0);
     }
     _fliesGpu = Vao(4, _fliesCpu); 
 
+    glPointSize(2);
     float cameraPath[] = {
          0,    0,  4.04,
         -7.11, 0,  4.06,

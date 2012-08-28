@@ -28,6 +28,7 @@ SHARED := \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/fx/quads.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
+	$(OBJDIR)/lib/noise/perlin.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
 	$(OBJDIR)/lib/pez/pez.o
 
@@ -60,6 +61,7 @@ $(OBJDIR):
 	@mkdir -p $@/fx
 	@mkdir -p $@/lib/pez
 	@mkdir -p $@/lib/lodepng
+	@mkdir -p $@/lib/noise
 	@mkdir -p $@/lib/tetgen
 
 $(OBJDIR)/%.o: %.cpp
