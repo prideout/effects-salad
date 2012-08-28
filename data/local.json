@@ -1,0 +1,15 @@
+// 
+// This file is intended for local developer configuration
+// overrides, do not commit
+//
+
+{
+    // 
+    // valid users are jcowles or prideout
+    // user will drive startup configuration for debugging and development
+    //
+    "user" : ""
+
+}
+
+

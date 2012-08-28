@@ -1,7 +1,7 @@
 #include "surface.h"
 
 
-Surface::Surface() {
+Surface::Surface() : width(0), height(0), texture(0), depth(0), fbo(0) {
 }
 
 void

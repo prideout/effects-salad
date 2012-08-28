@@ -13,8 +13,28 @@ DemoContext* context;
 // TODO : make this function read from JSON
 static void _constructScene()
 {
+    
     // Json::Value scene;
     // ReadJsonFile("data/scene.json", &scene);
+
+    //
+    // Local user setup for debugging
+    //
+    Json::Value local;
+    ReadJsonFile("data/local.json", &local);
+    std::string user = local.get("user", "").asString();
+
+    if (user == "jcowles") {
+        context->drawables.push_back(new FireFlies());
+        context->drawables.push_back(new FpsOverlay());
+        DemoContext::SetCurrent(context);
+        return;
+
+    } else if (user == "prideout") {
+        return;
+
+    }
+
 
     context->drawables.push_back(new Quads());
 
@@ -36,7 +56,7 @@ static void _constructScene()
 
 void PezInitialize()
 {
-    PezConfig cfg = PezGetConfig();
+    //PezConfig cfg = PezGetConfig();
 
     context = DemoContext::SetCurrent(DemoContext::New());
     context->mainCam.eye.z = 5;
