@@ -63,10 +63,10 @@ void FireFlies::Init()
 
     // XXX: need to call srand in a more common location
     srand(0);
-    for (int i = 0; i < 500; i ++) {
-        float x = 20*(rand() / float(RAND_MAX)) - 10; 
+    for (int i = 0; i < 1000; i ++) {
+        float x = 80*(rand() / float(RAND_MAX)) - 40; 
         float y = 3*(rand() / float(RAND_MAX)) - 2; 
-        float z = 20*(rand() / float(RAND_MAX)) - 10; 
+        float z = 80*(rand() / float(RAND_MAX)) - 40; 
         //n = noise.Get(
         //std::cout << x << ", " << y << ", " << z << "\n";
         _fliesCpu.push_back(x);
@@ -140,6 +140,9 @@ void FireFlies::Draw() {
         //surfaceCam.eye.x = 0;
         surfaceCam.eye.y = .0;
         surfaceCam.center = vec3(0,.8,0); //cameraPoints[counter];
+        // look where we are walking
+        surfaceCam.center = cameraPoints[counter+1 % cameraPoints.size()];
+        surfaceCam.center.y = 0;
         surfaceCam.Bind(glm::mat4());
         
         /*
