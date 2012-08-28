@@ -14,6 +14,7 @@
 class FireFlies : public Effect {
     FloatList _fliesCpu;
     Vao _fliesGpu;
+    Vao _ground;
     Surface _surface;
     Quad _quad;
     Vec3List cameraPoints;

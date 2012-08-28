@@ -1,10 +1,9 @@
--- Flies.FS
-
+-- Ground.FS
 //in vec3 vNormal;
 in vec4 vPosition;
 //in vec2 vUvCoord;
 out vec4 FragColor;
-
+uniform vec3 Eye;
 
 // --------------------- ( NOISE LIB CODE ) --------------------------------
 //
@@ -78,6 +77,28 @@ float snoise(vec2 v)
   return 130.0 * dot(m, g);
 }
 // --------------------- ( END NOISE LIB CODE ) --------------------------------
+
+
+
+void main()
+{
+    //float s = vUvCoord.x + vUvCoord.y;
+    //float r = min(1, max(10-sqrt(vPosition.x * vPosition.x + vPosition.z * vPosition.z), 0));
+    //float r = clamp(1-.15*distance(eye, vPosition.xyz), 0., 1.);
+    float r = clamp(.3+snoise(vPosition.xz/25.)+2*.5, 0., 1.);
+    r = r*clamp(1-.045*distance(Eye.xyz, vPosition.xyz), 0., 1.);
+    FragColor = r * vec4(.7, .7, .2, 1.0);
+}
+
+
+
+-- Flies.FS
+
+//in vec3 vNormal;
+in vec4 vPosition;
+//in vec2 vUvCoord;
+out vec4 FragColor;
+
 
 
 
