@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/camera.h"
+#include "common/curve.h"
 #include "common/effect.h"
 #include "common/init.h"
 #include "common/instancer.h"
@@ -15,6 +16,8 @@ class FireFlies : public Effect {
     Vao _fliesGpu;
     Surface _surface;
     Quad _quad;
+    Vec3List cameraPoints;
+    int counter;
 
 public:
 
