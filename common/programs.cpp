@@ -30,7 +30,8 @@ Programs::Load(const string& name,
                 const string& fsName,
                 const string& vsName) {
 
-    // XXX: what about naming collisions?
+    if (_progMap.find(name) != _progMap.end())
+        return _progMap[name];
 
     return _progMap[name] = 
                 ::InitProgram(fsName.c_str(), vsName.c_str(), NULL);
@@ -42,7 +43,8 @@ Programs::Load(const string& name,
                 const string& vsName, 
                 const string& gsName) {
      
-    // XXX: what about naming collisions?
+    if (_progMap.find(name) != _progMap.end())
+        return _progMap[name];
 
     return _progMap[name] = 
                 ::InitProgram(fsName.c_str(), vsName.c_str(), gsName.c_str());

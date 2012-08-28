@@ -3,7 +3,7 @@
 #include "common/programs.h"
 #include "common/init.h"
 #include "common/demoContext.h"
-#include <string.h>
+#include <sstream>
 #include <sys/time.h>
 
 using namespace std;
@@ -103,7 +103,7 @@ FpsOverlay::Draw()
 {
     Effect::Draw();
     Programs& progs = Programs::GetInstance();
-    glUseProgram(progs.Load("Fps"));
+    glUseProgram(progs["Fps"]);
 
     vec2 viewport = vec2(this->context->viewport.width,
                          this->context->viewport.height);
@@ -120,9 +120,17 @@ FpsOverlay::Draw()
     double alpha = _filterConstant;
     _fps = fps * alpha + _fps * (1.0 - alpha);
 
-    char digits[MaxNumDigits + 1] = {0};
-    sprintf(digits, "%d", (int) round(_fps));
-    int numDigits = strlen(digits);
+    std::stringstream ssdigits;
+    std::string digits;
+    ssdigits << int(round(_fps));
+    digits = ssdigits.str();
+    if (digits.size() > MaxNumDigits) {
+        digits = "999";
+        // the kalman/decay filter gets "whacked out" if the value is too large
+        // so reset the filter memory
+        _fps = 0;
+    }
+    int numDigits = digits.size();
     vec2 pos(-viewport.x / 2 + 5, -viewport.y / 2 + 10);
 
     vector<float> vbo(numDigits * FloatsPerDigit);
@@ -151,4 +159,5 @@ FpsOverlay::Draw()
     glDrawArrays(GL_TRIANGLES, 0, numDigits * VertsPerDigit);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    pezCheckGL("Draw FPS");
 }
