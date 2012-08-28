@@ -26,6 +26,7 @@ SHARED := \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/fireFlies.o \
 	$(OBJDIR)/fx/portal.o \
+	$(OBJDIR)/fx/quads.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
 	$(OBJDIR)/lib/pez/pez.o
