@@ -43,7 +43,7 @@ void FireFlies::Init()
     int index = SIZE - 1;
     bool isFirstIndex = true;
     int di = -1;
-    while (index < (SIZE*SIZE)) {
+    while (index < (SIZE*SIZE) - SIZE) {
         for (int i = 0; i < SIZE; i++) {
             if (i > 0 or isFirstIndex) {
                 indices.push_back(index);
@@ -112,7 +112,7 @@ void FireFlies::Init()
         //-9.5176629202812819, 0, 3.6461550396041615
         };
     Vec3List cvs;
-    for(int i = 0; i < sizeof(cameraPath) / sizeof(float); i+=3) {
+    for(unsigned i = 0; i < sizeof(cameraPath) / sizeof(float); i+=3) {
         cvs.push_back( 1.f * vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
     }
 
@@ -131,6 +131,7 @@ void FireFlies::Draw() {
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
     glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glUseProgram(progs["FireFlies.Flies"]);
 
@@ -150,7 +151,7 @@ void FireFlies::Draw() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         */
         _fliesGpu.Bind();
-        glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount*4);
+        glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount);
 
         glUseProgram(progs["FireFlies.Ground"]);
         surfaceCam.Bind(glm::mat4());
@@ -171,5 +172,6 @@ void FireFlies::Draw() {
     counter++;
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 };
 
