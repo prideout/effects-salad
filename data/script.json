@@ -38,7 +38,8 @@
 //   dictionary args  (optional)
 //
 // The effectIds string is a space-separated list of effect types. The "args" dictionary
-// is passed to all effects.  Effects should silently ignore any arguments they do not understand.
+// is passed to all effects in this list.  Effects should silently ignore any arguments
+// they do not understand.
 //
 // Internally, we pass around Json::Value objects for effect args instead of a special
 // dictionary type like TfDictionary or map<string,boost::variant>.
@@ -74,13 +75,13 @@
 ["KidReveal", 20.0, "Curve1", [
     ["Foo Bar Baz", 0]]],
 
-["GrassFinale", 20.0, "Curve1", [
+["GrassFinale", 10.0, "Curve1", [
     ["Portal", 0, {"Context": "WomanPip"}]]],
 
-["WomanFinale", 20.0, "Curve1", [
+["WomanFinale", 10.0, "Curve1", [
     ["Portal", 0, {"Context": "KidPip"}]]],
 
-["Triptych", 20.0, "Curve1", [
+["Triptych", 10.0, "Curve1", [
     ["Portal", 0, {"Context": "GrassPip"}],
     ["Portal", 0, {"Context": "WomanPip"}]]],
 
