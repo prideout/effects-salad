@@ -1,0 +1,88 @@
+// Our demo is 2 minutes, composed of 10 shots, each of which can be uniquely identified
+// with a human-readable id string  For example: 'GrassIntro', 'KidReveal', and 'Credits'.
+//
+// To aid development, every shot begins with its internal clock set to "0" and has no dependencies
+// on previous shots.  Scrubbing to a specific time within a shot requires it to be replayed up to
+// the desired point using a sequence of "Update" calls with reasonable delta-T values.  Note that
+// calling "Draw" does not update state.  Our demo is almost equivalent to running 10 different
+// executables in series.
+//
+// A specific shot can be played using a command line argument.  eg, "salad KidReveal" will play
+// the KidReveal shot, then exit.  Typing "salad" alone will play the demo until the end, then pause
+// when reaching the last frame, waiting for a keypress.
+//
+// In the JSON specification, the duration of each shot is expressed with an absolute time in seconds.
+// Shots do not have explicitly-specified start times because they always occur in sequence.
+//
+// Each effect within a shot has a specified start time and an optional duration.  If ommited,
+// the duration is assumed to be the entire remainder of the shot. Start times are always relative
+// to the start of the shot.
+//
+// Effect types have human-readable id strings but individual instances of effects do not have names.
+//
+// Each shot has an associated "camera curve id".  Curves are defined in a separate JSON file;
+// each curve has a unique human-readable identifier.  Curves have positions and optional
+// orientation vectors.
+//
+// Each shot is defined in JSON using an array with 4 elements:
+//   string shotId
+//   float duration
+//   string cameraCurveId
+//   array effects
+//
+// Each element in the effect array is an array with 2 to 5 elements:
+//   string effectIds
+//   string animationId (optional)
+//   float startTime
+//   float duration (optional)
+//   dictionary args  (optional)
+//
+// The effectIds string is a space-separated list of effect types. The "args" dictionary
+// is passed to all effects.  Effects should silently ignore any arguments they do not understand.
+//
+// Internally, we pass around Json::Value objects for effect args instead of a special
+// dictionary type like TfDictionary or map<string,boost::variant>.
+//
+// Low-level shader configuration (uniforms and program strings) should not be specified directly
+// in the effect arguments dictionary.  A separate JSON file called "programs.json" has a mapping
+// of effect ids to uniforms and program strings.
+//
+// Additionally, a separate JSON file called "animation.json" can be used to specify interpolation
+// over time of effect arguments and/or uniform values.  The optional "animationId" string
+// chooses a particular interpolation timeline from the animation JSON file.
+//
+
+[
+["GrassIntro", 10.0, "GrassIntroCurve", [
+    ["Moon Pond Grass", 0,   {"RippleHeight": 3.2, "LunarBrightness": 1.1}],
+    ["Fireflies",       0.1, {"SpriteSize": 1.1}]]],
+
+["WomanIntro", 10.0, "FranticCurve", [
+    ["Buildings",  0, {"RandomVariation": 1.2}],
+    ["NeonLights", 0.1, 0.2, {}],
+    ["NeonLights", 0.3, 0.1, {}]]],
+
+["KidIntro",   10.0, "CuriousCamera", [
+   ["RubiksCube", "ToyAnimation", 0, {}]]],
+
+["GrassReveal", 20.0, "Curve1", [
+    ["Moon Pond Grass Fireflies", 0, {}]]],
+
+["WomanReveal", 20.0, "Curve1", [
+    ["NeonLights Buildings", 0]]],
+
+["KidReveal", 20.0, "Curve1", [
+    ["Foo Bar Baz", 0]]],
+
+["GrassFinale", 20.0, "Curve1", [
+    ["Portal", 0, {"Context": "WomanPip"}]]],
+
+["WomanFinale", 20.0, "Curve1", [
+    ["Portal", 0, {"Context": "KidPip"}]]],
+
+["Triptych", 20.0, "Curve1", [
+    ["Portal", 0, {"Context": "GrassPip"}],
+    ["Portal", 0, {"Context": "WomanPip"}]]],
+
+["Credits", 5.0, "FallingDown", []]
+]
