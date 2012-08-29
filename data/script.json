@@ -75,11 +75,18 @@
 ["KidReveal", 20.0, "Curve1", [
     ["Foo Bar Baz", 0]]],
 
+// GrassFinale is the first shot with a picture-in-picture (portal) effect.
+// The viewport is expressed as four floats in the [0,1] interval:
+//    [left, top, width, height]
+// These are percentages of the enclosing viewport size.
+
 ["GrassFinale", 10.0, "Curve1", [
-    ["Portal", 0, {"Context": "WomanPip"}]]],
+    ["Portal", 0, {"Context": "WomanPip",
+                   "Viewport": [0.05, 0.05, 0.2, 0.2]}]]],
 
 ["WomanFinale", 10.0, "Curve1", [
-    ["Portal", 0, {"Context": "KidPip"}]]],
+    ["Portal", 0, {"Context": "KidPip",
+                   "Viewport": [0.05, 0.05, 0.2, 0.2]}]]],
 
 ["Triptych", 10.0, "Curve1", [
     ["Portal", 0, {"Context": "GrassPip"}],
