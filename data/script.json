@@ -14,7 +14,7 @@
 // In the JSON specification, the duration of each shot is expressed with an absolute time in seconds.
 // Shots do not have explicitly-specified start times because they always occur in sequence.
 //
-// Each effect within a shot has a specified start time and an optional duration.  If ommited,
+// Each effect within a shot has a specified start time and an optional duration.  If omitted,
 // the duration is assumed to be the entire remainder of the shot. Start times are always relative
 // to the start of the shot.
 //
