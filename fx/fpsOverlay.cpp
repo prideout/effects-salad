@@ -9,7 +9,7 @@
 using namespace std;
 using namespace glm;
 
-static const int MaxNumDigits = 3;
+static const unsigned MaxNumDigits = 3;
 static const int VertsPerDigit = 6;
 static const int FloatsPerVert = 4;
 static const int FloatsPerDigit = VertsPerDigit * FloatsPerVert;
