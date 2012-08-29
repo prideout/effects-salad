@@ -1,7 +1,9 @@
 #include "fireFlies.h"
 #include "common/programs.h"
 #include "common/demoContext.h"
+
 #include "noise/perlin.h"
+#include "glm/core/func_geometric.hpp"
 
 #include <cstdlib>
 
@@ -15,6 +17,7 @@ void FireFlies::Init()
 
     glUseProgram(progs.Load("FireFlies.Blur"));
     glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Flies.VS"));
+    glUseProgram(progs.Load("FireFlies.Stars", "FireFlies.Stars.FS", "FireFlies.Flies.VS"));
     glUniform1i(u("Tex"), 1);
 
     _surface.Init();
@@ -37,7 +40,7 @@ void FireFlies::Init()
             ground.push_back(cent.z + z*SCALE);
             ground.push_back(1.);
         }
-    }
+    } 
 
     // build up a triangle strip over the surface
     int index = SIZE - 1;
@@ -58,7 +61,48 @@ void FireFlies::Init()
         index += SIZE + di;
     }
 
+    // initialize the normals list
+    FloatList normals;
+    normals.reserve(ground.size());
+    FOR_EACH(p, ground) {
+        normals.push_back(0);
+    }
+
+    // calculate vertex normals
+    // since we just generated the triangle indices, use them here
+    glm::vec3 cur, prev1, prev2;
+    int curIdx=0, prev1Idx=0, prev2Idx=0;
+    for(unsigned i = 0; i < indices.size(); i++) {
+        prev2 = prev1;
+        prev2Idx = prev1Idx;
+        prev1 = cur;
+        prev1Idx = curIdx;
+        curIdx = indices[i];
+        cur = glm::vec3(ground[curIdx], indices[curIdx+1], indices[curIdx+2]);
+        if (i < 2)
+            continue;
+        glm::vec3 leg1 = cur - prev1;
+        glm::vec3 leg2 = prev2 - cur;
+        glm::vec3 norm = glm::cross(leg1, leg2);
+
+        normals[curIdx+0] += norm.x;
+        normals[curIdx+1] += norm.y;
+        normals[curIdx+2] += norm.z;
+        normals[curIdx+3] = 1.0;
+
+        normals[prev1Idx+0] += norm.x;
+        normals[prev1Idx+1] += norm.y;
+        normals[prev1Idx+2] += norm.z;
+        normals[prev1Idx+3] = 1.0;
+
+        normals[prev2Idx+0] += norm.x;
+        normals[prev2Idx+1] += norm.y;
+        normals[prev2Idx+2] += norm.z;
+        normals[prev2Idx+3] = 1.0;
+    }
+
     _ground = Vao(4, ground, indices);
+    _ground.AddVertexAttribute(AttrNormal, 4, normals);
     
 
     // XXX: need to call srand in a more common location
@@ -77,7 +121,19 @@ void FireFlies::Init()
     }
     _fliesGpu = Vao(4, _fliesCpu); 
 
-    glPointSize(1.5);
+    FloatList stars;
+    for (int i = 0; i < 2000; i ++) {
+        // Use spherical coordinates with fixed radius to simulate a sky dome
+        float r = 80;
+        float theta = 3.14*(rand() / float(RAND_MAX)); 
+        float phi = 2*3.14*(rand() / float(RAND_MAX));
+        stars.push_back(r*sin(theta)*cos(phi) - 10);
+        stars.push_back(r*sin(theta)*sin(phi));
+        stars.push_back(r*cos(theta) + 10);
+        stars.push_back(1.0);
+    }
+    _stars = Vao(4, stars); 
+
     float cameraPath[] = {
         /* LOOP:
          0,    0,  4.04,
@@ -138,9 +194,9 @@ void FireFlies::Draw() {
         //_surface.Bind();
         PerspCamera surfaceCam = context->mainCam;
         surfaceCam.eye = cameraPoints[counter];
-        //surfaceCam.eye.x = 0;
         surfaceCam.eye.y = .0;
         surfaceCam.center = vec3(0,.8,0); //cameraPoints[counter];
+
         // look where we are walking
         surfaceCam.center = cameraPoints[counter+1 % cameraPoints.size()];
         surfaceCam.center.y = 0;
@@ -150,8 +206,15 @@ void FireFlies::Draw() {
         glClearColor(.0,.0,.9,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         */
+        glPointSize(1.5);
         _fliesGpu.Bind();
         glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount);
+
+        glUseProgram(progs["FireFlies.Stars"]);
+        surfaceCam.Bind(glm::mat4());
+        glPointSize(.5);
+        _stars.Bind();
+        glDrawArrays(GL_POINTS, 0, _stars.vertexCount);
 
         glUseProgram(progs["FireFlies.Ground"]);
         surfaceCam.Bind(glm::mat4());

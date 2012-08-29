@@ -1,5 +1,5 @@
 -- Ground.FS
-//in vec3 vNormal;
+in vec3 vNormal;
 in vec4 vPosition;
 //in vec2 vUvCoord;
 out vec4 FragColor;
@@ -82,15 +82,33 @@ float snoise(vec2 v)
 
 void main()
 {
+    vec3 light = normalize(vec3(1., 1., 1.) + Eye);
     //float s = vUvCoord.x + vUvCoord.y;
     //float r = min(1, max(10-sqrt(vPosition.x * vPosition.x + vPosition.z * vPosition.z), 0));
     //float r = clamp(1-.15*distance(eye, vPosition.xyz), 0., 1.);
     float r = clamp(.3+snoise(vPosition.xz/25.)+2*.5, 0., 1.);
     r = r*clamp(1-.045*distance(Eye.xyz, vPosition.xyz), 0., 1.);
+
+    // blinn-phong (in progress)
+    //float NdotHV = max(dot(vNormal, light),0.0);
+    //float specular = 5 * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
+
+    //FragColor = NdotHV * vec4(.7, .7, .2, 1.0);
     FragColor = r * vec4(.7, .7, .2, 1.0);
 }
 
+-- Stars.FS
 
+//in vec3 vNormal;
+in vec4 vPosition;
+//in vec2 vUvCoord;
+out vec4 FragColor;
+
+void main()
+{
+    //float s = vUvCoord.x + vUvCoord.y;
+    FragColor = vec4(.5, .5, .5, 1.0);
+}
 
 -- Flies.FS
 
@@ -98,10 +116,6 @@ void main()
 in vec4 vPosition;
 //in vec2 vUvCoord;
 out vec4 FragColor;
-
-
-
-
 
 void main()
 {
@@ -112,12 +126,12 @@ void main()
 
 -- Flies.VS
 layout(location = 0) in vec4 Position;
-//layout(location = 1) in vec3 Normal;
+layout(location = 1) in vec4 Normal;
 //layout(location = 2) in vec2 UvCoord;
 
 out vec4 vPosition;
 //out vec2 vUvCoord;
-//out vec3 vNormal;
+out vec3 vNormal;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -135,6 +149,7 @@ void main()
     */
     vPosition = Position;
     gl_Position = Projection * Modelview * vPosition;
+    vNormal = normalize(Normal.xyz);
 }
 
 -- Blur.FS
