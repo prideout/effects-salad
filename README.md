@@ -13,6 +13,7 @@ Videos:
   * [Walking through 5ft grass](http://www.youtube.com/watch?feature=player_detailpage&v=y0AexwPTz1k#t=40s)
   * [Grass Sound](http://www.youtube.com/watch?v=ldGw2mJA5_o&feature=related)
   * [Journey through tall grass](http://www.youtube.com/watch?v=Hsw0trAkKuE&feature=related)
+  * [First person view walking](http://www.youtube.com/watch?feature=player_detailpage&v=LYZeB44xrow#t=35s)
 
 Stills:
   * [Knot Tubes](http://www.originalsoundversion.com/wp-content/uploads/2008/12/badloop_luo.jpg)
