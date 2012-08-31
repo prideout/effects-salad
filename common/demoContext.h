@@ -14,12 +14,12 @@
 
 class DemoContext {
     static DemoContext* _current;
-
-    float t;
-
     DemoContext();
 
 public:
+
+    float duration;
+    float elapsedTime;
 
     DrawableList drawables;
     LightList lights;

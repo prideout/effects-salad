@@ -11,6 +11,11 @@
 #include "fx/all.h"
 #include "jsoncpp/json.h"
 
+
+unsigned shotIndex;
+std::vector<DemoContext*> sequence;
+
+
 static std::string _getShotName() 
 {
     int argc;
@@ -20,12 +25,16 @@ static std::string _getShotName()
     return std::string(argv[1]);
 }
 
-// TODO : make this function read from JSON
 static void _constructScene()
 {
     typedef std::map<std::string,DemoContext*> ShotMap;
     ShotMap shotMap;
-     
+
+    //
+    // Check to see if a specific shot was pass on the command line
+    //
+    std::string shot = _getShotName();
+
     //
     // Build up the shot map, this idea is evolving...
     //
@@ -37,6 +46,7 @@ static void _constructScene()
         ctx->drawables.push_back(new FireFlies());
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["GrassIntro"] = ctx;
+        if (shot.empty()) ctx->Init();
     }
 
 
@@ -49,6 +59,7 @@ static void _constructScene()
         ctx->drawables.push_back(new Buildings());
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["CityIntro"] = ctx;
+        if (shot.empty()) ctx->Init();
 
     }
 
@@ -74,42 +85,46 @@ static void _constructScene()
         DemoContext::SetCurrent(ctx);
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["Test"] = ctx;
+        if (shot.empty()) ctx->Init();
     }
 
-
-    std::vector<DemoContext*> sequence;
     Json::Value script;
     ReadJsonFile("data/script.json", &script);
     FOR_EACH(element, script) {
         Json::Value cur = *element;
         if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
-            sequence.push_back(shotMap[cur[0u].asString()]);
-            std::cerr << "Added " << cur[0u] << std::endl;
+            // XXX: can currently only use a context once, because duration is shared :(
+            string curShot = cur[0u].asString();
+            shotMap[curShot]->duration = cur[1u].asDouble();
+            sequence.push_back(shotMap[curShot]);
+            std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
         } else {
             std::cerr << "WARNING: shot not found '" << cur[0u] << "'" << std::endl;
         }
     }
 
-    //
-    // Check to see if a specific shot was pass on the command line
-    //
-    std::string shot = _getShotName();
-
-    if (shot != "") {
+    if (not shot.empty()) {
         if (shotMap.find(shot) == shotMap.end()) {
             std::cerr << "ERROR: Shot not found '" << shot << "', aborting" << std::endl;
             exit(1);
         }
 
         sequence.clear();
+
+        // run forever
+        shotMap[shot]->duration = -1;
+
+        // the shot is lazily initialized to avoid having to load everything
+        // so call Init here
+        shotMap[shot]->Init();
+
         sequence.push_back(shotMap[shot]);
     }
 
+    shotIndex = 0;
+
     // TODO:
-    //  - save duration 
-    //  - make sequence some sort of global state
-    //  - make shot map global state
-    //  - iterate over the sequence at update time
+    //  - allow shots to be reused
 
     DemoContext::SetCurrent(sequence[0]);
 }
@@ -119,7 +134,6 @@ void PezInitialize()
     // add our shader path
     pezSwAddPath("", ".glsl");
     _constructScene();
-    DemoContext::GetCurrent()->Init();
 }
 
 PezConfig PezGetConfig()
@@ -147,5 +161,23 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
-    DemoContext::GetCurrent()->Update(seconds);
+    //
+    // The firest couple frames may be jumpy, so try to account for that by freezing time
+    // XXX: how will this impact audio? 
+    // 
+    static int prime = 2;
+    if (prime) {
+        prime--;
+        seconds = 0.0f;
+    }
+    DemoContext* ctx = DemoContext::GetCurrent();
+    ctx->Update(seconds);
+    //std::cout << "seconds: " << seconds << " elapsed: " << ctx->elapsedTime << " dur: " << ctx->duration << std::endl;
+    if (ctx->duration > 0 and ctx->elapsedTime > ctx->duration and shotIndex < sequence.size() - 1) {
+        shotIndex++;
+        DemoContext::SetCurrent(sequence[shotIndex]);
+        ctx = DemoContext::GetCurrent();
+        // XXX: by setting this to 0, we may be messing up the audio sync
+        ctx->elapsedTime = 0;
+    }
 }

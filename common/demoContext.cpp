@@ -7,11 +7,12 @@
 
 DemoContext* DemoContext::_current(NULL);
 
-DemoContext::DemoContext() : clearColor(0,0,0,1) {
+DemoContext::DemoContext() : duration(0), elapsedTime(0), clearColor(0,0,0,1) {
 }
 
 void 
 DemoContext::Init() {
+    elapsedTime = 0;
     FOR_EACH(drawable, drawables) {
         (*drawable)->Init();
     }
@@ -38,8 +39,8 @@ DemoContext::Render() {
 void 
 DemoContext::Update(float seconds) {
     deltaTime = seconds;
-    t += seconds;
-    mainCam.eye.x += .1*cos(t*2); 
+    elapsedTime += seconds;
+    mainCam.eye.x += .1*cos(elapsedTime*2); 
     mainCam.aspect = viewport.GetAspect();
 
     // update active effects
