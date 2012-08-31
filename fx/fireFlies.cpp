@@ -192,7 +192,7 @@ void FireFlies::Draw() {
     glUseProgram(progs["FireFlies.Flies"]);
 
         //_surface.Bind();
-        PerspCamera surfaceCam = context->mainCam;
+        PerspCamera surfaceCam = GetContext()->mainCam;
         surfaceCam.eye = cameraPoints[counter];
         surfaceCam.eye.y = .0;
         surfaceCam.center = vec3(0,.8,0); //cameraPoints[counter];
@@ -227,7 +227,7 @@ void FireFlies::Draw() {
 
     /*
     glUseProgram(progs["FireFlies.Blur"]);
-    context->mainCam.Bind(glm::mat4());
+    GetContext()->mainCam.Bind(glm::mat4());
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, _surface.texture);
     _quad.Draw();

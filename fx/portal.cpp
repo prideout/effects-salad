@@ -23,9 +23,11 @@ void
 Portal::Update()
 {
     Effect::Update();
+    // save off the time delta before switching context
+    float dt = GetContext()->deltaTime;
     DemoContext* previous = DemoContext::GetCurrent();
     DemoContext::SetCurrent(portalContext);
-    portalContext->Update(context->deltaTime);
+    portalContext->Update(dt);
     DemoContext::SetCurrent(previous);
 }
 

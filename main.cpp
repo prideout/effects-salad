@@ -52,7 +52,7 @@ static void _constructScene()
 
     }
 
-    {   // Test Bed
+    {   // Test 
         DemoContext* ctx = DemoContext::New();
         DemoContext::SetCurrent(ctx);
         ctx->mainCam.eye.z = 5;
@@ -73,6 +73,7 @@ static void _constructScene()
         // ordering is important here... need to fix this
         DemoContext::SetCurrent(ctx);
         ctx->drawables.push_back(new FpsOverlay());
+        shotMap["Test"] = ctx;
     }
 
 

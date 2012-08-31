@@ -45,7 +45,7 @@ void Quads::Draw() {
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
     surface.Bind();
-    surfaceCam = context->mainCam;
+    surfaceCam = GetContext()->mainCam;
     surfaceCam.aspect = surface.GetAspect();
     glUseProgram(progs["Default.Instanced"]);
     surfaceCam.Bind(quad.modelMat);
@@ -61,8 +61,8 @@ void Quads::Draw() {
     glBindTexture(GL_TEXTURE_2D, surface.texture);
     pezCheckGL("Quads::Draw Texture bind failed");
 
-    context->viewport.Bind();
-    context->mainCam.Bind(quad.modelMat);
+    GetContext()->viewport.Bind();
+    GetContext()->mainCam.Bind(quad.modelMat);
     manyQuads.Draw();
     pezCheckGL("Quads::Draw draw failed"); 
     glBindTexture(GL_TEXTURE_2D, 0);

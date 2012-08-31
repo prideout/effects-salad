@@ -14,7 +14,6 @@ class Drawable {
 public:
 
     bool visible;
-    DemoContext* context;
     glm::mat4 modelMat;
 
     Drawable();
@@ -27,6 +26,7 @@ public:
 
     virtual void Update();
 
+    DemoContext* GetContext();
 
 };
 

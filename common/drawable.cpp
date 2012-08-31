@@ -3,8 +3,7 @@
 
 
 Drawable::Drawable() :
-    visible(true),
-    context(DemoContext::GetCurrent())
+    visible(true)
 {
 }
 
@@ -12,6 +11,10 @@ Drawable::Drawable() :
 Drawable::~Drawable() {
 }
 
+DemoContext*
+Drawable::GetContext() {
+    return DemoContext::GetCurrent();
+}
 
 /* virtual */
 void

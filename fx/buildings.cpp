@@ -157,7 +157,7 @@ Buildings::Draw()
 
     glUseProgram(progs["Tetra.Solid"]);
 
-    PerspCamera surfaceCam = context->mainCam;
+    PerspCamera surfaceCam = GetContext()->mainCam;
     surfaceCam.Bind(glm::mat4());
 
     FOR_EACH(batch, _batches) {

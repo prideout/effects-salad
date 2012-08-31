@@ -105,8 +105,8 @@ FpsOverlay::Draw()
     Programs& progs = Programs::GetInstance();
     glUseProgram(progs["Fps"]);
 
-    vec2 viewport = vec2(this->context->viewport.width,
-                         this->context->viewport.height);
+    vec2 viewport = vec2(GetContext()->viewport.width,
+                         GetContext()->viewport.height);
 
     vec2 invViewport = 2.0f / viewport;
     glUniform2fv(u("InverseViewport"), 1, ptr(invViewport));
