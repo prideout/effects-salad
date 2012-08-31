@@ -18,7 +18,7 @@ class FireFlies : public Effect {
     Vao _stars;
     Surface _surface;
     Quad _quad;
-    Vec3List cameraPoints;
+    AnimCurve<glm::vec3> cameraPoints;
     unsigned counter;
 
 public:

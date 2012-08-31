@@ -174,7 +174,7 @@ void FireFlies::Init()
 
     // XXX: this is time independent right now
     //      need to make it explicit in time if we're going to keep the camera motion
-    cameraPoints = Bezier::Eval(1000, cvs);
+    cameraPoints = AnimCurve<glm::vec3>(cvs, 0, GetContext()->duration);
     counter = 0;
 };
 
@@ -183,7 +183,7 @@ void FireFlies::Update() {
 };
 
 void FireFlies::Draw() {
-    if (counter > cameraPoints.size() -1) counter = 0;
+    //if (counter > cameraPoints.size() -1) counter = 0;
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
     glEnable(GL_CULL_FACE);
@@ -193,12 +193,12 @@ void FireFlies::Draw() {
 
         //_surface.Bind();
         PerspCamera surfaceCam = GetContext()->mainCam;
-        surfaceCam.eye = cameraPoints[counter];
+        surfaceCam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         surfaceCam.eye.y = .0;
         surfaceCam.center = vec3(0,.8,0); //cameraPoints[counter];
 
         // look where we are walking
-        surfaceCam.center = cameraPoints[counter+1 % cameraPoints.size()];
+        surfaceCam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
         surfaceCam.center.y = 0;
         surfaceCam.Bind(glm::mat4());
         

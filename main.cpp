@@ -95,6 +95,7 @@ static void _constructScene()
         if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
             // XXX: can currently only use a context once, because duration is shared :(
             string curShot = cur[0u].asString();
+            DemoContext::SetCurrent(shotMap[shot]);
             shotMap[curShot]->duration = cur[1u].asDouble();
             sequence.push_back(shotMap[curShot]);
             std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
@@ -112,7 +113,7 @@ static void _constructScene()
         sequence.clear();
 
         // run forever
-        shotMap[shot]->duration = -1;
+        //shotMap[shot]->duration = -1;
 
         // the shot is lazily initialized to avoid having to load everything
         // so call Init here
@@ -173,8 +174,8 @@ void PezUpdate(float seconds)
     DemoContext* ctx = DemoContext::GetCurrent();
     ctx->Update(seconds);
     //std::cout << "seconds: " << seconds << " elapsed: " << ctx->elapsedTime << " dur: " << ctx->duration << std::endl;
-    if (ctx->duration > 0 and ctx->elapsedTime > ctx->duration and shotIndex < sequence.size() - 1) {
-        shotIndex++;
+    if (ctx->elapsedTime > ctx->duration) {
+        shotIndex = (shotIndex+1) % sequence.size();
         DemoContext::SetCurrent(sequence[shotIndex]);
         ctx = DemoContext::GetCurrent();
         // XXX: by setting this to 0, we may be messing up the audio sync

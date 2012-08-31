@@ -124,6 +124,60 @@ namespace Bezier {
 
 }
 
+template<typename T>
+class AnimCurve {
+    // these can't be simpliy updated, so keep them private
+    std::vector<T> _points;
+    float _startTime;
+    float _duration;
+
+    unsigned _GetIndex(float time)
+    {
+        pezCheck(_duration > 0, "Invalid AnimCurve duration");
+        pezCheck(_points.size() > 0, "Invalid number of curve points");
+        if (time < _startTime) return 0;
+        if (time > _startTime+_duration) return _points.size() -1;
+        //std::cout << unsigned(((time - _startTime) / _duration) * _points.size()) << std::endl;
+
+        // no interpolation, just grab the nearest sample
+        unsigned index = round(((time - _startTime) / _duration) * _points.size());
+        pezCheck(index >= 0 and index < _points.size(), "Invalid AnimCurve time index");
+        return index;
+    }
+
+public:
+
+    typedef std::vector<T> VecT;
+
+    AnimCurve() :
+        _startTime(0),
+        _duration(0)
+    {}
+
+    AnimCurve(VecT cvs, float startTime, float duration) :
+        _startTime(startTime),
+        _duration(duration)
+    {
+        pezCheck(cvs.size() > 0, "Invalid number of curve CVs");
+        _points = Bezier::Eval(60*duration, cvs);    
+    }
+
+    // Get the interpolated value at the given time
+    T At(float time)
+    {
+        return _points[_GetIndex(time)];
+    }
+
+    // Get the next interpolated value after the given time
+    T After(float time)
+    {
+        unsigned index = (_GetIndex(time)+1) % _points.size();
+        return _points[index];
+    }
+
+
+};
+
 
 /*
 class Curve : public Drawable {
