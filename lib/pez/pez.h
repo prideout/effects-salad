@@ -57,6 +57,9 @@ void pezCheckPointer(void*, ...);
 void pezCheckGL(const char *call);
 void pezCheckFBO();
 
+// get the program startup arguments
+void pezGetArgs(int* argc, const char*** argv);
+
 int pezIsPressing(char key);
 const char* pezResourcePath();
 const char* pezOpenFileDialog();

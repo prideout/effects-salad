@@ -16,6 +16,9 @@
 #include <X11/Xutil.h>
 #include <X11/Xmd.h>
 
+extern int __pez__Argc;
+extern const char** __pez__Argv;
+
 typedef struct PlatformContextRec
 {
     Display* MainDisplay;
@@ -31,6 +34,10 @@ unsigned int GetMicroseconds()
 
 int main(int argc, char** argv)
 {
+
+    __pez__Argc = argc;
+    __pez__Argv = argv;
+
     int attrib[] = {
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,

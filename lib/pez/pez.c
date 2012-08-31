@@ -29,6 +29,8 @@ typedef struct pezContextRec
 // PRIVATE GLOBALS
 
 static pezContext* __pez__Context = 0;
+const char** __pez__Argv = 0;
+int __pez__Argc = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
@@ -98,8 +100,14 @@ static bstring __pez__LoadEffectContents(pezContext* gc, bstring effectName)
     return effectContents;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS
+
+void pezGetArgs(int* argc, const char*** argv) {
+    *argc = __pez__Argc;
+    *argv = __pez__Argv;
+}
 
 int pezSwInit(const char* keyPrefix)
 {

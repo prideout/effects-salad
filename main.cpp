@@ -1,3 +1,5 @@
+#include <string>
+
 #include "lib/pez/pez.h"
 
 #include "common/camera.h"
@@ -10,6 +12,15 @@
 
 DemoContext* context;
 
+static std::string _getShotName() 
+{
+    int argc;
+    const char** argv;
+    pezGetArgs(&argc, &argv);
+    if (argc < 2) return "";
+    return std::string(argv[1]);
+}
+
 // TODO : make this function read from JSON
 static void _constructScene()
 {
@@ -18,19 +29,17 @@ static void _constructScene()
     // ReadJsonFile("data/scene.json", &scene);
 
     //
-    // Local user setup for debugging
+    // Check to see if a specific shot was pass on the command line
     //
-    Json::Value local;
-    ReadJsonFile("data/local.json", &local);
-    std::string user = local.get("user", "").asString();
+    std::string shot = _getShotName();
 
-    if (user == "jcowles") {
+    if (shot == "grassIntro") {
         context->drawables.push_back(new FireFlies());
         context->drawables.push_back(new FpsOverlay());
         DemoContext::SetCurrent(context);
         return;
 
-    } else if (user == "prideout") {
+    } else if (shot == "cityIntro") {
         context->mainCam.eye.x = 50;
         context->mainCam.eye.y = 50;
         context->drawables.push_back(new Buildings());

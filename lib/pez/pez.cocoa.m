@@ -7,6 +7,9 @@
 #import <wchar.h>
 #import <stdio.h>
 
+extern int __pez__Argc;
+extern const char** __pez__Argv;
+
 @class View;
 
 @interface View : NSOpenGLView <NSWindowDelegate> {
@@ -183,6 +186,8 @@
 
 int main(int argc, const char *argv[])
 {
+    __pez__Argc = argc;
+    __pez__Argv = argv;
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     NSApplication *NSApp = [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
