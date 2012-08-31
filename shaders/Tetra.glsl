@@ -72,24 +72,30 @@ float randhash(uint seed, float b)
     return float(b * i) * InverseMaxInt;
 }
 
+uniform float Hue;
+uniform vec3 Translate;
+uniform vec3 Scale;
+
 void main()
 {
     uint tetid = uint(gl_VertexID) / 12u;
     vec4 tetdata = texelFetch(CentroidTexture, int(tetid));
-    vec3 tetcenter = tetdata.rgb;
+    vec3 tetcenter = tetdata.rgb * Scale + Translate;
     int neighbors = int(tetdata.a);
     if (tetcenter.y > CullY) {
         vColor = vec4(0);
     } else {
+        float interiorHue = Hue;
+        float variationHue = 0.2;
         vFacetNormal = NormalMatrix * Normal;
-        float hue   = (neighbors == 4) ? 0.6 : 0.6 + 0.2 * (randhash(tetid, 1.0) - 0.5);
-        float sat   = (neighbors == 4) ? 1.0 : 0.75;
+        float hue   = (neighbors == 4) ? interiorHue : Hue + variationHue * (randhash(tetid, 1.0) - 0.5);
+        float sat   = (neighbors == 4) ? 1.0 : 0.5;
         float value = (neighbors == 4) ? 0.7 : 1.0;
         vec3 hsv = vec3(hue, sat, value);
         vColor =  vec4(HSVtoRGB(hsv), 1.0);
     }
 
-    gl_Position = Projection * Modelview * Position;
+    gl_Position = Projection * Modelview * vec4(Position.xyz * Scale + Translate, 1);
 }
 
 -- Solid.FS

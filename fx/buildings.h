@@ -4,15 +4,52 @@
 #include "common/texture.h"
 #include "common/effect.h"
 
+struct BuildingTemplate {
+    BufferTexture CentroidTexture;
+    int TotalTetCount;
+    int BoundaryTetCount;
+    Vao BuildingVao;
+};
+
+struct BuildingInstance {
+    bool BoundariesOnly;
+    bool EnableCullingPlane;
+    float CullingPlaneY;
+    glm::vec2 GroundPosition;
+    float Height;
+    float Radius;
+    float Hue;
+};
+
 class Buildings : public Effect {
-    Vao _buildingVao;
-    BufferTexture _centroidTexture;
-    int _totalTetCount;
-    int _boundaryTetCount;
+
+    typedef std::vector<BuildingTemplate> TemplateList;
+    typedef std::vector<BuildingInstance> InstanceList;
+
+    struct BuildingBatch {
+        BuildingTemplate* Template;
+        InstanceList Instances;
+    };
+
+    typedef std::vector<BuildingBatch> BatchList;
+
+    TemplateList _templates;
+    BatchList _batches;
+
 public:
     Buildings() : Effect() {}
     virtual ~Buildings() {} 
     virtual void Init();
     virtual void Update();
     virtual void Draw();
+
+private:
+    void _GenerateBuilding(float thickness,
+                           float topRadius,
+                           float tetSize,
+                           int nSides,
+                           BuildingTemplate* dest);
+
+    void _DrawBuilding(BuildingTemplate& templ,
+                       BuildingInstance& instance);
 };

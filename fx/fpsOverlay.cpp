@@ -155,6 +155,7 @@ FpsOverlay::Draw()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
 
     glDrawArrays(GL_TRIANGLES, 0, numDigits * VertsPerDigit);
     glDisable(GL_BLEND);

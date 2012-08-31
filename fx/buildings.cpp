@@ -1,3 +1,4 @@
+#include "glm/gtc/type_ptr.hpp"
 #include "fx/buildings.h"
 #include "common/tetUtil.h"
 #include "common/init.h"
@@ -9,57 +10,135 @@ using namespace std;
 using glm::mat4;
 using glm::mat3;
 using glm::vec3;
+using glm::vec2;
 
 void
 Buildings::Init()
 {
+    _templates.resize(4);
+     {
+         float thickness = 3;
+         float topRadius =  8.0f / 13.0f;
+         float tetSize = 0.1f;
+         int nSides = 5;
+         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[0]);
+     }
+     {
+         float thickness = 2.5f;
+         float topRadius =  1.0f;
+         float tetSize = 0.2f;
+         int nSides = 4;
+         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[1]);
+     }
+     {
+         float thickness = 2.5f;
+         float topRadius =  1.2f;
+         float tetSize = 0.2f;
+         int nSides = 3;
+         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[2]);
+     }
+     {
+         float thickness = 4;
+         float topRadius =  1;
+         float tetSize = 0.3f;
+         int nSides = 32;
+         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[3]);
+     }
+
+     _batches.resize(4);
+     _batches[0].Template = &_templates[0];
+     _batches[0].Instances.resize(1);
+     _batches[0].Instances[0].BoundariesOnly = false;
+     _batches[0].Instances[0].EnableCullingPlane = true;
+     _batches[0].Instances[0].CullingPlaneY = 10.0;
+     _batches[0].Instances[0].GroundPosition = vec2(0, 0);
+     _batches[0].Instances[0].Height = 1;
+     _batches[0].Instances[0].Radius = 1;
+     _batches[0].Instances[0].Hue = 0.6;
+
+     _batches[1].Template = &_templates[1];
+     _batches[1].Instances.resize(2);
+     _batches[1].Instances[0].BoundariesOnly = true;
+     _batches[1].Instances[0].EnableCullingPlane = false;
+     _batches[1].Instances[0].GroundPosition = vec2(-20, 0);
+     _batches[1].Instances[0].Height = 0.5;
+     _batches[1].Instances[0].Radius = 1.0;
+     _batches[1].Instances[0].Hue = 0.3;
+     _batches[1].Instances[1] = _batches[1].Instances[0];
+     _batches[1].Instances[1].GroundPosition = vec2(12, 12);
+     _batches[1].Instances[1].Height = 0.3;
+     _batches[1].Instances[1].Radius = 1.2;
+ 
+     _batches[2].Template = &_templates[2];
+     _batches[2].Instances.resize(2);
+     _batches[2].Instances[0].BoundariesOnly = true;
+     _batches[2].Instances[0].EnableCullingPlane = false;
+     _batches[2].Instances[0].GroundPosition = vec2(-15, 30);
+     _batches[2].Instances[0].Height = 1.3;
+     _batches[2].Instances[0].Radius = 1.0;
+     _batches[2].Instances[0].Hue = 0.1;
+     _batches[2].Instances[1] = _batches[2].Instances[0];
+     _batches[2].Instances[1].GroundPosition = vec2(15, 30);
+
+     _batches[3].Template = &_templates[3];
+     _batches[3].Instances.resize(2);
+     _batches[3].Instances[0].BoundariesOnly = true;
+     _batches[3].Instances[0].EnableCullingPlane = false;
+     _batches[3].Instances[0].GroundPosition = vec2(0, -30);
+     _batches[3].Instances[0].Height = 1.4;
+     _batches[3].Instances[0].Radius = 0.8;
+     _batches[3].Instances[0].Hue = 0.0;
+     _batches[3].Instances[1] = _batches[3].Instances[0];
+     _batches[3].Instances[1].GroundPosition = vec2(13, -28);
+     _batches[3].Instances[1].Radius = 0.4;
+     _batches[3].Instances[1].Height = 0.4;
+     _batches[3].Instances[1].Hue = 0.1;
+
+     // Compile shaders
+     Programs& progs = Programs::GetInstance();
+     progs.Load("Tetra.Simple", false);
+     progs.Load("Tetra.Solid", false);
+ }
+
+void
+Buildings::_GenerateBuilding(float thickness,
+                             float topRadius,
+                             float tetSize,
+                             int nSides,
+                             BuildingTemplate* dest)
+{
     // Create the boundaries
     tetgenio in;
-    float r1 = 13;    float r2 = 8;
-    float y1 = 0;     float y2 = 20;
-    TetUtil::HullFrustum(r1, r2, y1, y2, 4, &in);
-    y1 += 3; y2 -= 3;
-    r1 -= 3; r2 -= 3;
-    TetUtil::HullFrustum(r1, r2, y1, y2, 4, &in);
-
-    TetUtil::HullTranslate(27, 0, 0, &in);
-
-    r1 = 13;    r2 = 8;
-    y1 = 0;     y2 = 20;
-    TetUtil::HullFrustum(r1, r2, y1, y2, 5, &in);
-    y1 += 3; y2 -= 3;
-    r1 -= 3; r2 -= 3;
-    TetUtil::HullFrustum(r1, r2, y1, y2, 5, &in);
+    float r1 = 10.0f;  float r2 = r1 * topRadius;
+    float y1 = 0;     float y2 = 20.0f;
+    TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
+    y1 += thickness; y2 -= thickness;
+    r1 -= thickness; r2 -= thickness;
+    TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
 
     // Poke volumetric holes
     Vec3List holePoints;
-    holePoints.push_back(vec3(0, 10, 0));
-    holePoints.push_back(vec3(27, 10, 0));
+    holePoints.push_back(vec3(0, 10.0, 0));
     TetUtil::AddHoles(holePoints, &in);
 
     // Tetrahedralize the boundary mesh
     tetgenio out;
     const float qualityBound = 1.414;
-    const float maxVolume = 0.1f;
+    const float maxVolume = tetSize;
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
-    _totalTetCount = out.numberoftetrahedra;
+    dest->TotalTetCount = out.numberoftetrahedra;
 
     // Populate the per-tet texture data
     Vec4List centroids;
-    TetUtil::SortTetrahedra(&centroids, out, &_boundaryTetCount);
-    _centroidTexture.Init(centroids);
+    TetUtil::SortTetrahedra(&centroids, out, &dest->BoundaryTetCount);
+    dest->CentroidTexture.Init(centroids);
 
     // Create a flat list of non-indexed triangles
     Blob massive;
     VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
     TetUtil::PointsFromTets(out, attribs, &massive);
-    _buildingVao.Init();
-    _buildingVao.AddInterleaved(attribs, massive);
-
-    // Compile shaders
-    Programs& progs = Programs::GetInstance();
-    progs.Load("Tetra.Simple", false);
-    progs.Load("Tetra.Solid", false);
+    dest->BuildingVao.Init();
+    dest->BuildingVao.AddInterleaved(attribs, massive);
 }
 
 void 
@@ -72,24 +151,40 @@ Buildings::Draw()
 {
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     Programs& progs = Programs::GetInstance();
 
-    bool cuttingPlane = true;
-    float cullY = 9;
     glUseProgram(progs["Tetra.Solid"]);
-    glUniform1f(u("CullY"), cuttingPlane ? cullY : 999);
 
     PerspCamera surfaceCam = context->mainCam;
     surfaceCam.Bind(glm::mat4());
 
-    _centroidTexture.Bind(0, "CentroidTexture");
-    _buildingVao.Bind();
+    FOR_EACH(batch, _batches) {
+        FOR_EACH(instance, batch->Instances) {
+            _DrawBuilding(*batch->Template, *instance);
+        }
+    }
+}
 
-    // Optimization: don't draw interior tets after completely filling the volume
-    if (false) {
-        glDrawArrays(GL_TRIANGLES, 0, _boundaryTetCount * 4 * 3);
+void
+Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
+{
+    vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
+    vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
+
+    templ.CentroidTexture.Bind(0, "CentroidTexture");
+    templ.BuildingVao.Bind();
+
+    glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
+    glUniform3fv(u("Translate"), 1, ptr(xlate));
+    glUniform1f(u("Height"), instance.Height);
+    glUniform3fv(u("Scale"), 1, ptr(scale));
+    glUniform1f(u("Hue"), instance.Hue);
+
+    if (instance.BoundariesOnly) {
+        glDrawArrays(GL_TRIANGLES, 0, templ.BoundaryTetCount * 4 * 3);
     } else {
-        glDrawArrays(GL_TRIANGLES, 0, _totalTetCount * 4 * 3);
+        glDrawArrays(GL_TRIANGLES, 0, templ.TotalTetCount * 4 * 3);
     }
 }
