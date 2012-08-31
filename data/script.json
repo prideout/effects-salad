@@ -42,7 +42,7 @@
 // they do not understand.
 //
 // Internally, we pass around Json::Value objects for effect args instead of a special
-// dictionary type like TfDictionary or map<string,boost::variant>.
+// dictionary type like map<string,boost::variant>.
 //
 // Low-level shader configuration (uniforms and program strings) should not be specified directly
 // in the effect arguments dictionary.  A separate JSON file called "programs.json" has a mapping
@@ -56,41 +56,41 @@
 [
 ["GrassIntro", 10.0, "GrassIntroCurve", [
     ["Moon Pond Grass", 0,   {"RippleHeight": 3.2, "LunarBrightness": 1.1}],
-    ["Fireflies",       0.1, {"SpriteSize": 1.1}]]],
+    ["Fireflies",       0.1, {"SpriteSize": 1.1}]]]
 
-["WomanIntro", 10.0, "FranticCurve", [
-    ["Buildings",  0, {"RandomVariation": 1.2}],
-    ["NeonLights", 0.1, 0.2, {}],
-    ["NeonLights", 0.3, 0.1, {}]]],
-
-["KidIntro",   10.0, "CuriousCamera", [
-   ["RubiksCube", "ToyAnimation", 0, {}]]],
-
-["GrassReveal", 20.0, "Curve1", [
-    ["Moon Pond Grass Fireflies", 0, {}]]],
-
-["WomanReveal", 20.0, "Curve1", [
-    ["NeonLights Buildings", 0]]],
-
-["KidReveal", 20.0, "Curve1", [
-    ["Foo Bar Baz", 0]]],
-
-// GrassFinale is the first shot with a picture-in-picture (portal) effect.
-// The viewport is expressed as four floats in the [0,1] interval:
-//    [left, top, width, height]
-// These are percentages of the enclosing viewport size.
-
-["GrassFinale", 10.0, "Curve1", [
-    ["Portal", 0, {"Context": "WomanPip",
-                   "Viewport": [0.05, 0.05, 0.2, 0.2]}]]],
-
-["WomanFinale", 10.0, "Curve1", [
-    ["Portal", 0, {"Context": "KidPip",
-                   "Viewport": [0.05, 0.05, 0.2, 0.2]}]]],
-
-["Triptych", 10.0, "Curve1", [
-    ["Portal", 0, {"Context": "GrassPip"}],
-    ["Portal", 0, {"Context": "WomanPip"}]]],
-
-["Credits", 5.0, "FallingDown", []]
+//["WomanIntro", 10.0, "FranticCurve", [
+//    ["Buildings",  0, {"RandomVariation": 1.2}],
+//    ["NeonLights", 0.1, 0.2, {}],
+//    ["NeonLights", 0.3, 0.1, {}]]],
+//
+//["KidIntro",   10.0, "CuriousCamera", [
+//   ["RubiksCube", "ToyAnimation", 0, {}]]],
+//
+//["GrassReveal", 20.0, "Curve1", [
+//    ["Moon Pond Grass Fireflies", 0, {}]]],
+//
+//["WomanReveal", 20.0, "Curve1", [
+//    ["NeonLights Buildings", 0]]],
+//
+//["KidReveal", 20.0, "Curve1", [
+//    ["Foo Bar Baz", 0]]],
+//
+//// GrassFinale is the first shot with a picture-in-picture (portal) effect.
+//// The viewport is expressed as four floats in the [0,1] interval:
+////    [left, top, width, height]
+//// These are percentages of the enclosing viewport size.
+//
+//["GrassFinale", 10.0, "Curve1", [
+//    ["Portal", 0, {"Context": "WomanPip",
+//                   "Viewport": [0.05, 0.05, 0.2, 0.2]}]]],
+//
+//["WomanFinale", 10.0, "Curve1", [
+//    ["Portal", 0, {"Context": "KidPip",
+//                   "Viewport": [0.05, 0.05, 0.2, 0.2]}]]],
+//
+//["Triptych", 10.0, "Curve1", [
+//    ["Portal", 0, {"Context": "GrassPip"}],
+//    ["Portal", 0, {"Context": "WomanPip"}]]],
+//
+//["Credits", 5.0, "FallingDown", []]
 ]

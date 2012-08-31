@@ -1,4 +1,5 @@
 #include <string>
+#include <map>
 
 #include "lib/pez/pez.h"
 
@@ -9,8 +10,6 @@
 #include "common/surface.h"
 #include "fx/all.h"
 #include "jsoncpp/json.h"
-
-DemoContext* context;
 
 static std::string _getShotName() 
 {
@@ -24,61 +23,102 @@ static std::string _getShotName()
 // TODO : make this function read from JSON
 static void _constructScene()
 {
-    
-    // Json::Value scene;
-    // ReadJsonFile("data/scene.json", &scene);
+    typedef std::map<std::string,DemoContext*> ShotMap;
+    ShotMap shotMap;
+     
+    //
+    // Build up the shot map, this idea is evolving...
+    //
+
+    {   // Grass Intro 
+        DemoContext* ctx = DemoContext::New();
+        DemoContext::SetCurrent(ctx);
+        ctx->mainCam.eye.z = 5;
+        ctx->drawables.push_back(new FireFlies());
+        ctx->drawables.push_back(new FpsOverlay());
+        shotMap["GrassIntro"] = ctx;
+    }
+
+
+    {   // City Intro
+        DemoContext* ctx = DemoContext::New();
+        DemoContext::SetCurrent(ctx);
+        ctx->mainCam.eye.z = 5;
+        ctx->mainCam.eye.x = 50;
+        ctx->mainCam.eye.y = 50;
+        ctx->drawables.push_back(new Buildings());
+        ctx->drawables.push_back(new FpsOverlay());
+        shotMap["CityIntro"] = ctx;
+
+    }
+
+    {   // Test Bed
+        DemoContext* ctx = DemoContext::New();
+        DemoContext::SetCurrent(ctx);
+        ctx->mainCam.eye.z = 5;
+        ctx->drawables.push_back(new Quads());
+
+        Portal* portal = new Portal();
+        portal->Init();
+        portal->portalContext->viewport.x = 10;
+        portal->portalContext->viewport.y = 316;
+        portal->portalContext->viewport.width = 150;
+        portal->portalContext->viewport.height = 75;
+        portal->portalContext->drawables.push_back(new Background(vec4(0.6,.2,0.2,1)));
+        portal->portalContext->drawables.push_back(new Quads());
+        portal->portalContext->Init();
+        portal->portalContext->mainCam = ctx->mainCam;
+        ctx->drawables.push_back(portal);
+        
+        // ordering is important here... need to fix this
+        DemoContext::SetCurrent(ctx);
+        ctx->drawables.push_back(new FpsOverlay());
+    }
+
+
+    std::vector<DemoContext*> sequence;
+    Json::Value script;
+    ReadJsonFile("data/script.json", &script);
+    FOR_EACH(element, script) {
+        Json::Value cur = *element;
+        if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
+            sequence.push_back(shotMap[cur[0u].asString()]);
+            std::cerr << "Added " << cur[0u] << std::endl;
+        } else {
+            std::cerr << "WARNING: shot not found '" << cur[0u] << "'" << std::endl;
+        }
+    }
 
     //
     // Check to see if a specific shot was pass on the command line
     //
     std::string shot = _getShotName();
 
-    if (shot == "grassIntro") {
-        context->drawables.push_back(new FireFlies());
-        context->drawables.push_back(new FpsOverlay());
-        DemoContext::SetCurrent(context);
-        return;
+    if (shot != "") {
+        if (shotMap.find(shot) == shotMap.end()) {
+            std::cerr << "ERROR: Shot not found '" << shot << "', aborting" << std::endl;
+            exit(1);
+        }
 
-    } else if (shot == "cityIntro") {
-        context->mainCam.eye.x = 50;
-        context->mainCam.eye.y = 50;
-        context->drawables.push_back(new Buildings());
-        context->drawables.push_back(new FpsOverlay());
-        DemoContext::SetCurrent(context);
-        return;
-
+        sequence.clear();
+        sequence.push_back(shotMap[shot]);
     }
 
+    // TODO:
+    //  - save duration 
+    //  - make sequence some sort of global state
+    //  - make shot map global state
+    //  - iterate over the sequence at update time
 
-    context->drawables.push_back(new Quads());
-
-    Portal* portal = new Portal();
-    portal->Init();
-    portal->portalContext->viewport.x = 10;
-    portal->portalContext->viewport.y = 316;
-    portal->portalContext->viewport.width = 150;
-    portal->portalContext->viewport.height = 75;
-    portal->portalContext->drawables.push_back(new Background(vec4(0.6,.2,0.2,1)));
-    portal->portalContext->drawables.push_back(new Quads());
-    portal->portalContext->Init();
-    portal->portalContext->mainCam = context->mainCam;
-    context->drawables.push_back(portal);
-    DemoContext::SetCurrent(context);
-
-    context->drawables.push_back(new FpsOverlay());
+    DemoContext::SetCurrent(sequence[0]);
 }
 
 void PezInitialize()
 {
-    //PezConfig cfg = PezGetConfig();
-
-    context = DemoContext::SetCurrent(DemoContext::New());
-    context->mainCam.eye.z = 5;
-
     // add our shader path
     pezSwAddPath("", ".glsl");
     _constructScene();
-    context->Init();
+    DemoContext::GetCurrent()->Init();
 }
 
 PezConfig PezGetConfig()
@@ -101,10 +141,10 @@ void PezHandleMouse(int x, int y, int action)
 
 void PezRender()
 {
-    context->Render();
+    DemoContext::GetCurrent()->Render();
 }
 
 void PezUpdate(float seconds)
 {
-    context->Update(seconds);
+    DemoContext::GetCurrent()->Update(seconds);
 }
