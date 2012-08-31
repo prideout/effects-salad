@@ -82,7 +82,7 @@ void main()
         vColor = vec4(0);
     } else {
         vFacetNormal = NormalMatrix * Normal;
-        float hue   = (neighbors == 4) ? 0.6 : randhash(tetid, 1.0);
+        float hue   = (neighbors == 4) ? 0.6 : 0.6 + 0.2 * (randhash(tetid, 1.0) - 0.5);
         float sat   = (neighbors == 4) ? 1.0 : 0.75;
         float value = (neighbors == 4) ? 0.7 : 1.0;
         vec3 hsv = vec3(hue, sat, value);

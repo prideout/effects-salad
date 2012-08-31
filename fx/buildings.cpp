@@ -15,18 +15,32 @@ Buildings::Init()
 {
     // Create the boundaries
     tetgenio in;
-    TetUtil::HullWheel(glm::vec3(0), 25.0f, 13.0f, 32, &in);
-    TetUtil::HullWheel(glm::vec3(0), 20.0f, 8.5f, 32, &in);
+    float r1 = 13;    float r2 = 8;
+    float y1 = 0;     float y2 = 20;
+    TetUtil::HullFrustum(r1, r2, y1, y2, 4, &in);
+    y1 += 3; y2 -= 3;
+    r1 -= 3; r2 -= 3;
+    TetUtil::HullFrustum(r1, r2, y1, y2, 4, &in);
+
+    TetUtil::HullTranslate(27, 0, 0, &in);
+
+    r1 = 13;    r2 = 8;
+    y1 = 0;     y2 = 20;
+    TetUtil::HullFrustum(r1, r2, y1, y2, 5, &in);
+    y1 += 3; y2 -= 3;
+    r1 -= 3; r2 -= 3;
+    TetUtil::HullFrustum(r1, r2, y1, y2, 5, &in);
 
     // Poke volumetric holes
     Vec3List holePoints;
-    holePoints.push_back(vec3(0, 0, 0));
+    holePoints.push_back(vec3(0, 10, 0));
+    holePoints.push_back(vec3(27, 10, 0));
     TetUtil::AddHoles(holePoints, &in);
 
     // Tetrahedralize the boundary mesh
     tetgenio out;
     const float qualityBound = 1.414;
-    const float maxVolume = 0.5f;
+    const float maxVolume = 0.1f;
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, false);
     _totalTetCount = out.numberoftetrahedra;
 
@@ -56,11 +70,10 @@ Buildings::Update()
 void
 Buildings::Draw()
 {
-    Programs& progs = Programs::GetInstance();
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 
-    //glClearColor(0.1,0.2,0.3,1.0);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glEnable(GL_CULL_FACE);
+    Programs& progs = Programs::GetInstance();
 
     bool cuttingPlane = true;
     float cullY = 9;
@@ -71,9 +84,6 @@ Buildings::Draw()
     surfaceCam.Bind(glm::mat4());
 
     _centroidTexture.Bind(0, "CentroidTexture");
-
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
     _buildingVao.Bind();
 
     // Optimization: don't draw interior tets after completely filling the volume

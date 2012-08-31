@@ -20,6 +20,19 @@ namespace TetUtil
                    int numQuads,
                    tetgenio* dest);
 
+    // Shift all facets uniformly in one direction
+    void HullTranslate(float x, float y, float z, tetgenio* dest);
+
+    // Encloses the space between two parallel polygons that
+    // lie on the XZ plane and have the same number of sides.
+    // Can be used to create cylinders, cuboids, pyramids, etc.
+     void HullFrustum(float radius1,
+                      float radius2,
+                      float y1,
+                      float y2,
+                      int numSides,
+                      tetgenio* dest);
+
     // Flip the orientation of all facets in 'B'
     // and combine the result with the facets in 'A'
     void HullDifference(const tetgenio& hullA,

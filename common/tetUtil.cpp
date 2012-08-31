@@ -19,6 +19,90 @@ TetUtil::TetsFromHull(const tetgenio& hull,
     tetrahedralize(configString, (tetgenio*) &hull, dest);
 }
 
+void
+TetUtil::HullTranslate(float x, float y, float z, tetgenio* dest)
+{
+    vec3 t = vec3(x, y, z);
+    int n = dest->numberofpoints;
+    vec3* point = (vec3*) dest->pointlist;
+    while (n--) {
+        *(point++) += t;
+    }
+}
+
+// Encloses the space between two parallel polygons that
+// lie on the XZ plane and have the same number of sides.
+// Can be used to create cylinders, cuboids, pyramids, etc.
+void
+TetUtil::HullFrustum(float r1,
+                     float r2,
+                     float y1,
+                     float y2,
+                     int numQuads,
+                     tetgenio* dest)
+{
+    // If the destination already has facets, append to it:
+    if (dest->numberofpoints) {
+        tetgenio freshHull;
+        HullFrustum(r1, r2, y1, y2, numQuads, &freshHull);
+        HullCombine(freshHull, dest);
+        return;
+    }
+
+    dest->numberofpoints = numQuads * 2;
+    dest->pointlist = new float[dest->numberofpoints * 3];
+    const float twopi = 2 * pi<float>();
+    const float dtheta = twopi / numQuads;
+    float* coord = dest->pointlist;
+    
+    // Rim points:
+    for (float theta = 0; theta < twopi - dtheta / 2; theta += dtheta) {
+        float x1 = r1 * std::cos(theta);
+        float z1 = r1 * std::sin(theta);
+        *coord++ = x1; *coord++ = y1; *coord++ = z1;
+        float x2 = r2 * std::cos(theta);
+        float z2 = r2 * std::sin(theta);
+        *coord++ = x2; *coord++ = y2; *coord++ = z2;
+    }
+
+    // Facet per rim face + 2 facets for the "caps"
+    dest->numberoffacets = numQuads + 2;
+    dest->facetlist = new tetgenio::facet[dest->numberoffacets];
+    tetgenio::facet* facet = dest->facetlist;
+
+    // Rim faces:
+    for (int n = 0; n < numQuads * 2; n += 2, ++facet) {
+        facet->numberofpolygons = 1;
+        facet->polygonlist = new tetgenio::polygon[facet->numberofpolygons];
+        facet->numberofholes = 0;
+        facet->holelist = NULL;
+        tetgenio::polygon* poly = facet->polygonlist;
+        poly->numberofvertices = 4;
+        poly->vertexlist = new int[poly->numberofvertices];
+        poly->vertexlist[0] = n;
+        poly->vertexlist[1] = n+1;
+        poly->vertexlist[2] = (n+3) % (numQuads*2);
+        poly->vertexlist[3] = (n+2) % (numQuads*2);
+    }
+
+    // Cap fans:
+    for (int cap = 0; cap < 2; ++cap, ++facet) {
+        facet->numberofpolygons = 1;
+        facet->polygonlist = new tetgenio::polygon[facet->numberofpolygons];
+        facet->numberofholes = 0;
+        facet->holelist = NULL;
+        tetgenio::polygon* poly = facet->polygonlist;
+        poly->numberofvertices = numQuads;
+        poly->vertexlist = new int[poly->numberofvertices];
+        int nq = numQuads;
+        if (cap) {
+            for (int q = 0; q < nq; ++q) poly->vertexlist[q] = q*2;
+        } else {
+            for (int q = 0; q < nq; ++q) poly->vertexlist[nq-1-q] = q*2+1;
+        }
+    }
+}
+
 // Creates a circular ribbon, composing the rim out of quads.
 // Each of the two caps is a single facet, and each quad is a facet.
 // (tetgen defines a facet as a coplanar set of polygons)
