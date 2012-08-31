@@ -1,4 +1,5 @@
 #include "texture.h"
+#include "init.h"
 
 extern "C" {
 #include "lodepng/lodepng.h"
@@ -15,6 +16,13 @@ Texture::Bind(int stage) {
     glBindTexture(target, handle);
 }
 
+void
+Texture::Bind(int stage, std::string sampler) {
+    glActiveTexture(stage + GL_TEXTURE0);
+    glBindTexture(target, handle);
+    GLuint loc = glGetUniformLocation(CurrentProgram(), sampler.c_str());
+    glUniform1i(loc, stage);
+}
 
 //
 // Buffer Texture

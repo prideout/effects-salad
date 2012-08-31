@@ -31,6 +31,11 @@ static void _constructScene()
         return;
 
     } else if (user == "prideout") {
+        context->mainCam.eye.x = 50;
+        context->mainCam.eye.y = 50;
+        context->drawables.push_back(new Buildings());
+        context->drawables.push_back(new FpsOverlay());
+        DemoContext::SetCurrent(context);
         return;
 
     }
@@ -71,9 +76,9 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Width = 2560/4;
-    config.Height = 1600/4;
-    config.Multisampling = false;
+    config.Width = 2560/3;
+    config.Height = 1600/3;
+    config.Multisampling = true;
     config.VerticalSync = true;
     return config;
 }

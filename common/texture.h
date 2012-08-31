@@ -16,6 +16,7 @@ public:
     virtual ~Texture() {};
 
     virtual void Bind(int stage = 0);
+    virtual void Bind(int stage, std::string sampler);
     virtual void GenMipmaps() = 0;
 
 };
