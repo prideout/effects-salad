@@ -8,16 +8,25 @@ void main()
 -- FS
 
 uniform bool ApplyVignette;
-uniform bool ApplyScanline;
+uniform bool ApplyScanLines;
 uniform bool ApplySolidColor;
 uniform vec2 InverseViewport;
 uniform vec4 SolidColor;
 uniform sampler2D SourceImage;
 
+uniform vec4 ScanLineColor = vec4(0.2);
+
 out vec4 FragColor;
  
 void main()
 {
+    if (ApplyScanLines) {
+        if (mod(gl_FragCoord.y, 2) < 1) {
+           FragColor = ScanLineColor;
+           return;
+        } 
+    }
+
     vec2 tc = gl_FragCoord.xy * InverseViewport;
 
     vec4 c;

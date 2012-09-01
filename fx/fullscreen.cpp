@@ -21,6 +21,11 @@ Fullscreen::Init()
     _emptyVao.InitEmpty();
 
     ivec2 size = ivec2(PezGetConfig().Width, PezGetConfig().Height);
+
+    if (_mask & ScanLinesFlag) {
+        size.y /= 2;
+    }
+
     GLenum internalFormat = GL_RGBA8;
     GLenum format = GL_RGBA;
     GLenum type = GL_UNSIGNED_BYTE;
