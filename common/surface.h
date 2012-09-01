@@ -15,6 +15,14 @@ public:
     Surface();
 
     void Init();
+
+    void Init(glm::ivec2 size,
+              GLenum internalFormat,
+              GLenum format,
+              GLenum type,
+              GLenum filter,
+              bool createDepth);
+
     void Bind();
     void Unbind();
     void Verify();

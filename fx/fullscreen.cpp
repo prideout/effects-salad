@@ -12,7 +12,7 @@ Fullscreen::Init()
     name = "Fullscreen";
     Effect::Init();
     Programs& progs = Programs::GetInstance();
-    glUseProgram(progs.Load("Fuillscreen"));
+    glUseProgram(progs.Load("Fullscreen"));
 
     glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
     glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
@@ -20,10 +20,19 @@ Fullscreen::Init()
 
     glGenVertexArrays(1, &_vao);
 
-    // TODO
-    _surface.Init();
+    ivec2 size = ivec2(PezGetConfig().Width, PezGetConfig().Height);
+    GLenum internalFormat = GL_RGBA8;
+    GLenum format = GL_RGBA;
+    GLenum type = GL_UNSIGNED_BYTE;
+    GLenum filter = GL_LINEAR;
+    GLenum createDepth = true;
+    _surface.Init(size, internalFormat, format, type, filter, createDepth);
 
     pezCheckGL("Fullscreen::Init");
+
+    if (_child) {
+        _child->Init();
+    }
 }
 
 void
@@ -46,11 +55,11 @@ Fullscreen::Draw()
 
     GLint previousFb;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFb);
-
     glBindFramebuffer(GL_FRAMEBUFFER, _surface.fbo);
     glViewport(0, 0, _surface.width, _surface.height);
-
     if (_child) {
+        glClearColor(0.1, 0.2, 0.4, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         _child->Draw();
     }
 
@@ -60,10 +69,9 @@ Fullscreen::Draw()
 
     Programs& progs = Programs::GetInstance();
 
-    glUseProgram(progs["SolidColor"]);
+    glUseProgram(progs["Fullscreen"]);
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
     glUniform1i(u("SourceImage"), 0);
-
     vec2 inverseViewport = 1.0f /
         vec2(previousVp[2], previousVp[3]);
     glUniform2fv(u("InverseViewport"), 1, ptr(inverseViewport));

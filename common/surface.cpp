@@ -1,21 +1,31 @@
 #include "surface.h"
 
+using glm::ivec2;
 
 Surface::Surface() : width(0), height(0), texture(0), depth(0), fbo(0) {
 }
 
 void
 Surface::Init() {
-
-    // TODO: We should parameterize this, just doing this quick and dirty for now to get it up and running
-    //       Also, should we just take a Texture object?
-
-    width = 256;
-    height = 256;
+    ivec2 size = ivec2(256);
     GLenum internalFormat = GL_RGB16;
+    GLenum format = GL_RGBA;
     GLenum type = GL_FLOAT;
     GLenum filter = GL_NEAREST;
     bool createDepth = true;
+    this->Init(size, internalFormat, format, type, filter, createDepth);
+}
+
+void
+Surface::Init(ivec2 size,
+              GLenum internalFormat,
+              GLenum format,
+              GLenum type,
+              GLenum filter,
+              bool createDepth) {
+
+    width = size.x;
+    height = size.y;
 
     // beware of mac limitations:
     // http://developer.apple.com/library/mac/#documentation/Darwin/Reference/Manpages/man3/glTexImage2D.3.html
@@ -28,7 +38,7 @@ Surface::Init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, type, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Creation of the color texture for the FBO");
 

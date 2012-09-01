@@ -21,8 +21,8 @@ void main()
     vec2 tc = gl_FragCoord.xy * InverseViewport;
 
     vec4 c;
-    if (not ApplySolidColor) {
-        c = texture(tc, SourceImage);
+    if (!ApplySolidColor) {
+        c = texture(SourceImage, tc);
     } else {
         c = SolidColor;
     }

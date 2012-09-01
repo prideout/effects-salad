@@ -55,7 +55,9 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         ctx->mainCam.eye.x = 50;
         ctx->mainCam.eye.y = 50;
-        ctx->drawables.push_back(new Buildings());
+        //ctx->drawables.push_back(new Buildings());
+        ctx->drawables.push_back(new Fullscreen(Fullscreen::VignetteFlag,
+                                                new Buildings()));
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["CityIntro"] = ctx;
     }
@@ -144,7 +146,7 @@ PezConfig PezGetConfig()
     config.Title = __FILE__;
     config.Width = 2560/3;
     config.Height = 1600/3;
-    config.Multisampling = true;
+    config.Multisampling = false;
     config.VerticalSync = true;
     return config;
 }
