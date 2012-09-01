@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
 CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -I. -g
-CXXFLAGS=-Wall -c -O3 -Ilib -I. -g -Wc++11-extensions
+CXXFLAGS=-Wall -c -O3 -Ilib -I. -g
 OBJDIR=build
 
 SHARED := \
@@ -41,10 +41,12 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
+	CXXFLAGS := $(CXXFLAGS) --std=c++0x
 	LIBS = -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
+	CXXFLAGS := $(CXXFLAGS) -Wc++11-extensions
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o

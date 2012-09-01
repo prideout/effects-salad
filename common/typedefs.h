@@ -17,7 +17,7 @@ typedef std::vector<float> FloatList;
 typedef unsigned int VertexAttribMask;
 
 #define FOR_EACH(var, container)                                \
-  for(typeof((container).begin()) var = (container).begin();    \
+  for(auto var = (container).begin();    \
       var != (container).end();                                 \
       ++var)
 
