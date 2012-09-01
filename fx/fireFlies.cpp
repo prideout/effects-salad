@@ -39,9 +39,9 @@ void FireFlies::Init()
 
     for (float x = 0; x < SIZE; x++) {
         for (float z = 0; z < SIZE; z++) {
-            ground.push_back(cent.x + x*SCALE);
+            ground.push_back(cent.x + x*SCALE + .6*(rand() / float(RAND_MAX)));
             ground.push_back(cent.y + noise.Get(x*SCALE,z*SCALE));
-            ground.push_back(cent.z + z*SCALE);
+            ground.push_back(cent.z + z*SCALE + .6*(rand() / float(RAND_MAX)));
             ground.push_back(1.);
         }
     } 
@@ -256,10 +256,6 @@ void FireFlies::Draw() {
         glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount);
 
 
-        glUseProgram(progs["FireFlies.Grass"]);
-        surfaceCam.Bind(glm::mat4());
-        _normals.Draw();
-
         glUseProgram(progs["FireFlies.Stars"]);
         surfaceCam.Bind(glm::mat4());
         glPointSize(.5);
@@ -275,6 +271,11 @@ void FireFlies::Draw() {
         //glDrawElements(GL_TRIANGLE_STRIP, counter % 100, GL_UNSIGNED_INT, NULL);
         glDrawElements(GL_TRIANGLE_STRIP, _ground.indexCount, GL_UNSIGNED_INT, NULL);
         //_surface.Unbind();
+
+        glUseProgram(progs["FireFlies.Grass"]);
+        surfaceCam.Bind(glm::mat4());
+        _normals.Draw();
+
 
 
     /*
