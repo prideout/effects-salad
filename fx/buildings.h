@@ -35,6 +35,7 @@ class Buildings : public Effect {
 
     TemplateList _templates;
     BatchList _batches;
+    GLuint _emptyVao;
 
 public:
     Buildings() : Effect() {}

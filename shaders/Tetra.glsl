@@ -76,6 +76,8 @@ uniform float Hue;
 uniform vec3 Translate;
 uniform vec3 Scale;
 
+out vec3 vPosition;
+
 void main()
 {
     uint tetid = uint(gl_VertexID) / 12u;
@@ -89,17 +91,19 @@ void main()
         float variationHue = 0.2;
         vFacetNormal = NormalMatrix * Normal;
         float hue   = (neighbors == 4) ? interiorHue : Hue + variationHue * (randhash(tetid, 1.0) - 0.5);
-        float sat   = (neighbors == 4) ? 1.0 : 0.5;
-        float value = (neighbors == 4) ? 0.7 : 1.0;
+        float sat   = (neighbors == 4) ? 1.0 : 0.3;
+        float value = (neighbors == 4) ? 0.75 : 1.0;
         vec3 hsv = vec3(hue, sat, value);
         vColor =  vec4(HSVtoRGB(hsv), 1.0);
     }
 
-    gl_Position = Projection * Modelview * vec4(Position.xyz * Scale + Translate, 1);
+    vPosition = Position.xyz * Scale + Translate;
+    gl_Position = Projection * Modelview * vec4(vPosition, 1);
 }
 
 -- Solid.FS
 
+in vec3 vPosition;
 in vec4 vColor;
 in vec3 vFacetNormal;
 out vec4 FragColor;
@@ -117,6 +121,10 @@ void main()
     vec3 L = LightPosition;
     float df = abs(dot(N, L));
     vec3 color = AmbientMaterial + df * vColor.rgb;
+
+    // Craptastic AO:
+    float d = clamp((vPosition.y+5)/10, 0, 1);
+    color *= d;
 
     FragColor = vec4(color, vColor.a);
 }
