@@ -1,12 +1,19 @@
 //
-// Ground plane with distance-from-plane AO
-// Vignette
+// Vignette + Scanlines effect
+//
 // Building destruction
-// On the CPU side, take the "BoundaryTets" concept one step further by sorting the non-adjoining triangles to the front.
+//   1 Silently change facets into tets
+//   2 Grow glowing cracks along triangle edges from bottom up
+//   3 Progressively away tets from the top
+//   4 Make the cracks from step 2 grow, perhaps with an HDR buffer
+//
 // Stack buildings for a slightly more interesting effect
+//
+// Buildings should have floors
+//
 // Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
 // Camera
-// Scan line effect (render at half-height?)
+// DOF effect
 // Look at Akira references
 // Smoke
 //
