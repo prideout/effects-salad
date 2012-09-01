@@ -16,124 +16,12 @@ void FireFlies::Init()
     glUseProgram(progs.Load("FireFlies.Flies"));
 
     glUseProgram(progs.Load("FireFlies.Blur"));
-    glUseProgram(progs.Load("FireFlies.Grass"));
-    glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Flies.VS"));
     glUseProgram(progs.Load("FireFlies.Stars", "FireFlies.Stars.FS", "FireFlies.Flies.VS"));
     glUniform1i(u("Tex"), 1);
 
     _surface.Init();
     _quad.Init();
-
-    // --------------------------------------------------------------------- 
-    // Ground plane
-    // --------------------------------------------------------------------- 
-    FloatList ground;
-    IndexList indices;
-    const int SIZE = 150;
-    const float SCALE = 1;
-    glm::vec3 cent(0,-2,0);
-
-    // don't mess with Y because it isn't effected by SIZE
-    cent.x = cent.x - float(SIZE/2.*SCALE);
-    cent.z = cent.z - float(SIZE/2.*SCALE);
-
-    for (float x = 0; x < SIZE; x++) {
-        for (float z = 0; z < SIZE; z++) {
-            ground.push_back(cent.x + x*SCALE + .6*(rand() / float(RAND_MAX)));
-            ground.push_back(cent.y + noise.Get(x*SCALE,z*SCALE));
-            ground.push_back(cent.z + z*SCALE + .6*(rand() / float(RAND_MAX)));
-            ground.push_back(1.);
-        }
-    } 
-
-    // build up a triangle strip over the surface
-    int index = SIZE - 1;
-    bool isFirstIndex = true;
-    int di = -1;
-    while (index < (SIZE*SIZE) - SIZE) {
-        for (int i = 0; i < SIZE; i++) {
-            if (i > 0 or isFirstIndex) {
-                indices.push_back(index);
-                isFirstIndex = false;
-            }
-            indices.push_back(index+SIZE);
-            //std::cout << index + SIZE<< std::endl;
-            index += di;
-        }
-        di *= -1;
-        index += SIZE + di;
-    }
-
-    // initialize the normals list
-    FloatList normals;
-    normals.reserve(ground.size());
-    FOR_EACH(p, ground) {
-        normals.push_back(0);
-    }
-
-    // calculate vertex normals
-    // since we just generated the triangle indices, use them here
-    glm::vec3 cur, prev1, prev2;
-    int curIdx=0, prev1Idx=0, prev2Idx=0;
-    for(unsigned i = 0; i < indices.size(); i++) {
-        prev2 = prev1;
-        prev2Idx = prev1Idx;
-        prev1 = cur;
-        prev1Idx = curIdx;
-        curIdx = indices[i];
-        cur = glm::vec3(ground[curIdx*4], ground[curIdx*4+1], ground[curIdx*4+2]);
-        //std::cout << i << " - " << curIdx << " -- index.size: " << indices.size() << "  std::endl;
-        if (i < 2)
-            continue;
-        glm::vec3 leg1 = (cur - prev1);
-        glm::vec3 leg2 = (prev2 - prev1);
-        glm::vec3 norm = (glm::cross(leg1, leg2));
-        if (i % 2 == 1)
-            norm = -norm;
-
-
-        /*
-        std::cout << "XXX: " << cur.x << ", " << cur.y << ", " << cur.z << std::endl;
-        std::cout << "XXX: " << prev1.x << ", " << prev1.y << ", " << prev1.z << std::endl;
-        std::cout << "XXX: " << prev2.x << ", " << prev2.y << ", " << prev2.z << std::endl;
-        std::cout << "leg1: " << leg1.x << ", " << leg1.y << ", " << leg1.z << std::endl;
-        std::cout << "leg2: " << leg2.x << ", " << leg2.y << ", " << leg2.z << std::endl;
-        std::cout << "NORM: " << norm.x << ", " << norm.y << ", " << norm.z << std::endl;
-        */
-
-        normals[4*curIdx+0] += norm.x;
-        normals[4*curIdx+1] += norm.y;
-        normals[4*curIdx+2] += norm.z;
-        normals[4*curIdx+3] = 1.0;
-
-        normals[4*prev1Idx+0] += norm.x;
-        normals[4*prev1Idx+1] += norm.y;
-        normals[4*prev1Idx+2] += norm.z;
-        normals[4*prev1Idx+3] = 1.0;
-
-        normals[4*prev2Idx+0] += norm.x;
-        normals[4*prev2Idx+1] += norm.y;
-        normals[4*prev2Idx+2] += norm.z;
-        normals[4*prev2Idx+3] = 1.0;
-    }
-
-    // normalize the, um, normals
-    if (1)
-    for (unsigned i = 0; i < normals.size(); i+=4) { 
-        glm::vec3 v( normals[i], normals[i+1], normals[i+2] );
-        v = glm::normalize(v);
-        normals[i+0] = v.x;
-        normals[i+1] = v.y;
-        normals[i+2] = v.z;
-    }
-    //FOR_EACH(n, normals) 
-    //    std::cout << *n << std::endl;
-
-    _ground = Vao(4, ground, indices);
-    _ground.AddVertexAttribute(AttrNormal, 4, normals);
-
-    _normals = NormalField(4, ground, 4, normals);
-    _normals.Init();
+    _ground.Init();
 
     // --------------------------------------------------------------------- 
     // Fire Flies
@@ -224,7 +112,7 @@ void FireFlies::Init()
 
 void FireFlies::Update() {
     Effect::Update();
-    _normals.Update();
+    _ground.Update();
 };
 
 void FireFlies::Draw() {
@@ -237,15 +125,16 @@ void FireFlies::Draw() {
     glUseProgram(progs["FireFlies.Flies"]);
 
         //_surface.Bind();
-        PerspCamera surfaceCam = GetContext()->mainCam;
-        surfaceCam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
-        surfaceCam.eye.y = .0;
-        surfaceCam.center = vec3(0,.8,0); //cameraPoints[counter];
+        PerspCamera oldCam = GetContext()->mainCam;
+        PerspCamera& cam = GetContext()->mainCam;
+        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        cam.eye.y = .0;
+        cam.center = vec3(0,.8,0); //cameraPoints[counter];
 
         // look where we are walking
-        surfaceCam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
-        surfaceCam.center.y = 0;
-        surfaceCam.Bind(glm::mat4());
+        cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
+        cam.center.y = 0;
+        cam.Bind(glm::mat4());
         
         /*
         glClearColor(.0,.0,.9,1);
@@ -257,26 +146,14 @@ void FireFlies::Draw() {
 
 
         glUseProgram(progs["FireFlies.Stars"]);
-        surfaceCam.Bind(glm::mat4());
+        cam.Bind(glm::mat4());
         glPointSize(.5);
         _stars.Bind();
         glDrawArrays(GL_POINTS, 0, _stars.vertexCount);
 
+        _ground.Draw();
 
-        glUseProgram(progs["FireFlies.Ground"]);
-        surfaceCam.Bind(glm::mat4());
-        glUniform3f(u("Eye"), surfaceCam.eye.x, surfaceCam.eye.y, surfaceCam.eye.z);
-        _ground.Bind();
-        //glDrawElements(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_INT, NULL);
-        //glDrawElements(GL_TRIANGLE_STRIP, counter % 100, GL_UNSIGNED_INT, NULL);
-        glDrawElements(GL_TRIANGLE_STRIP, _ground.indexCount, GL_UNSIGNED_INT, NULL);
-        //_surface.Unbind();
-
-        glUseProgram(progs["FireFlies.Grass"]);
-        surfaceCam.Bind(glm::mat4());
-        _normals.Draw();
-
-
+    cam = oldCam;
 
     /*
     glUseProgram(progs["FireFlies.Blur"]);

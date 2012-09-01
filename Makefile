@@ -25,6 +25,7 @@ SHARED := \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
 	$(OBJDIR)/fx/fullscreen.o \
+	$(OBJDIR)/fx/ground.o \
 	$(OBJDIR)/fx/background.o \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/fireFlies.o \

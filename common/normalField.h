@@ -54,7 +54,7 @@ public:
                     std::cout  << points[pi + i] << " --- " 
                                << points[pi + i] + normals[ni + i]
                                << std::endl;
-                    lines.push_back(scale * (points[pi + i] + normals[ni + i]));
+                    lines.push_back( points[pi + i] + (.8+.2*(rand()/float(RAND_MAX))) * scale *normals[ni + i]);
                     }
                 else
                     lines.push_back(points[pi + i]);

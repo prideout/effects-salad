@@ -10,14 +10,15 @@
 #include "common/texture.h"
 #include "common/quad.h"
 
+#include "fx/ground.h"
+
 
 class FireFlies : public Effect {
     FloatList _fliesCpu;
     Vao _fliesGpu;
-    Vao _ground;
     Vao _stars;
-    NormalField _normals;
     Surface _surface;
+    Ground _ground;
     Quad _quad;
     AnimCurve<glm::vec3> cameraPoints;
     unsigned counter;
