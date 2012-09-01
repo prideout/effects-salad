@@ -54,8 +54,8 @@ void main()
 {
     float d1 = distFromShape(vPosition);
     float d2 = 0;
-    for (int i = 0; i < nSamples; i++) {
-        vec2 e = vec2(randhash(i*2,2), randhash(i*2+1,2)) - vec2(1);
+    for (uint i = 0u; i < uint(nSamples); i++) {
+        vec2 e = vec2(randhash(i*2u,2), randhash(i*2u+1u,2)) - vec2(1);
         d2 += distFromShape(vPosition + vec4(e.x, 0, e.y, 0));
     }
     float d = d2 - d1;
