@@ -140,8 +140,8 @@ class AnimCurve {
         //std::cout << unsigned(((time - _startTime) / _duration) * _points.size()) << std::endl;
 
         // no interpolation, just grab the nearest sample
-        unsigned index = round(((time - _startTime) / _duration) * _points.size());
-        pezCheck(index >= 0 and index < _points.size(), "Invalid AnimCurve time index");
+        unsigned index = round(((time - _startTime) / _duration) * (_points.size() - 1));
+        pezCheck(index < _points.size(), "Invalid AnimCurve time index");
         return index;
     }
 
@@ -161,6 +161,8 @@ public:
         pezCheck(cvs.size() > 0, "Invalid number of curve CVs");
         _points = Bezier::Eval(60*duration, cvs);    
     }
+
+    bool IsEmpty() { return _points.size() == 0; }
 
     // Get the interpolated value at the given time
     T At(float time)

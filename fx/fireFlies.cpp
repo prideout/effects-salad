@@ -174,6 +174,7 @@ void FireFlies::Init()
 
     // XXX: this is time independent right now
     //      need to make it explicit in time if we're going to keep the camera motion
+    std::cout << GetContext()->duration;
     cameraPoints = AnimCurve<glm::vec3>(cvs, 0, GetContext()->duration);
     counter = 0;
 };

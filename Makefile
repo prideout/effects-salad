@@ -6,6 +6,7 @@ OBJDIR=build
 
 SHARED := \
 	$(OBJDIR)/common/camera.o \
+	$(OBJDIR)/common/cameraPath.o \
 	$(OBJDIR)/common/curve.o \
 	$(OBJDIR)/common/demoContext.o \
 	$(OBJDIR)/common/tetUtil.o \
