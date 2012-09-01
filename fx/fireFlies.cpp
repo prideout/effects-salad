@@ -126,8 +126,8 @@ void FireFlies::Init()
         normals[i+1] = v.y;
         normals[i+2] = v.z;
     }
-    FOR_EACH(n, normals) 
-        std::cout << *n << std::endl;
+    //FOR_EACH(n, normals) 
+    //    std::cout << *n << std::endl;
 
     _ground = Vao(4, ground, indices);
     _ground.AddVertexAttribute(AttrNormal, 4, normals);
