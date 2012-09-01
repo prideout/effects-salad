@@ -55,9 +55,10 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         ctx->mainCam.eye.x = 50;
         ctx->mainCam.eye.y = 50;
+        auto fs = new Fullscreen(Fullscreen::VignetteFlag);
+        ctx->drawables.push_back(fs);
+        fs->AddChild(new Buildings());
         //ctx->drawables.push_back(new Buildings());
-        ctx->drawables.push_back(new Fullscreen(Fullscreen::VignetteFlag,
-                                                new Buildings()));
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["CityIntro"] = ctx;
     }

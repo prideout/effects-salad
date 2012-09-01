@@ -33,6 +33,7 @@ public:
         unsigned indexCount);
 
     void Init();
+    void InitEmpty();
 
     void AddVertexAttribute(GLuint attrib, 
                             int componentCount, 

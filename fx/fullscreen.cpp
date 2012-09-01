@@ -18,7 +18,7 @@ Fullscreen::Init()
     glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
     glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
 
-    glGenVertexArrays(1, &_vao);
+    _emptyVao.InitEmpty();
 
     ivec2 size = ivec2(PezGetConfig().Width, PezGetConfig().Height);
     GLenum internalFormat = GL_RGBA8;
@@ -30,8 +30,8 @@ Fullscreen::Init()
 
     pezCheckGL("Fullscreen::Init");
 
-    if (_child) {
-        _child->Init();
+    FOR_EACH(child, _children) {
+        (*child)->Init();
     }
 }
 
@@ -39,9 +39,15 @@ void
 Fullscreen::Update()
 {
     Effect::Update();
-    if (_child) {
-        _child->Update();
+    FOR_EACH(child, _children) {
+        (*child)->Update();
     }
+}
+
+void
+Fullscreen::AddChild(Effect* child)
+{
+    _children.push_back(child);
 }
 
 void
@@ -57,10 +63,13 @@ Fullscreen::Draw()
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFb);
     glBindFramebuffer(GL_FRAMEBUFFER, _surface.fbo);
     glViewport(0, 0, _surface.width, _surface.height);
-    if (_child) {
-        glClearColor(0.1, 0.2, 0.4, 1);
+    if (_children.size()) {
+        glClearColor(clearColor.r, clearColor.g,
+                     clearColor.b, clearColor.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        _child->Draw();
+        FOR_EACH(child, _children) {
+            (*child)->Draw();
+        }
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, previousFb);
@@ -76,7 +85,7 @@ Fullscreen::Draw()
         vec2(previousVp[2], previousVp[3]);
     glUniform2fv(u("InverseViewport"), 1, ptr(inverseViewport));
 
-    glBindVertexArray(_vao);
+    _emptyVao.Bind();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     glBindTexture(GL_TEXTURE_2D, 0);

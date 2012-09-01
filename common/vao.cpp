@@ -87,6 +87,27 @@ Vao::Init() {
     glGenVertexArrays(1, &vao);
 }
 
+// It is legal in modern OpenGL to have 0 enabled vertex attribs,
+// which is convenient for ubersimple geometry (eg fullscreen
+// triangles) but some Mac drivers have issues with this.
+// Workaround is to add some dummy data into the VAO.
+void
+Vao::InitEmpty() {
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GLuint vbo;
+    float dummy[4] = {0};
+    glEnableVertexAttribArray(0);
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, 
+                 sizeof(dummy), 
+                 &dummy[0], 
+                 GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, 0);
+}
+
 void
 Vao::AddInterleaved(VertexAttribMask attribs,
                     const Blob& data)

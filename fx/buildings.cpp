@@ -1,5 +1,5 @@
 //
-// Vignette + Scanlines effect
+// Scanlines effect
 //
 // Building destruction
 //   1 Silently change facets into tets
@@ -38,7 +38,7 @@ static const bool SingleBuilding = true;
 void
 Buildings::Init()
 {
-    glGenVertexArrays(1, &_emptyVao);
+    _emptyVao.InitEmpty();
 
     _templates.resize(SingleBuilding ? 1 : 4);
     _batches.resize(_templates.size());
@@ -208,7 +208,7 @@ Buildings::Draw()
     glDisable(GL_CULL_FACE);
     glUseProgram(progs["Buildings.XZPlane"]);
     surfaceCam.Bind(glm::mat4());
-    glBindVertexArray(_emptyVao);
+    _emptyVao.Bind();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
