@@ -39,7 +39,6 @@ static void _constructScene()
     // Build up the shot map, this idea is evolving...
     //
 
-            std::cout << "Added " << std::endl;
     {   // Grass Intro 
         DemoContext* ctx = DemoContext::New();
         DemoContext::SetCurrent(ctx);
@@ -99,7 +98,7 @@ static void _constructScene()
             if (shot.empty()) 
                 shotMap[curShot]->Init();
             
-            std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
+            //std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
         } else {
             std::cerr << "WARNING: shot not found '" << cur[0u] << "'" << std::endl;
         }
