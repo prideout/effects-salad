@@ -110,6 +110,48 @@ void main()
     FragColor = vec4(.5, .5, .5, 1.0);
 }
 
+-- Grass.FS
+
+//in vec3 vNormal;
+in vec4 vPosition;
+//in vec2 vUvCoord;
+out vec4 FragColor;
+
+void main()
+{
+    //float s = vUvCoord.x + vUvCoord.y;
+    FragColor = vec4(.05, .2, .02, 1.0);
+}
+
+
+-- Grass.VS
+layout(location = 0) in vec4 Position;
+layout(location = 1) in vec4 Normal;
+//layout(location = 2) in vec2 UvCoord;
+
+out vec4 vPosition;
+//out vec2 vUvCoord;
+out vec3 vNormal;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat4 ViewMatrix;
+uniform mat4 ModelMatrix;
+/*
+uniform mat3 NormalMatrix;
+*/
+void main()
+{
+    /*
+    vPosition = (Modelview * Position).xyz;
+    gl_Position = Projection * Modelview * Position;
+    vNormal = NormalMatrix * Normal;
+    */
+    vPosition = Position;
+    gl_Position = Projection * Modelview * vPosition;
+    vNormal = normalize(Normal.xyz);
+}
+
 -- Flies.FS
 
 //in vec3 vNormal;

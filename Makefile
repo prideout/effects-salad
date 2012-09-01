@@ -15,6 +15,7 @@ SHARED := \
 	$(OBJDIR)/common/init.o \
 	$(OBJDIR)/common/instancer.o \
 	$(OBJDIR)/common/light.o \
+	$(OBJDIR)/common/normalField.o \
 	$(OBJDIR)/common/programs.o \
 	$(OBJDIR)/common/quad.o \
 	$(OBJDIR)/common/tube.o \

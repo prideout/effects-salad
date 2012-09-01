@@ -5,10 +5,10 @@
 #include "common/effect.h"
 #include "common/init.h"
 #include "common/instancer.h"
+#include "common/normalField.h"
 #include "common/surface.h"
 #include "common/texture.h"
 #include "common/quad.h"
-
 
 
 class FireFlies : public Effect {
@@ -16,6 +16,7 @@ class FireFlies : public Effect {
     Vao _fliesGpu;
     Vao _ground;
     Vao _stars;
+    NormalField _normals;
     Surface _surface;
     Quad _quad;
     AnimCurve<glm::vec3> cameraPoints;
