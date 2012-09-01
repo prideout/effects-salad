@@ -9,10 +9,12 @@ struct BuildingTemplate {
     int TotalTetCount;
     int BoundaryTetCount;
     Vao BuildingVao;
+    GLuint CracksVbo;
 };
 
 struct BuildingInstance {
     bool BoundariesOnly;
+    bool ShowWireframe;
     bool EnableCullingPlane;
     float CullingPlaneY;
     glm::vec2 GroundPosition;

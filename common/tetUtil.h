@@ -60,6 +60,9 @@ namespace TetUtil
                         VertexAttribMask requestedAttribs,
                         Blob* vbo);
 
+    // Builds an index buffer for use with GL_LINES
+    void FindCracks(const tetgenio& tets, Blob* vbo);
+
     // Add "regions", which are defined by seed points that flood until hitting a facet.
     // Regions annotate the resulting tets with region id's.
     void AddRegions(const Vec3List& points,

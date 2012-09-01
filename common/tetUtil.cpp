@@ -453,6 +453,12 @@ TetUtil::PointsFromTets(const tetgenio& tets,
     }    
 }
 
+// Builds an index buffer for use with GL_LINES
+void
+TetUtil::FindCracks(const tetgenio& tets, Blob* vbo)
+{
+}
+
 // Averages the corners of each tet and dumps the result into an array.
 void
 TetUtil::ComputeCentroids(Vec3List* centroids,

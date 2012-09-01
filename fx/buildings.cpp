@@ -1,11 +1,9 @@
 //
-// Scanlines effect
-//
 // Building destruction
 //   1 Silently change facets into tets
 //   2 Grow glowing cracks along triangle edges from bottom up
-//   3 Progressively away tets from the top
-//   4 Make the cracks from step 2 grow, perhaps with an HDR buffer
+//   3 Progressively peel away tets from the top
+//   4 Make the cracks glow, perhaps with an HDR buffer
 //
 // Stack buildings for a slightly more interesting effect
 //
@@ -76,6 +74,7 @@ Buildings::Init()
      _batches[0].Instances[0].Height = 1;
      _batches[0].Instances[0].Radius = 1;
      _batches[0].Instances[0].Hue = 0.6;
+     _batches[0].Instances[0].ShowWireframe = false;
 
      if (not SingleBuilding) {
          _batches[1].Template = &_templates[1];
@@ -163,6 +162,16 @@ Buildings::_GenerateBuilding(float thickness,
     TetUtil::PointsFromTets(out, attribs, &massive);
     dest->BuildingVao.Init();
     dest->BuildingVao.AddInterleaved(attribs, massive);
+
+    // Create an index buffer for vertical crack lines
+    Blob cracks;
+    TetUtil::FindCracks(out, &cracks);
+    glGenBuffers(1, &dest->CracksVbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dest->CracksVbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 sizeof(cracks[0]) * cracks.size(),
+                 &cracks[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void
@@ -198,6 +207,9 @@ Buildings::Draw()
     // Draw buildings
     glUseProgram(progs["Tetra.Solid"]);
     surfaceCam.Bind(glm::mat4());
+    glUseProgram(progs["Tetra.Simple"]);
+    surfaceCam.Bind(glm::mat4());
+
     FOR_EACH(batch, _batches) {
         FOR_EACH(instance, batch->Instances) {
             _DrawBuilding(*batch->Template, *instance);
@@ -215,9 +227,11 @@ Buildings::Draw()
 void
 Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
+    Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
 
+    glUseProgram(progs["Tetra.Solid"]);
     templ.CentroidTexture.Bind(0, "CentroidTexture");
     templ.BuildingVao.Bind();
 
@@ -231,5 +245,24 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
         glDrawArrays(GL_TRIANGLES, 0, templ.BoundaryTetCount * 4 * 3);
     } else {
         glDrawArrays(GL_TRIANGLES, 0, templ.TotalTetCount * 4 * 3);
+    }
+
+    if (instance.ShowWireframe) {
+        glUseProgram(progs["Tetra.Simple"]);
+        templ.CentroidTexture.Bind(0, "CentroidTexture");
+        templ.BuildingVao.Bind();
+    
+        glEnable(GL_POLYGON_OFFSET_LINE);
+        glPolygonOffset(-1,12);
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if (instance.BoundariesOnly) {
+            glDrawArrays(GL_TRIANGLES, 0, templ.BoundaryTetCount * 4 * 3);
+        } else {
+            glDrawArrays(GL_TRIANGLES, 0, templ.TotalTetCount * 4 * 3);
+        }
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glDisable(GL_POLYGON_OFFSET_LINE);
     }
 }
