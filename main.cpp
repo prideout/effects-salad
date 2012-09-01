@@ -46,7 +46,6 @@ static void _constructScene()
         ctx->drawables.push_back(new FireFlies());
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["GrassIntro"] = ctx;
-        if (shot.empty()) ctx->Init();
     }
 
 
@@ -59,8 +58,6 @@ static void _constructScene()
         ctx->drawables.push_back(new Buildings());
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["CityIntro"] = ctx;
-        if (shot.empty()) ctx->Init();
-
     }
 
     {   // Test 
@@ -85,7 +82,6 @@ static void _constructScene()
         DemoContext::SetCurrent(ctx);
         ctx->drawables.push_back(new FpsOverlay());
         shotMap["Test"] = ctx;
-        if (shot.empty()) ctx->Init();
     }
 
     Json::Value script;
@@ -95,10 +91,14 @@ static void _constructScene()
         if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
             // XXX: can currently only use a context once, because duration is shared :(
             string curShot = cur[0u].asString();
-            DemoContext::SetCurrent(shotMap[shot]);
+            DemoContext::SetCurrent(shotMap[curShot]);
             shotMap[curShot]->duration = cur[1u].asDouble();
             sequence.push_back(shotMap[curShot]);
-            std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
+
+            if (shot.empty()) 
+                shotMap[curShot]->Init();
+            
+            //std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
         } else {
             std::cerr << "WARNING: shot not found '" << cur[0u] << "'" << std::endl;
         }
@@ -117,6 +117,7 @@ static void _constructScene()
 
         // the shot is lazily initialized to avoid having to load everything
         // so call Init here
+        DemoContext::SetCurrent(shotMap[shot]);
         shotMap[shot]->Init();
 
         sequence.push_back(shotMap[shot]);

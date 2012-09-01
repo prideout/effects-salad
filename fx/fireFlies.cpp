@@ -50,7 +50,6 @@ void FireFlies::Init()
         for (int i = 0; i < SIZE; i++) {
             if (i > 0 or isFirstIndex) {
                 indices.push_back(index);
-                //std::cout << "F: " << index << std::endl;
                 isFirstIndex = false;
             }
             indices.push_back(index+SIZE);
