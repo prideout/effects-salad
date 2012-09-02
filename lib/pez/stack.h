@@ -14,6 +14,5 @@ void pezPrintStackTrace() {
   // print out all the frames to stderr
   //fprintf(stderr, "Error: signal %d:\n", sig);
   backtrace_symbols_fd(array, size, 2);
-  exit(1);
 }
 
