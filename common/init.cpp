@@ -20,7 +20,7 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
     glCompileShader(vsHandle);
     glGetShaderiv(vsHandle, GL_COMPILE_STATUS, &compileSuccess);
     glGetShaderInfoLog(vsHandle, sizeof(spew), 0, spew);
-    pezCheck(compileSuccess, "Can't compile vshader:\n%s", spew);
+    pezCheck(compileSuccess, "Can't compile vshader [%s]:\n%s", vsKey, spew);
     glAttachShader(programHandle, vsHandle);
 
     if (gsKey) {
@@ -31,7 +31,7 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
         glCompileShader(gsHandle);
         glGetShaderiv(gsHandle, GL_COMPILE_STATUS, &compileSuccess);
         glGetShaderInfoLog(gsHandle, sizeof(spew), 0, spew);
-        pezCheck(compileSuccess, "Can't compile gshader:\n%s", spew);
+        pezCheck(compileSuccess, "Can't compile gshader [%s]:\n%s", gsKey, spew);
         glAttachShader(programHandle, gsHandle);
     }
 
@@ -42,14 +42,14 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
     glCompileShader(fsHandle);
     glGetShaderiv(fsHandle, GL_COMPILE_STATUS, &compileSuccess);
     glGetShaderInfoLog(fsHandle, sizeof(spew), 0, spew);
-    pezCheck(compileSuccess, "Can't compile fshader:\n%s", spew);
+    pezCheck(compileSuccess, "Can't compile fshader [%s]:\n%s", fsKey, spew);
     glAttachShader(programHandle, fsHandle);
 
     glLinkProgram(programHandle);
     GLint linkSuccess;
     glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
     glGetProgramInfoLog(programHandle, sizeof(spew), 0, spew);
-    pezCheck(linkSuccess, "Can't link shaders:\n%s", spew);
+    pezCheck(linkSuccess, "Can't link shaders [fs: %s, vs: %s]:\n%s", fsKey, vsKey, spew);
     glUseProgram(programHandle);
     return programHandle;
 }
