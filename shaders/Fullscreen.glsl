@@ -50,7 +50,7 @@ void main()
         c.rgb *= 1 - 0.75 * d;
     }
     
-    if (ApplyCopyDepth || true) {
+    if (ApplyCopyDepth) {
        gl_FragDepth = texture(DepthImage, tc).x;
     }
 
