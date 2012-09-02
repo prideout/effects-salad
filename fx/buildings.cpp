@@ -211,7 +211,6 @@ Buildings::Draw()
     surfaceCam.Bind(glm::mat4());
     glUseProgram(progs["Tetra.Simple"]);
     surfaceCam.Bind(glm::mat4());
-
     FOR_EACH(batch, _batches) {
         FOR_EACH(instance, batch->Instances) {
             _DrawBuilding(*batch->Template, *instance);
@@ -258,9 +257,7 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
         glEnable(GL_POLYGON_OFFSET_LINE);
         glPolygonOffset(-1, 12);
         templ.CracksVao.Bind();
-        glLineWidth(2);
         glDrawArrays(GL_LINES, 0, 2 * templ.NumCracks);
-        glLineWidth(1);
         glDisable(GL_POLYGON_OFFSET_LINE);
     }
 }
