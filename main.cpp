@@ -58,6 +58,7 @@ static void _constructScene()
 
         // Instance the effects, but do not place them into the scene graph:
         auto fullscreen = new Fullscreen(Fullscreen::VignetteFlag |
+                                         Fullscreen::CopyDepthFlag |
                                          Fullscreen::TeleLinesFlag);
         auto buildings = new Buildings();
         auto fps = new FpsOverlay();

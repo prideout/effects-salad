@@ -18,6 +18,7 @@ public:
         VignetteFlag   = 1 << 1,
         ScanLinesFlag  = 1 << 2,
         TeleLinesFlag  = 1 << 3,
+        CopyDepthFlag  = 1 << 4,
     };
 
     typedef unsigned int Mask;

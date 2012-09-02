@@ -11,9 +11,11 @@ uniform bool ApplyVignette;
 uniform bool ApplyScanLines;
 uniform bool ApplyTeleLines;
 uniform bool ApplySolidColor;
+uniform bool ApplyCopyDepth;
 uniform vec2 InverseViewport;
 uniform vec4 SolidColor;
 uniform sampler2D SourceImage;
+uniform sampler2D DepthImage;
 
 uniform vec4 ScanLineColor = vec4(0.2);
 uniform float TeleLineFreq = 10;
@@ -46,6 +48,10 @@ void main()
     if (ApplyVignette) {
         float d = distance(tc, vec2(0.5));
         c.rgb *= 1 - 0.75 * d;
+    }
+    
+    if (ApplyCopyDepth || true) {
+       gl_FragDepth = texture(DepthImage, tc).x;
     }
 
     FragColor = c;

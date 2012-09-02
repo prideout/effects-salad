@@ -2,7 +2,11 @@
 
 using glm::ivec2;
 
-Surface::Surface() : width(0), height(0), texture(0), depth(0), fbo(0) {
+Surface::Surface() : width(0),
+                     height(0),
+                     texture(0),
+                     depthTexture(0),
+                     fbo(0) {
 }
 
 void
@@ -42,22 +46,31 @@ Surface::Init(ivec2 size,
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Creation of the color texture for the FBO");
 
-    // create depth renderbuffer
+    // create depth texture
     if (createDepth) {
-        glGenRenderbuffers(1, &depth);
-        glBindRenderbuffer(GL_RENDERBUFFER, depth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-        pezCheckGL("Creation of the depth renderbuffer for the FBO");
+        glGenTextures(1, &depthTexture);
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+
+        GLenum type = GL_FLOAT;
+        GLenum internalFormat = GL_DEPTH_COMPONENT24;
+        GLenum format = GL_DEPTH_COMPONENT;
+
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        pezCheckGL("Creation of the depth texture for the FBO");
     } else {
-        depth = 0;
+        depthTexture = 0;
     }
 
     // create FBO itself
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-    if (depth)
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+    if (depthTexture) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+    }
 
     // Should we always unilaterally call Verify, or leave it up to the client?
     Verify();

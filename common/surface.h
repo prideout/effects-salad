@@ -9,7 +9,7 @@ public:
     GLsizei height;
     glm::vec4 clearColor;
     GLuint texture;
-    GLuint depth;
+    GLuint depthTexture;
     GLuint fbo;
 
     Surface();

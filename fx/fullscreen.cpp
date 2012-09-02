@@ -18,6 +18,7 @@ Fullscreen::Init()
     glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
     glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
     glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
+    glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
 
     _emptyVao.InitEmpty();
 
@@ -80,22 +81,28 @@ Fullscreen::Draw()
 
     glBindFramebuffer(GL_FRAMEBUFFER, previousFb);
     glViewport(previousVp[0], previousVp[1], previousVp[2], previousVp[3]);
+
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _surface.texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, _surface.depthTexture);
+    glActiveTexture(GL_TEXTURE0);
 
     Programs& progs = Programs::GetInstance();
 
     glUseProgram(progs["Fullscreen"]);
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
+
     glUniform1i(u("SourceImage"), 0);
+    glUniform1i(u("DepthImage"), 1);
+
     vec2 inverseViewport = 1.0f /
         vec2(previousVp[2], previousVp[3]);
     glUniform2fv(u("InverseViewport"), 1, ptr(inverseViewport));
 
     _emptyVao.Bind();
 
-    glDepthMask(GL_FALSE);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glDepthMask(GL_TRUE);
 
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Fullscreen::Draw");
