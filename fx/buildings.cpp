@@ -251,13 +251,11 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     if (showCracks) {
         glUseProgram(progs["Tetra.Simple"]);
         glUniform1f(u("Time"), GetContext()->elapsedTime);
+        glUniform1f(u("DepthOffset"), -0.0001f);
         glUniform4f(u("Color"), 0, 10, 10, 10);
         templ.CentroidTexture.Bind(0, "CentroidTexture");
         templ.BuildingVao.Bind();
-        glEnable(GL_POLYGON_OFFSET_LINE);
-        glPolygonOffset(-1, 12);
         templ.CracksVao.Bind();
         glDrawArrays(GL_LINES, 0, 2 * templ.NumCracks);
-        glDisable(GL_POLYGON_OFFSET_LINE);
     }
 }

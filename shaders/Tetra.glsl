@@ -20,6 +20,7 @@ in float vLength;
 out vec4 FragColor;
 uniform vec4 Color = vec4(0, 0, 0, 0.75);
 uniform float Time;
+uniform float DepthOffset;
 
 void main()
 {
@@ -29,6 +30,7 @@ void main()
     }
     //FragColor = (vLength / 100.0) * Color;
     FragColor = Color;
+    gl_FragDepth = gl_FragCoord.z + DepthOffset;
 }
 
 -- Solid.VS
