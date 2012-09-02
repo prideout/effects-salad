@@ -99,7 +99,7 @@ extern const char** __pez__Argv;
 
         // Set up the Shader Wrangler
         pezSwAddPath("./shaders/", ".glsl");
-        pezSwAddDirective("*", "#version 150");
+        pezSwAddDirective("*", "#version 330");
 
         // Perform user-specified intialization
         pezPrintString("OpenGL Version: %s\n", glGetString(GL_VERSION));
