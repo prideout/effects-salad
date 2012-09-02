@@ -17,6 +17,7 @@ Fullscreen::Init()
     glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
     glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
     glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
+    glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
 
     _emptyVao.InitEmpty();
 

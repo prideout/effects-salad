@@ -9,12 +9,14 @@ void main()
 
 uniform bool ApplyVignette;
 uniform bool ApplyScanLines;
+uniform bool ApplyTeleLines;
 uniform bool ApplySolidColor;
 uniform vec2 InverseViewport;
 uniform vec4 SolidColor;
 uniform sampler2D SourceImage;
 
 uniform vec4 ScanLineColor = vec4(0.2);
+uniform float TeleLineFreq = 10;
 
 out vec4 FragColor;
  
@@ -34,6 +36,11 @@ void main()
         c = texture(SourceImage, tc);
     } else {
         c = SolidColor;
+    }
+
+    if (ApplyTeleLines) {
+        float a = mod(gl_FragCoord.y, TeleLineFreq) / TeleLineFreq;
+        c.rgb *= 0.5 + 0.25 * (sin(a * 6.28) + 1.0);
     }
 
     if (ApplyVignette) {

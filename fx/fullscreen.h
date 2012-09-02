@@ -17,6 +17,7 @@ public:
         SolidColorFlag = 1 << 0,
         VignetteFlag   = 1 << 1,
         ScanLinesFlag  = 1 << 2,
+        TeleLinesFlag  = 1 << 3,
     };
 
     typedef unsigned int Mask;
