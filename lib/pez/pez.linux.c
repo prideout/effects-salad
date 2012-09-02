@@ -1,4 +1,4 @@
-a// Pez was developed by Philip Rideout and released under the MIT License.
+// Pez was developed by Philip Rideout and released under the MIT License.
 
 #include <GL/glx.h>
 
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 {
 
     __pez__Argc = argc;
-    __pez__Argv = argv;
+    __pez__Argv = (const char**) argv;
 
     int attrib[] = {
         GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -58,6 +58,7 @@ int main(int argc, char** argv)
 
     context.MainDisplay = XOpenDisplay(NULL);
     int screenIndex = DefaultScreen(context.MainDisplay);
+    Screen* pScreen = XScreenOfDisplay(context.MainDisplay, screenIndex);
     _PezDesktopWidth = XWidthOfScreen(pScreen);
     _PezDesktopHeight = XHeightOfScreen(pScreen);
 
@@ -136,7 +137,6 @@ int main(int argc, char** argv)
 
     int centerWindow = 1;
     if (centerWindow) {
-        Screen* pScreen = XScreenOfDisplay(context.MainDisplay, screenIndex);
         int left = XWidthOfScreen(pScreen)/2 - PezGetConfig().Width/2;
         int top = XHeightOfScreen(pScreen)/2 - PezGetConfig().Height/2;
         XMoveWindow(context.MainDisplay, context.MainWindow, left, top);
@@ -369,7 +369,10 @@ void pezCheckFBO()
         "unsupported format"  // GL_FRAMEBUFFER_UNSUPPORTED......................The combination of internal formats of the attached images does not violate an implementation-dependent set of restrictions.
     };
 
-    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    typedef GLenum (GLAPIENTRY * PFNGLCHECKFRAMEBUFFERSTATUSPROC) (GLenum target);
+    PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((GLubyte*)"glCheckFramebufferStatus");
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status == GL_FRAMEBUFFER_COMPLETE)
         return;
 
