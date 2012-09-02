@@ -1,4 +1,4 @@
-// Pez was developed by Philip Rideout and released under the MIT License.
+a// Pez was developed by Philip Rideout and released under the MIT License.
 
 #include <GL/glx.h>
 
@@ -19,6 +19,9 @@
 
 extern int __pez__Argc;
 extern const char** __pez__Argv;
+
+static int _PezDesktopWidth;
+static int _PezDesktopHeight;
 
 typedef struct PlatformContextRec
 {
@@ -55,6 +58,9 @@ int main(int argc, char** argv)
 
     context.MainDisplay = XOpenDisplay(NULL);
     int screenIndex = DefaultScreen(context.MainDisplay);
+    _PezDesktopWidth = XWidthOfScreen(pScreen);
+    _PezDesktopHeight = XHeightOfScreen(pScreen);
+
     Window root = RootWindow(context.MainDisplay, screenIndex);
 
     int fbcount;
@@ -392,4 +398,14 @@ int pezIsPressing(char key)
 const char* pezResourcePath()
 {
     return ".";
+}
+
+int pezGetDesktopWidth()
+{
+    return _PezDesktopWidth;
+}
+
+int pezGetDesktopHeight()
+{
+    return _PezDesktopHeight;
 }

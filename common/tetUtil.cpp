@@ -482,8 +482,7 @@ TetUtil::FindCracks(const tetgenio& tets,
     std::list<int> startingTets;
 
     // Find a starting tet along the bottom edge.
-    int i = 1;
-    int minIndex = 0;
+    int i = 0;
     for (auto c = centroids.begin(); c != centroids.end(); ++c, ++i) {
         if (c->w > 3) {
             break;
@@ -491,19 +490,19 @@ TetUtil::FindCracks(const tetgenio& tets,
         if (c->y < startHeight) {
             startingTets.push_back(i);
         }
-        if (c->y < centroids[minIndex].y) {
-            minIndex = i;
-        }
     }
 
     printf("Forming %d cracks...\n", (int) startingTets.size());
     std::vector<int> path;
     std::set<int> pathSet;
+    size_t crackStart = 0;
+    int expectedEdgeCount = 0;
+    std::list<size_t> crackLengths; // number of edges per crack
 
     // For each starting tet, form a crack upwards through the volume.
     for (auto startTet = startingTets.begin(); startTet != startingTets.end(); ++startTet) {
 
-        minIndex = *startTet;
+        int minIndex = *startTet;
         path.push_back(minIndex);
         pathSet.insert(minIndex);
 
@@ -530,12 +529,14 @@ TetUtil::FindCracks(const tetgenio& tets,
             pathSet.insert(nTallest);
             previous = nTallest;
         }
+
+        crackLengths.push_back(path.size() - crackStart - 1);
+        expectedEdgeCount += crackLengths.back();
+        crackStart = path.size();
     }
 
-    // Create lines for all edges of all tets in the path.
-    // Really we should only create lines that connect consecutive tets.
-    int edgeCount = path.size() - startingTets.size();
-    vbo->resize(2 * edgeCount * sizeof(vec4));
+    // Create lines that connect consecutive tets.
+    vbo->resize(2 * expectedEdgeCount * sizeof(vec4));
     vec4* edge = (vec4*) &((*vbo)[0]);
 
     const ivec4* corners = (const ivec4*) tets.tetrahedronlist;
@@ -550,24 +551,32 @@ TetUtil::FindCracks(const tetgenio& tets,
     for (auto tetIndex = ++path.begin(); tetIndex != path.end(); ++tetIndex) {
 
         ivec4 currentCorners = corners[*tetIndex];
-        ivec4 shared = _FindSharedPoints(currentCorners, previousCorners);
-
-        // TODO instead of picking the first shared point,
-        // use a heuristic that prefers max x-z variation
-        int chosenCorner = shared.x;
-
-        // If there's no common points, then we must've jumped over to the next crack
         bool skip = false;
-        if (chosenCorner == -1) {
-            chosenCorner = currentCorners.x;
-            lengthSoFar = 0;
-            skip = true;
-        }
+        int chosenCorner = currentCorners.x;
 
-        // Try to choose an edge that's visible to the viewer
-        if (shared.y != -1 && glm::length(points[shared.y]) > glm::length(points[chosenCorner])) chosenCorner = shared.y;
-        if (shared.z != -1 && glm::length(points[shared.z]) > glm::length(points[chosenCorner])) chosenCorner = shared.z;
-        if (shared.w != -1 && glm::length(points[shared.w]) > glm::length(points[chosenCorner])) chosenCorner = shared.w;
+        // When jumping to a new crack, don't draw an edge to it.
+        if (crackLengths.front()-- <= 0) {
+            skip = true;
+            crackLengths.pop_front();
+            lengthSoFar = 0;
+        } else {
+
+            // For now, pick any point that the two tets have in common.
+            // TODO instead of picking the first shared point,
+            // use a heuristic that prefers max x-z variation
+            ivec4 shared = _FindSharedPoints(currentCorners, previousCorners);
+            chosenCorner = shared.x;
+
+            // This should never happen, but just to be safe:
+            if (chosenCorner == -1) {
+                chosenCorner = currentCorners.x;
+            }
+
+            // Try to choose an edge that's visible to the viewer
+            if (shared.y != -1 && glm::length(points[shared.y]) > glm::length(points[chosenCorner])) chosenCorner = shared.y;
+            if (shared.z != -1 && glm::length(points[shared.z]) > glm::length(points[chosenCorner])) chosenCorner = shared.z;
+            if (shared.w != -1 && glm::length(points[shared.w]) > glm::length(points[chosenCorner])) chosenCorner = shared.w;
+        }
         
         vec4 currentPoint = vec4(points[chosenCorner], lengthSoFar);
 
@@ -583,8 +592,8 @@ TetUtil::FindCracks(const tetgenio& tets,
         previousPoint = currentPoint;
     }
 
-    printf("%d line segments generated\n", edgesWritten);
-    pezCheck(edgeCount == edgesWritten, "Internal error");
+    printf("%d line segments generated; expected %d\n", edgesWritten, expectedEdgeCount);
+    pezCheck(expectedEdgeCount == edgesWritten, "Internal error");
 }
 
 // Averages the corners of each tet and dumps the result into an array.

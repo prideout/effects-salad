@@ -56,6 +56,8 @@ void pezCheck(int condition, ...);
 void pezCheckPointer(void*, ...);
 void pezCheckGL(const char *call);
 void pezCheckFBO();
+int pezGetDesktopWidth();
+int pezGetDesktopHeight();
 
 // get the program startup arguments
 void pezGetArgs(int* argc, const char*** argv);

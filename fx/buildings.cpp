@@ -1,7 +1,4 @@
-//
-// Debug the issue with a short crack and spurious line
-// Change (c->w > 3) back to (c->w > 2) to help debug
-//
+// Radial blur per shadertoy -- Avoid HDR, just blur in a sep buffer
 //
 // Building destruction
 //   1 Silently change facets into tets
@@ -187,7 +184,7 @@ Buildings::Update()
     if (SingleBuilding) {
         PerspCamera* camera = &GetContext()->mainCam;
         camera->eye.x = 0;
-        camera->eye.y = 30;
+        camera->eye.y = 20;
         camera->eye.z = 40;
         camera->center.y = 10;
         if (SingleBuilding) {
@@ -232,19 +229,18 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
 
-    glUseProgram(progs["Tetra.Solid"]);
-    templ.CentroidTexture.Bind(0, "CentroidTexture");
-    templ.BuildingVao.Bind();
-
-    glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
-    glUniform3fv(u("Translate"), 1, ptr(xlate));
-    glUniform1f(u("Height"), instance.Height);
-    glUniform3fv(u("Scale"), 1, ptr(scale));
-    glUniform1f(u("Hue"), instance.Hue);
-    if (instance.BoundariesOnly) {
-        glDrawArrays(GL_TRIANGLES, 0, templ.BoundaryTetCount * 4 * 3);
-    } else {
-        glDrawArrays(GL_TRIANGLES, 0, templ.TotalTetCount * 4 * 3);
+    bool showTets = true;
+    if (showTets) {
+        glUseProgram(progs["Tetra.Solid"]);
+        templ.CentroidTexture.Bind(0, "CentroidTexture");
+        templ.BuildingVao.Bind();
+        glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
+        glUniform3fv(u("Translate"), 1, ptr(xlate));
+        glUniform1f(u("Height"), instance.Height);
+        glUniform3fv(u("Scale"), 1, ptr(scale));
+        glUniform1f(u("Hue"), instance.Hue);
+        int n = instance.BoundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
+        glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
     }
 
     bool showCracks = true;

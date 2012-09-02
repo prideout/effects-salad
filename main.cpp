@@ -55,8 +55,8 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         ctx->mainCam.eye.x = 50;
         ctx->mainCam.eye.y = 50;
-        auto fs = new Fullscreen(Fullscreen::VignetteFlag /*|
-                                                            Fullscreen::ScanLinesFlag*/);
+        auto fs = new Fullscreen(Fullscreen::VignetteFlag |
+                                 Fullscreen::ScanLinesFlag);
         ctx->drawables.push_back(fs);
         fs->AddChild(new Buildings());
         ctx->drawables.push_back(new FpsOverlay());
@@ -145,8 +145,15 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Width = 2560/3;
-    config.Height = 1600/3;
+    config.Width = 2560/2;
+    config.Height = 1600/2;
+
+    // Accomodate my puny MacBook resolution if need be:
+    if (config.Height > pezGetDesktopHeight() * 2 /3) {
+        config.Width = config.Width * 2 / 3;
+        config.Height = config.Height * 2 / 3;
+    }
+
     config.Multisampling = false;
     config.VerticalSync = true;
     return config;

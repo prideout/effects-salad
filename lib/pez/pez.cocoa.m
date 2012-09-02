@@ -11,6 +11,9 @@
 extern int __pez__Argc;
 extern const char** __pez__Argv;
 
+static int _PezDesktopWidth;
+static int _PezDesktopHeight;
+
 @class View;
 
 @interface View : NSOpenGLView <NSWindowDelegate> {
@@ -207,6 +210,9 @@ int main(int argc, const char *argv[])
     [appMenuItem setSubmenu:appMenu];
 
     NSRect screenBounds = [[NSScreen mainScreen] frame];
+    _PezDesktopWidth = screenBounds.size.width;
+    _PezDesktopHeight = screenBounds.size.height;
+
     NSRect viewBounds = NSMakeRect(0, 0, PezGetConfig().Width, PezGetConfig().Height);
     
     View* view = [[View alloc] initWithFrame:viewBounds];
@@ -354,4 +360,14 @@ void pezCheckW(int condition, ...)
     va_start(a, condition);
     pStr = va_arg(a, const wchar_t*);
     _pezFatalW(pStr, a);
+}
+
+int pezGetDesktopWidth()
+{
+    return _PezDesktopWidth;
+}
+
+int pezGetDesktopHeight()
+{
+    return _PezDesktopHeight;
 }
