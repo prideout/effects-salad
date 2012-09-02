@@ -1,4 +1,8 @@
 //
+// Cracks should only draw ONE line instead of SIX lines per tet.
+// Heuristic: choose the edge that connects the two tetrahedra and that has the most x-z movement
+// We need a point buffer: one that has length-along-crack as an attrib
+//
 // Building destruction
 //   1 Silently change facets into tets
 //   2 Grow glowing cracks along triangle edges from bottom up
@@ -151,7 +155,7 @@ Buildings::_GenerateBuilding(float thickness,
     TetUtil::TetsFromHull(in, &out, qualityBound, maxVolume, true);
     dest->TotalTetCount = out.numberoftetrahedra;
 
-    // Populate the per-tet texture data
+    // Populate the per-tet texture data and move boundary tets to the front
     Vec4List centroids;
     TetUtil::SortTetrahedra(&centroids, out, &dest->BoundaryTetCount);
     dest->CentroidTexture.Init(centroids);
@@ -165,12 +169,13 @@ Buildings::_GenerateBuilding(float thickness,
 
     // Create an index buffer for vertical crack lines
     Blob cracks;
-    TetUtil::FindCracks(out, &cracks);
+    TetUtil::FindCracks(out, centroids, &cracks);
     glGenBuffers(1, &dest->CracksVbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dest->CracksVbo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                  sizeof(cracks[0]) * cracks.size(),
                  &cracks[0], GL_STATIC_DRAW);
+    dest->NumCracks = cracks.size() / sizeof(ivec2);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
@@ -240,11 +245,25 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     glUniform1f(u("Height"), instance.Height);
     glUniform3fv(u("Scale"), 1, ptr(scale));
     glUniform1f(u("Hue"), instance.Hue);
-
     if (instance.BoundariesOnly) {
         glDrawArrays(GL_TRIANGLES, 0, templ.BoundaryTetCount * 4 * 3);
     } else {
         glDrawArrays(GL_TRIANGLES, 0, templ.TotalTetCount * 4 * 3);
+    }
+
+    bool showCracks = true;
+    if (showCracks) {
+        glUseProgram(progs["Tetra.Simple"]);
+        glUniform4f(u("Color"), 0, 10, 10, 10);
+        templ.CentroidTexture.Bind(0, "CentroidTexture");
+        templ.BuildingVao.Bind();
+        glEnable(GL_POLYGON_OFFSET_LINE);
+        glPolygonOffset(-1, 12);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, templ.CracksVbo);
+        glLineWidth(2);
+        glDrawElements(GL_LINES, 2 * templ.NumCracks, GL_UNSIGNED_INT, 0);
+        glLineWidth(1);
+        glDisable(GL_POLYGON_OFFSET_LINE);
     }
 
     if (instance.ShowWireframe) {

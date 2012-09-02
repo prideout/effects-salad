@@ -1,7 +1,10 @@
-#include <algorithm>
 #include "common/init.h"
 #include "common/tetUtil.h"
 #include "glm/gtx/constants.inl"
+
+#include <algorithm>
+#include <list>
+#include <set>
 
 using namespace glm;
 
@@ -453,10 +456,90 @@ TetUtil::PointsFromTets(const tetgenio& tets,
     }    
 }
 
-// Builds an index buffer for use with GL_LINES
+// Builds an index buffer for use with GL_LINES that represents
+// a vertical "crack" along the side of the hull.  Assumes that tets
+// are sorted with boundary tets coming first.
 void
-TetUtil::FindCracks(const tetgenio& tets, Blob* vbo)
+TetUtil::FindCracks(const tetgenio& tets,
+                    const Vec4List& centroids,
+                    Blob* vbo,
+                    float startHeight,
+                    int maxCrackLength)
 {
+    const ivec4* neighbors = (const ivec4*) tets.neighborlist;
+    std::list<int> startingTets;
+    std::list<int> path;
+    std::set<int> pathSet;
+
+    // Find a starting tet along the bottom edge.
+    int i = 1;
+    int minIndex = 0;
+    for (auto c = centroids.begin(); c != centroids.end(); ++c, ++i) {
+        if (c->w > 3) {
+            break;
+        }
+        if (c->y < startHeight) {
+            startingTets.push_back(i);
+        }
+        if (c->y < centroids[minIndex].y) {
+            minIndex = i;
+        }
+    }
+
+    printf("Forming %d cracks...\n", (int) startingTets.size());
+
+    // For each starting tet, form a crack upwards through the volume.
+    for (auto startTet = startingTets.begin(); startTet != startingTets.end(); ++startTet) {
+        minIndex = *startTet;
+        path.push_back(minIndex);
+        pathSet.insert(minIndex);
+
+        // Find the "highest altitude" neighboring tet that is also a boundary tet.
+        int previous = minIndex;
+        for (int i = 0; i < maxCrackLength; i++) {
+            ivec4 n = neighbors[previous];
+            vec4 c0 = centroids[n.x];
+            vec4 c1 = centroids[n.y];
+            vec4 c2 = centroids[n.z];
+            vec4 c3 = centroids[n.w];
+            int nTallest = n.x;
+            
+            if (c1.y > centroids[nTallest].y && pathSet.find(n.y) == pathSet.end()) nTallest = n.y;
+            if (c2.y > centroids[nTallest].y && pathSet.find(n.z) == pathSet.end()) nTallest = n.z;
+            if (c3.y > centroids[nTallest].y && pathSet.find(n.w) == pathSet.end()) nTallest = n.w;
+        
+            // Give up if the only way to go is down
+            if (centroids[nTallest].y < centroids[minIndex].y) {
+                break;
+            }
+            
+            path.push_back(nTallest);
+            pathSet.insert(nTallest);
+            previous = nTallest;
+        }
+    }
+
+    // Create lines for all edges of all tets in the path.
+    // Really we should only create lines that connect consecutive tets.
+    int edgeCount = 6 * path.size();
+    vbo->resize(edgeCount * sizeof(ivec2));
+    ivec2* edge = (ivec2*) &((*vbo)[0]);
+    for (auto tetIndex = path.begin(); tetIndex != path.end(); ++tetIndex) {
+
+        // We're indexing into a buffer that is already dereferenced.
+        int p0 = (*tetIndex) * 12 + 1;
+        int p1 = (*tetIndex) * 12 + 0;
+        int p2 = (*tetIndex) * 12 + 2;
+        int p3 = (*tetIndex) * 12 + 5;
+
+        // For now highlight all edges of the tet.
+        *edge++ = ivec2(p0, p1);
+        *edge++ = ivec2(p0, p2);
+        *edge++ = ivec2(p0, p3);
+        *edge++ = ivec2(p1, p2);
+        *edge++ = ivec2(p1, p3);
+        *edge++ = ivec2(p2, p3);
+    }
 }
 
 // Averages the corners of each tet and dumps the result into an array.
@@ -479,9 +562,11 @@ TetUtil::ComputeCentroids(Vec3List* centroids,
 
 struct SortableTet
 {
+    ivec4 Neighbors;
     ivec4 Corners;
     vec3 Centroid;
     int NeighborCount;
+    int OriginalIndex;
 };
 
 typedef std::vector<SortableTet> SortableTetList;
@@ -512,7 +597,7 @@ TetUtil::SortTetrahedra(Vec4List* tetData,
         vec3 d = points[corners.w];
         vec3 center = (a + b + c + d) / 4.0f;
         float neighborCount = 0;
-        vec4 neighbors = *((vec4*) (tets.neighborlist + i*4));
+        ivec4 neighbors = ((ivec4*) tets.neighborlist)[i];
         if (neighbors.x > -1) ++neighborCount;
         if (neighbors.y > -1) ++neighborCount;
         if (neighbors.z > -1) ++neighborCount;
@@ -523,18 +608,39 @@ TetUtil::SortTetrahedra(Vec4List* tetData,
         sortableList[i].Centroid = center;
         sortableList[i].NeighborCount = neighborCount;
         sortableList[i].Corners = corners;
+        sortableList[i].OriginalIndex = i;
+        sortableList[i].Neighbors = neighbors;
     }
 
     // Move boundary tets to the front.
     std::sort(sortableList.begin(), sortableList.end(), _CompareTets());
 
+    // Create a mapping from "old indices" to "new indices" and apply it to
+    // the neighbor indices. -1 maps to -1 to handle absence-of-neighbor.
+    std::vector<int> mappingWithPad(sortableList.size() + 1);
+    int* mapping = &mappingWithPad[1];
+    mapping[-1] = -1;
+    int newIndex = 0;
+    for (auto s = sortableList.begin(); s != sortableList.end(); ++s) {
+        mapping[s->OriginalIndex] = newIndex++;
+    }
+    for (auto s = sortableList.begin(); s != sortableList.end(); ++s) {
+        s->Neighbors.x = mapping[s->Neighbors.x];
+        s->Neighbors.y = mapping[s->Neighbors.y];
+        s->Neighbors.z = mapping[s->Neighbors.z];
+        s->Neighbors.w = mapping[s->Neighbors.w];
+    }
+
     // Populate the tetData array and re-write the tet list.
     tetData->resize(tets.numberoftetrahedra);
+
     Vec4List::iterator data = tetData->begin();
     ivec4* tetList = (ivec4*) tets.tetrahedronlist;
+    ivec4* neiList = (ivec4*) tets.neighborlist;
     for (int i = 0; i < tets.numberoftetrahedra; ++i) {
         *tetList++ = sortableList[i].Corners;
         *data++ = vec4(sortableList[i].Centroid, sortableList[i].NeighborCount);
+        *neiList++ = sortableList[i].Neighbors;
     }
 
     // Return a count of boundary tets if requested.

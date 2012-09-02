@@ -61,7 +61,11 @@ namespace TetUtil
                         Blob* vbo);
 
     // Builds an index buffer for use with GL_LINES
-    void FindCracks(const tetgenio& tets, Blob* vbo);
+    void FindCracks(const tetgenio& tets,
+                    const Vec4List& centroids,
+                    Blob* vbo,
+                    float startHeight = 0.1,
+                    int maxCrackLength = 300);
 
     // Add "regions", which are defined by seed points that flood until hitting a facet.
     // Regions annotate the resulting tets with region id's.

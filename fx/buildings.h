@@ -10,6 +10,7 @@ struct BuildingTemplate {
     int BoundaryTetCount;
     Vao BuildingVao;
     GLuint CracksVbo;
+    int NumCracks;
 };
 
 struct BuildingInstance {

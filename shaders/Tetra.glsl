@@ -13,10 +13,11 @@ void main()
 -- Simple.FS
 
 out vec4 FragColor;
+uniform vec4 Color = vec4(0, 0, 0, 0.75);
 
 void main()
 {
-    FragColor = vec4(0, 0, 0, 0.75);
+    FragColor = Color;
 }
 
 -- Solid.VS

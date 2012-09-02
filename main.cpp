@@ -145,8 +145,8 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Width = 2560/3;
-    config.Height = 1600/3;
+    config.Width = 2560/2;
+    config.Height = 1600/2;
     config.Multisampling = false;
     config.VerticalSync = true;
     return config;
