@@ -3,6 +3,7 @@
 #include <GL/glx.h>
 
 #include "pez.h"
+#include "stack.h"
 #include "bstrlib.h"
 #include <sys/time.h>
 #include <stdlib.h>
@@ -320,6 +321,8 @@ void pezCheck(int condition, ...)
 
     if (condition)
         return;
+
+    pezPrintStackTrace();
 
     va_start(a, condition);
     pStr = va_arg(a, const char*);

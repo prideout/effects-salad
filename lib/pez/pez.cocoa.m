@@ -1,6 +1,7 @@
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/GL.h>
 #import "pez.h"
+#import "stack.h"
 #import "bstrlib.h"
 #import <Cocoa/Cocoa.h>
 #import <mach/mach_time.h>
@@ -293,6 +294,8 @@ void pezCheck(int condition, ...)
     if (condition)
         return;
     
+    pezPrintStackTrace();
+
     va_start(a, condition);
     pStr = va_arg(a, const char*);
     _pezFatal(pStr, a);
