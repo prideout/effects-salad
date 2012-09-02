@@ -125,6 +125,7 @@ Vao::AddInterleaved(VertexAttribMask attribs,
     if (attribs & AttrNormalFlag)   stride += AttrNormalWidth;
     if (attribs & AttrTexCoordFlag) stride += AttrTexCoordWidth;
     if (attribs & AttrTetIdFlag)    stride += AttrTetIdWidth;
+    if (attribs & AttrLengthFlag)   stride += AttrLengthWidth;
     this->vertexCount = data.size() / stride;
 
     int p = 0;
@@ -147,5 +148,10 @@ Vao::AddInterleaved(VertexAttribMask attribs,
         glVertexAttribIPointer(AttrTetId, 1, GL_UNSIGNED_INT, stride, offset(p));
         glEnableVertexAttribArray(AttrTetId);
         p += AttrTetIdWidth;
+    }
+    if (attribs & AttrLengthFlag) {
+        glVertexAttribPointer(AttrLength, 1, GL_FLOAT, GL_FALSE, stride, offset(p));
+        glEnableVertexAttribArray(AttrLength);
+        p += AttrLengthWidth;
     }
 }

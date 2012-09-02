@@ -15,6 +15,7 @@ enum VertexAttribs {
     AttrNormal,
     AttrTexCoord,
     AttrTetId,
+    AttrLength,
 };
 
 // Bit flags useful for argument passing
@@ -23,6 +24,7 @@ enum VertexAttribFlags {
     AttrNormalFlag = (1 << 1),
     AttrTexCoordFlag = (1 << 2),
     AttrTetIdFlag = (1 << 3),
+    AttrLengthFlag = (1 << 4),
 };
 
 // Byte Counts for attributes
@@ -31,6 +33,7 @@ enum VertexAttribWidths {
     AttrNormalWidth = 12,
     AttrTexCoordWidth = 8,
     AttrTetIdWidth = 4,
+    AttrLengthWidth = 4,
 };
 
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);

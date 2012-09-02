@@ -1,22 +1,33 @@
 -- Simple.VS
 
 layout(location = 0) in vec4 Position;
+layout(location = 4) in float Length;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
 
+out float vLength;
+
 void main()
 {
+    vLength = Length;
     gl_Position = Projection * Modelview * Position;
 }
 
 -- Simple.FS
 
+in float vLength;
 out vec4 FragColor;
 uniform vec4 Color = vec4(0, 0, 0, 0.75);
+uniform float Time;
 
 void main()
 {
+    if (vLength > Time * 4) {
+        discard;
+        return;
+    }
+    //FragColor = (vLength / 100.0) * Color;
     FragColor = Color;
 }
 
@@ -93,7 +104,7 @@ void main()
         vFacetNormal = NormalMatrix * Normal;
         float hue   = (neighbors == 4) ? interiorHue : Hue + variationHue * (randhash(tetid, 1.0) - 0.5);
         float sat   = (neighbors == 4) ? 1.0 : 0.3;
-        float value = (neighbors == 4) ? 0.75 : 1.0;
+        float value = (neighbors == 4) ? 0.3 : 0.7;
         vec3 hsv = vec3(hue, sat, value);
         vColor =  vec4(HSVtoRGB(hsv), 1.0);
     }

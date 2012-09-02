@@ -456,7 +456,19 @@ TetUtil::PointsFromTets(const tetgenio& tets,
     }    
 }
 
-// Builds an index buffer for use with GL_LINES that represents
+static ivec4
+_FindSharedPoints(ivec4 a, ivec4 b)
+{
+    ivec4 ret(-1);
+    int i = 0;
+    if (a.x == b.x || a.x == b.y || a.x == b.z || a.x == b.w) ret[i++] = a.x;
+    if (a.y == b.x || a.y == b.y || a.y == b.z || a.y == b.w) ret[i++] = a.y;
+    if (a.z == b.x || a.z == b.y || a.z == b.z || a.z == b.w) ret[i++] = a.z;
+    if (a.w == b.x || a.w == b.y || a.w == b.z || a.w == b.w) ret[i++] = a.w;
+    return ret;
+}
+
+// Builds non-indexed vec4's for use with GL_LINES that represents
 // a vertical "crack" along the side of the hull.  Assumes that tets
 // are sorted with boundary tets coming first.
 void
@@ -468,8 +480,6 @@ TetUtil::FindCracks(const tetgenio& tets,
 {
     const ivec4* neighbors = (const ivec4*) tets.neighborlist;
     std::list<int> startingTets;
-    std::list<int> path;
-    std::set<int> pathSet;
 
     // Find a starting tet along the bottom edge.
     int i = 1;
@@ -487,9 +497,12 @@ TetUtil::FindCracks(const tetgenio& tets,
     }
 
     printf("Forming %d cracks...\n", (int) startingTets.size());
+    std::vector<int> path;
+    std::set<int> pathSet;
 
     // For each starting tet, form a crack upwards through the volume.
     for (auto startTet = startingTets.begin(); startTet != startingTets.end(); ++startTet) {
+
         minIndex = *startTet;
         path.push_back(minIndex);
         pathSet.insert(minIndex);
@@ -521,25 +534,57 @@ TetUtil::FindCracks(const tetgenio& tets,
 
     // Create lines for all edges of all tets in the path.
     // Really we should only create lines that connect consecutive tets.
-    int edgeCount = 6 * path.size();
-    vbo->resize(edgeCount * sizeof(ivec2));
-    ivec2* edge = (ivec2*) &((*vbo)[0]);
-    for (auto tetIndex = path.begin(); tetIndex != path.end(); ++tetIndex) {
+    int edgeCount = path.size() - startingTets.size();
+    vbo->resize(2 * edgeCount * sizeof(vec4));
+    vec4* edge = (vec4*) &((*vbo)[0]);
 
-        // We're indexing into a buffer that is already dereferenced.
-        int p0 = (*tetIndex) * 12 + 1;
-        int p1 = (*tetIndex) * 12 + 0;
-        int p2 = (*tetIndex) * 12 + 2;
-        int p3 = (*tetIndex) * 12 + 5;
+    const ivec4* corners = (const ivec4*) tets.tetrahedronlist;
+    const vec3* points = (const vec3*) tets.pointlist;
 
-        // For now highlight all edges of the tet.
-        *edge++ = ivec2(p0, p1);
-        *edge++ = ivec2(p0, p2);
-        *edge++ = ivec2(p0, p3);
-        *edge++ = ivec2(p1, p2);
-        *edge++ = ivec2(p1, p3);
-        *edge++ = ivec2(p2, p3);
+    float lengthSoFar = 0;
+    ivec4 previousCorners = corners[path.front()];
+
+    int chosenCorner = previousCorners.x;
+    vec4 previousPoint = vec4(points[chosenCorner], lengthSoFar);
+    int edgesWritten = 0;
+    for (auto tetIndex = ++path.begin(); tetIndex != path.end(); ++tetIndex) {
+
+        ivec4 currentCorners = corners[*tetIndex];
+        ivec4 shared = _FindSharedPoints(currentCorners, previousCorners);
+
+        // TODO instead of picking the first shared point,
+        // use a heuristic that prefers max x-z variation
+        int chosenCorner = shared.x;
+
+        // If there's no common points, then we must've jumped over to the next crack
+        bool skip = false;
+        if (chosenCorner == -1) {
+            chosenCorner = currentCorners.x;
+            lengthSoFar = 0;
+            skip = true;
+        }
+
+        // Try to choose an edge that's visible to the viewer
+        if (shared.y != -1 && glm::length(points[shared.y]) > glm::length(points[chosenCorner])) chosenCorner = shared.y;
+        if (shared.z != -1 && glm::length(points[shared.z]) > glm::length(points[chosenCorner])) chosenCorner = shared.z;
+        if (shared.w != -1 && glm::length(points[shared.w]) > glm::length(points[chosenCorner])) chosenCorner = shared.w;
+        
+        vec4 currentPoint = vec4(points[chosenCorner], lengthSoFar);
+
+        if (!skip) {
+            *edge++ = previousPoint;
+            *edge++ = currentPoint;
+            lengthSoFar += glm::distance(vec3(previousPoint),
+                                         vec3(currentPoint)); 
+            edgesWritten++;
+        }
+
+        previousCorners = currentCorners;
+        previousPoint = currentPoint;
     }
+
+    printf("%d line segments generated\n", edgesWritten);
+    pezCheck(edgeCount == edgesWritten, "Internal error");
 }
 
 // Averages the corners of each tet and dumps the result into an array.

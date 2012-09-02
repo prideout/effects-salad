@@ -60,7 +60,9 @@ namespace TetUtil
                         VertexAttribMask requestedAttribs,
                         Blob* vbo);
 
-    // Builds an index buffer for use with GL_LINES
+    // Builds non-indexed vec4's for use with GL_LINES that represents
+    // a vertical "crack" along the side of the hull.  Assumes that tets
+    // are sorted with boundary tets coming first.
     void FindCracks(const tetgenio& tets,
                     const Vec4List& centroids,
                     Blob* vbo,

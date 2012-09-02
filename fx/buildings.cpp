@@ -1,7 +1,7 @@
 //
-// Cracks should only draw ONE line instead of SIX lines per tet.
-// Heuristic: choose the edge that connects the two tetrahedra and that has the most x-z movement
-// We need a point buffer: one that has length-along-crack as an attrib
+// Debug the issue with a short crack and spurious line
+// Change (c->w > 3) back to (c->w > 2) to help debug
+//
 //
 // Building destruction
 //   1 Silently change facets into tets
@@ -78,7 +78,6 @@ Buildings::Init()
      _batches[0].Instances[0].Height = 1;
      _batches[0].Instances[0].Radius = 1;
      _batches[0].Instances[0].Hue = 0.6;
-     _batches[0].Instances[0].ShowWireframe = false;
 
      if (not SingleBuilding) {
          _batches[1].Template = &_templates[1];
@@ -166,17 +165,15 @@ Buildings::_GenerateBuilding(float thickness,
     TetUtil::PointsFromTets(out, attribs, &massive);
     dest->BuildingVao.Init();
     dest->BuildingVao.AddInterleaved(attribs, massive);
+    pezCheckGL("Bigass VBO for tets");
 
     // Create an index buffer for vertical crack lines
     Blob cracks;
     TetUtil::FindCracks(out, centroids, &cracks);
-    glGenBuffers(1, &dest->CracksVbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dest->CracksVbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 sizeof(cracks[0]) * cracks.size(),
-                 &cracks[0], GL_STATIC_DRAW);
-    dest->NumCracks = cracks.size() / sizeof(ivec2);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    dest->CracksVao.Init();
+    dest->CracksVao.AddInterleaved(AttrPositionFlag | AttrLengthFlag, cracks);
+    dest->NumCracks = (cracks.size() / sizeof(vec4)) / 2;
+    pezCheckGL("Bigass VBO for cracks");
 }
 
 void
@@ -254,34 +251,16 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     bool showCracks = true;
     if (showCracks) {
         glUseProgram(progs["Tetra.Simple"]);
+        glUniform1f(u("Time"), GetContext()->elapsedTime);
         glUniform4f(u("Color"), 0, 10, 10, 10);
         templ.CentroidTexture.Bind(0, "CentroidTexture");
         templ.BuildingVao.Bind();
         glEnable(GL_POLYGON_OFFSET_LINE);
         glPolygonOffset(-1, 12);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, templ.CracksVbo);
+        templ.CracksVao.Bind();
         glLineWidth(2);
-        glDrawElements(GL_LINES, 2 * templ.NumCracks, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_LINES, 0, 2 * templ.NumCracks);
         glLineWidth(1);
-        glDisable(GL_POLYGON_OFFSET_LINE);
-    }
-
-    if (instance.ShowWireframe) {
-        glUseProgram(progs["Tetra.Simple"]);
-        templ.CentroidTexture.Bind(0, "CentroidTexture");
-        templ.BuildingVao.Bind();
-    
-        glEnable(GL_POLYGON_OFFSET_LINE);
-        glPolygonOffset(-1,12);
-        
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        if (instance.BoundariesOnly) {
-            glDrawArrays(GL_TRIANGLES, 0, templ.BoundaryTetCount * 4 * 3);
-        } else {
-            glDrawArrays(GL_TRIANGLES, 0, templ.TotalTetCount * 4 * 3);
-        }
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDisable(GL_POLYGON_OFFSET_LINE);
     }
 }
