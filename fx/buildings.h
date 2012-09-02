@@ -23,7 +23,29 @@ struct BuildingInstance {
     float Hue;
 };
 
+class CracksEffect;
+
 class Buildings : public Effect {
+public:
+    Buildings();
+    virtual ~Buildings();
+    virtual void Init();
+    virtual void Update();
+    virtual void Draw();
+
+    Effect* Cracks();
+
+private:
+
+    void _GenerateBuilding(float thickness,
+                           float topRadius,
+                           float tetSize,
+                           int nSides,
+                           BuildingTemplate* dest);
+
+    void _DrawBuilding(BuildingTemplate& templ,
+                       BuildingInstance& instance);
+
 
     typedef std::vector<BuildingTemplate> TemplateList;
     typedef std::vector<BuildingInstance> InstanceList;
@@ -38,21 +60,7 @@ class Buildings : public Effect {
     TemplateList _templates;
     BatchList _batches;
     Vao _emptyVao;
+    CracksEffect* _cracks;
 
-public:
-    Buildings() : Effect() {}
-    virtual ~Buildings() {} 
-    virtual void Init();
-    virtual void Update();
-    virtual void Draw();
-
-private:
-    void _GenerateBuilding(float thickness,
-                           float topRadius,
-                           float tetSize,
-                           int nSides,
-                           BuildingTemplate* dest);
-
-    void _DrawBuilding(BuildingTemplate& templ,
-                       BuildingInstance& instance);
+    friend class CracksEffect;
 };

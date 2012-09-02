@@ -1,3 +1,5 @@
+//
+// Add "CopyDepth" flag to Fullscreen
 // Radial blur per shadertoy -- Avoid HDR, just blur in a sep buffer
 //
 // Building destruction
@@ -33,6 +35,28 @@ using glm::vec3;
 using glm::vec2;
 
 static const bool SingleBuilding = true;
+
+class CracksEffect : public Effect {
+public:
+    CracksEffect(Buildings* buildings) : Effect(), _buildings(buildings) {}
+    ~CracksEffect() {} 
+    void Init();
+    void Update();
+    void Draw();
+private:
+    void _DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance);
+    Buildings* _buildings;
+};
+
+Buildings::Buildings() : Effect()
+{
+    _cracks = new CracksEffect(this);
+}
+
+Buildings::~Buildings()
+{
+    delete _cracks;
+}
 
 void
 Buildings::Init()
@@ -121,6 +145,8 @@ Buildings::Init()
      progs.Load("Tetra.Simple", false);
      progs.Load("Tetra.Solid", false);
      progs.Load("Buildings.XZPlane", false);
+
+     _cracks->Init();
 }
 
 void
@@ -191,6 +217,7 @@ Buildings::Update()
             camera->eye = glm::rotateY(camera->eye, time * 16);
         }
     }
+    _cracks->Update();
 }
 
 void
@@ -205,8 +232,6 @@ Buildings::Draw()
 
     // Draw buildings
     glUseProgram(progs["Tetra.Solid"]);
-    surfaceCam.Bind(glm::mat4());
-    glUseProgram(progs["Tetra.Simple"]);
     surfaceCam.Bind(glm::mat4());
     FOR_EACH(batch, _batches) {
         FOR_EACH(instance, batch->Instances) {
@@ -229,29 +254,64 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
 
-    bool showTets = true;
-    if (showTets) {
-        glUseProgram(progs["Tetra.Solid"]);
-        templ.CentroidTexture.Bind(0, "CentroidTexture");
-        templ.BuildingVao.Bind();
-        glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
-        glUniform3fv(u("Translate"), 1, ptr(xlate));
-        glUniform1f(u("Height"), instance.Height);
-        glUniform3fv(u("Scale"), 1, ptr(scale));
-        glUniform1f(u("Hue"), instance.Hue);
-        int n = instance.BoundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
-        glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
-    }
+    glUseProgram(progs["Tetra.Solid"]);
+    templ.CentroidTexture.Bind(0, "CentroidTexture");
+    templ.BuildingVao.Bind();
+    glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
+    glUniform3fv(u("Translate"), 1, ptr(xlate));
+    glUniform1f(u("Height"), instance.Height);
+    glUniform3fv(u("Scale"), 1, ptr(scale));
+    glUniform1f(u("Hue"), instance.Hue);
+    int n = instance.BoundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
+    glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
+}
 
-    bool showCracks = true;
-    if (showCracks) {
-        glUseProgram(progs["Tetra.Simple"]);
-        glUniform1f(u("Time"), GetContext()->elapsedTime);
-        glUniform1f(u("DepthOffset"), -0.0001f);
-        glUniform4f(u("Color"), 0, 10, 10, 10);
-        templ.CentroidTexture.Bind(0, "CentroidTexture");
-        templ.BuildingVao.Bind();
-        templ.CracksVao.Bind();
-        glDrawArrays(GL_LINES, 0, 2 * templ.NumCracks);
+Effect*
+Buildings::Cracks()
+{
+    return _cracks;
+}
+
+void
+CracksEffect::Init()
+{
+}
+
+void
+CracksEffect::Update()
+{
+}
+
+void
+CracksEffect::Draw()
+{
+    Programs& progs = Programs::GetInstance();
+    PerspCamera surfaceCam = GetContext()->mainCam;
+
+    glUseProgram(progs["Tetra.Simple"]);
+    surfaceCam.Bind(glm::mat4());
+    FOR_EACH(batch, _buildings->_batches) {
+        FOR_EACH(instance, batch->Instances) {
+            _DrawBuilding(*batch->Template, *instance);
+        }
     }
+}
+
+void
+CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
+{
+    Programs& progs = Programs::GetInstance();
+    vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
+    vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
+    glUseProgram(progs["Tetra.Simple"]);
+    glUniform3fv(u("Translate"), 1, ptr(xlate));
+    glUniform1f(u("Height"), instance.Height);
+    glUniform3fv(u("Scale"), 1, ptr(scale));
+    glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("DepthOffset"), -0.0001f);
+    glUniform4f(u("Color"), 0, 10, 10, 10);
+    templ.CentroidTexture.Bind(0, "CentroidTexture");
+    templ.BuildingVao.Bind();
+    templ.CracksVao.Bind();
+    glDrawArrays(GL_LINES, 0, 2 * templ.NumCracks);
 }

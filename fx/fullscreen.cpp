@@ -92,7 +92,10 @@ Fullscreen::Draw()
     glUniform2fv(u("InverseViewport"), 1, ptr(inverseViewport));
 
     _emptyVao.Bind();
+
+    glDepthMask(GL_FALSE);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDepthMask(GL_TRUE);
 
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Fullscreen::Draw");
