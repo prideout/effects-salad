@@ -38,6 +38,80 @@ Tube::SweepPolygon(const Vec3List& centerline,
                    float polygonRadius,
                    int numPolygonSides)
 {
+    int n = 9;
+    const float TWOPI = 3*3.1415;
+    Vec3List tangents, normals, binormals;
+
+    // XXX(jcowles): ordering of params is slightly different from matrix order... see mat3 init below
+    ComputeFrames(centerline, &tangents, &normals, &binormals);
+    unsigned count = centerline.size();
+    FloatList mesh(count * (n+1) * 6, 0);
+    //mesh = new Float32Array(count * (n+1) * 6)
+    int i = 0;
+    int m = 0;
+    glm::vec3 p;
+    float r = 0.07f; //@radius
+
+    while (i < count) {
+        int v = 0;
+
+        glm::mat3 basis(normals[i], binormals[i], tangents[i]);
+        
+        /*
+        basis = (frames[C].subarray(i*3,i*3+3) for C in [0..2])
+        basis = ((B[C] for C in [0..2]) for B in basis)
+        basis = (basis.reduce (A,B) -> A.concat(B))
+        basis = mat3.create(basis)
+        */
+        float theta = 0;
+        float dtheta = TWOPI / n;
+
+        while (v < n+1) {
+            float x = r*cos(theta);
+            float y = r*sin(theta);
+            float z = 0;
+            p = basis * glm::vec3(x,y,z);
+            //mat3.multiplyVec3(basis, [x,y,z], p)
+            p.x += centerline[i].x;
+            p.y += centerline[i].y;
+            p.z += centerline[i].z;
+
+            // Stamp p into 'm', skipping over the normal:
+            /* mesh.set p, m */
+            mesh[m+0] = p.x;
+            mesh[m+1] = p.y;
+            mesh[m+2] = p.z;
+            
+            m = m + 6;
+            v++;
+            theta += dtheta;
+        }
+
+        i++;
+    }
+
+/*
+    # Next, populate normals:
+    [i, m] = [0, 0]
+    normal= vec3.create()
+    center = vec3.create()
+    while i < count
+      v = 0
+      while v < n+1
+        p[0] = mesh[m+0]
+        p[1] = mesh[m+1]
+        p[2] = mesh[m+2]
+        center[0] = centerline[i*3+0] # there has GOT to be a better way
+        center[1] = centerline[i*3+1]
+        center[2] = centerline[i*3+2]
+        vec3.direction(p, center, normal)
+
+        # Stamp n into 'm', skipping over the position:
+        mesh.set normal, m+3
+        [m, v] = [m+6,v+1]
+      i++
+    mesh
+    */
 }
 
 
@@ -52,7 +126,9 @@ Tube::ComputeFrames(const Vec3List& centerline,
 {
 
     // XXX(jcowles): WARNING: this *compiles* but has not been tested!
-
+    // Note: R -> Normals
+    //       S -> Binormals
+    //       T -> Tangents
     const unsigned tangentSmoothness = 3.0f;
     unsigned count = centerline.size();
     
@@ -107,4 +183,6 @@ Tube::ComputeFrames(const Vec3List& centerline,
         ni = nj; 
         ++i;
     }
+
+    // originally returned: [ Noramls, Binormals, Tangents ]
 }
