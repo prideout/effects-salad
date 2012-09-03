@@ -27,7 +27,7 @@ using glm::mat3;
 using glm::vec3;
 using glm::vec2;
 
-static const bool SingleBuilding = true;
+static bool SingleBuilding = false;
 
 class CracksEffect : public Effect {
 public:
@@ -68,24 +68,21 @@ Buildings::Init()
      if (not SingleBuilding) {
          thickness = 2.5f;
          topRadius =  1.0f;
-         tetSize = 0.2f;
+         tetSize = 0.1f;
          nSides = 4;
          _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[1]);
          thickness = 2.5f;
          topRadius =  1.2f;
-         tetSize = 0.2f;
          nSides = 3;
          _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[2]);
-         thickness = 4;
-         topRadius =  1;
-         tetSize = 0.3f;
-         nSides = 32;
+         thickness = 2.5f;
+         topRadius = 1;
+         nSides = 24;
          _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[3]);
      }
 
      _batches[0].Template = &_templates[0];
      _batches[0].Instances.resize(1);
-     _batches[0].Instances[0].BoundariesOnly = false;
      _batches[0].Instances[0].EnableCullingPlane = false;
      _batches[0].Instances[0].CullingPlaneY = 10.0;
      _batches[0].Instances[0].GroundPosition = vec2(0, 0);
@@ -97,41 +94,43 @@ Buildings::Init()
      if (not SingleBuilding) {
          _batches[1].Template = &_templates[1];
          _batches[1].Instances.resize(2);
-         _batches[1].Instances[0].BoundariesOnly = true;
          _batches[1].Instances[0].EnableCullingPlane = false;
          _batches[1].Instances[0].GroundPosition = vec2(-20, 0);
          _batches[1].Instances[0].Height = 0.5;
          _batches[1].Instances[0].Radius = 1.0;
          _batches[1].Instances[0].Hue = 0.3;
+         _batches[1].Instances[0].ExplosionStart = 5.0;
          _batches[1].Instances[1] = _batches[1].Instances[0];
          _batches[1].Instances[1].GroundPosition = vec2(12, 12);
          _batches[1].Instances[1].Height = 0.3;
          _batches[1].Instances[1].Radius = 1.2;
- 
+
          _batches[2].Template = &_templates[2];
          _batches[2].Instances.resize(2);
-         _batches[2].Instances[0].BoundariesOnly = true;
          _batches[2].Instances[0].EnableCullingPlane = false;
          _batches[2].Instances[0].GroundPosition = vec2(-15, 30);
          _batches[2].Instances[0].Height = 1.3;
          _batches[2].Instances[0].Radius = 1.0;
          _batches[2].Instances[0].Hue = 0.1;
+         _batches[2].Instances[0].ExplosionStart = 6.0;
          _batches[2].Instances[1] = _batches[2].Instances[0];
          _batches[2].Instances[1].GroundPosition = vec2(15, 30);
+         _batches[2].Instances[1].Height = 2.0;
 
          _batches[3].Template = &_templates[3];
          _batches[3].Instances.resize(2);
-         _batches[3].Instances[0].BoundariesOnly = true;
          _batches[3].Instances[0].EnableCullingPlane = false;
          _batches[3].Instances[0].GroundPosition = vec2(0, -30);
          _batches[3].Instances[0].Height = 1.4;
          _batches[3].Instances[0].Radius = 0.8;
          _batches[3].Instances[0].Hue = 0.0;
+         _batches[3].Instances[0].ExplosionStart = 7.0;
          _batches[3].Instances[1] = _batches[3].Instances[0];
          _batches[3].Instances[1].GroundPosition = vec2(13, -28);
          _batches[3].Instances[1].Radius = 0.4;
          _batches[3].Instances[1].Height = 0.4;
          _batches[3].Instances[1].Hue = 0.1;
+         _batches[3].Instances[1].ExplosionStart = 7.5;
      }
 
      // Compile shaders
@@ -150,11 +149,23 @@ Buildings::_GenerateBuilding(float thickness,
                              int nSides,
                              BuildingTemplate* dest)
 {
-    // Create the boundaries
+    // Create the outer skin
     tetgenio in;
     float r1 = 10.0f;  float r2 = r1 * topRadius;
     float y1 = 0;     float y2 = 20.0f;
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
+
+    // Create a cheap Vao for buildings that aren't self-destructing
+    Blob indices;
+    TetUtil::TrianglesFromHull(in, &indices);
+    dest->HullVao.Init();
+    dest->HullVao.AddVertexAttribute(AttrPositionFlag,
+                                     3,
+                                     in.pointlist,
+                                     in.numberofpoints);
+    dest->HullVao.AddIndices(indices);
+    
+    // Add inner walls
     y1 += thickness; y2 -= thickness;
     r1 -= thickness; r2 -= thickness;
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
@@ -196,21 +207,19 @@ Buildings::_GenerateBuilding(float thickness,
 void
 Buildings::Update()
 {
-    if (SingleBuilding) {
+    const bool Looping = true;
+    if (not Looping) {
         GetContext()->duration = std::numeric_limits<float>::infinity();
     }
-    float time = GetContext()->elapsedTime;
 
-    if (SingleBuilding) {
-        PerspCamera* camera = &GetContext()->mainCam;
-        camera->eye.x = 0;
-        camera->eye.y = 35;
-        camera->eye.z = 70;
-        camera->center.y = 20;
-        if (SingleBuilding) {
-            camera->eye = glm::rotateY(camera->eye, time * 48);
-        }
-    }
+    float time = GetContext()->elapsedTime;
+    PerspCamera* camera = &GetContext()->mainCam;
+    camera->eye.x = 0;
+    camera->eye.y = 35;
+    camera->eye.z = 70;
+    camera->center.y = 20;
+    camera->eye = glm::rotateY(camera->eye, time * 48);
+
     _cracks->Update();
 }
 
@@ -248,19 +257,27 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
 
+    float time = GetContext()->elapsedTime;
+    bool boundariesOnly = (time < instance.ExplosionStart);
+
     glUseProgram(progs["Tetra.Solid"]);
     templ.CentroidTexture.Bind(0, "CentroidTexture");
     templ.BuildingVao.Bind();
     glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform1f(u("Height"), instance.Height);
-    glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("Time"), time);
     glUniform3fv(u("Scale"), 1, ptr(scale));
     glUniform1f(u("Hue"), instance.Hue);
     glUniform1f(u("ExplosionStart"), instance.ExplosionStart);
 
-    int n = instance.BoundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
+    int n = boundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
+    if (not boundariesOnly) {
+        glEnable(GL_BLEND);
+    }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
+    glDisable(GL_BLEND);
 }
 
 Effect*

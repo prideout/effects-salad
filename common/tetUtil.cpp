@@ -469,6 +469,39 @@ _FindSharedPoints(ivec4 a, ivec4 b)
     return ret;
 }
 
+struct StartingTet
+{
+    int Index;
+    float CentroidY;
+};
+
+struct _CompareStartTets : public binary_function<StartingTet,StartingTet,bool>
+{
+	inline bool operator()(const StartingTet& a, const StartingTet& b)
+	{
+        return a.CentroidY < b.CentroidY;
+	}
+};
+
+struct IndirectSortElement { int value; int ordering; };
+bool operator<(IndirectSortElement a, IndirectSortElement b)
+{
+    return a.ordering < b.ordering;
+}
+
+ivec4 indirect_sort(ivec4 target, ivec4 ordering)
+{
+    IndirectSortElement mylist[4] = {
+        {target.x, ordering.x},
+        {target.y, ordering.y},
+        {target.z, ordering.z},
+        {target.w, ordering.w},
+    };
+    IndirectSortElement* p = &mylist[0];
+    sort(p, p+4);
+    return ivec4(p[0].value, p[1].value, p[2].value, p[3].value);
+}
+
 // Builds non-indexed vec4's for use with GL_LINES that represents
 // a vertical "crack" along the side of the hull.  Assumes that tets
 // are sorted with boundary tets coming first.
@@ -476,25 +509,32 @@ void
 TetUtil::FindCracks(const tetgenio& tets,
                     const Vec4List& centroids,
                     Blob* vbo,
-                    float startHeight,
                     int maxCrackLength)
 {
     const ivec4* neighbors = (const ivec4*) tets.neighborlist;
-    list<int> startingTets;
 
-    // Find a starting tet along the bottom edge.
+    // Find a set of low-altitude starting tets
+    vector<StartingTet> startingTets;
+    startingTets.reserve(centroids.size());
     int i = 0;
     FOR_EACH(c, centroids) {
-        if (c->w > 3) {
-            break;
+        if (c->w > 2) {
+            i++;
+            continue;
         }
-        if (c->y < startHeight) {
-            startingTets.push_back(i);
-        }
-        ++i;
+        StartingTet tet = {i++, c->y};
+        startingTets.push_back(tet);
+    }
+    sort(startingTets.begin(), startingTets.end(), _CompareStartTets());
+    while (startingTets.size() > 30) {
+        startingTets.pop_back();
     }
 
     printf("Forming %d cracks...\n", (int) startingTets.size());
+    if (startingTets.empty()) {
+        return;
+    }
+
     vector<int> path;
     set<int> pathSet;
     size_t crackStart = 0;
@@ -504,20 +544,32 @@ TetUtil::FindCracks(const tetgenio& tets,
     // For each starting tet, form a crack upwards through the volume.
     FOR_EACH (startTet, startingTets) {
 
-        int minIndex = *startTet;
+        int minIndex = startTet->Index;
+
         path.push_back(minIndex);
         pathSet.insert(minIndex);
 
         // Find the "highest altitude" neighboring tet that is also a boundary tet.
         int previous = minIndex;
         for (int i = 0; i < maxCrackLength; i++) {
-            ivec4 n = neighbors[previous];
+
+            ivec4 n0 = neighbors[previous];
+            ivec4 n1 = ivec4(centroids[n0.x].w,
+                             centroids[n0.y].w,
+                             centroids[n0.z].w,
+                             centroids[n0.w].w);
+
+            // Order small-valence tets first; this makes the crack prefer
+            // the surface over the interior.
+            // Well, it doesn't seem to help.  Turning off for now.
+            ivec4 n = n0; // indirect_sort(n0, n1);
+
+            // Find the "highest altitude" neighbor that we haven't chosen before
             vec4 c0 = centroids[n.x];
             vec4 c1 = centroids[n.y];
             vec4 c2 = centroids[n.z];
             vec4 c3 = centroids[n.w];
             int nTallest = n.x;
-            
             if (c1.y > centroids[nTallest].y && pathSet.find(n.y) == pathSet.end()) nTallest = n.y;
             if (c2.y > centroids[nTallest].y && pathSet.find(n.z) == pathSet.end()) nTallest = n.z;
             if (c3.y > centroids[nTallest].y && pathSet.find(n.w) == pathSet.end()) nTallest = n.w;

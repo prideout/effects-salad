@@ -46,7 +46,7 @@ PerspCamera::PerspCamera() :
     fov(45),
     aspect(1.0),
     near(1.0),
-    far(100)
+    far(200)
 {
 }
 

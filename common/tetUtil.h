@@ -66,7 +66,6 @@ namespace TetUtil
     void FindCracks(const tetgenio& tets,
                     const Vec4List& centroids,
                     Blob* vbo,
-                    float startHeight = 0.1,
                     int maxCrackLength = 300);
 
     // Add "regions", which are defined by seed points that flood until hitting a facet.
