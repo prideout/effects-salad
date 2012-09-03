@@ -150,11 +150,23 @@ Buildings::_GenerateBuilding(float thickness,
                              int nSides,
                              BuildingTemplate* dest)
 {
-    // Create the boundaries
+    // Create the outer skin
     tetgenio in;
     float r1 = 10.0f;  float r2 = r1 * topRadius;
     float y1 = 0;     float y2 = 20.0f;
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
+
+    // Create a cheap Vao for buildings that aren't self-destructing
+    Blob indices;
+    TetUtil::TrianglesFromHull(in, &indices);
+    dest->HullVao.Init();
+    dest->HullVao.AddVertexAttribute(AttrPositionFlag,
+                                     3,
+                                     in.pointlist,
+                                     in.numberofpoints);
+    dest->HullVao.AddIndices(indices);
+    
+    // Add inner walls
     y1 += thickness; y2 -= thickness;
     r1 -= thickness; r2 -= thickness;
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);

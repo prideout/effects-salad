@@ -39,8 +39,15 @@ public:
                             int componentCount, 
                             const FloatList& values);
 
+    void AddVertexAttribute(GLuint attrib, 
+                            int componentCount, 
+                            const float* values,
+                            int vertexCount);
+
     void AddInterleaved(VertexAttribMask attribs,
                         const Blob& data);
+
+    void AddIndices(const Blob& data);
 
     void Bind();
 };

@@ -10,6 +10,7 @@ struct BuildingTemplate {
     int BoundaryTetCount;
     Vao BuildingVao;
     Vao CracksVao;
+    Vao HullVao;
     int NumCracks;
 };
 
