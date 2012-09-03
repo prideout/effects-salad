@@ -100,6 +100,18 @@ uniform float ExplosionStart = 3.0;
 
 out vec3 vPosition;
 
+// http://gizma.com/easing
+
+vec3 easeOutCirc(float t, vec3 x1, vec3 x2, float duration)
+{
+    float d = duration;
+    vec3 b = x1;
+    vec3 c = x2 - x1;
+	t /= d;
+	t--;
+	return c * sqrt(1 - t*t) + b;
+};
+
 void main()
 {
     uint tetid = uint(gl_VertexID) / 12u;
@@ -138,17 +150,21 @@ void main()
 
     if (Time > ExplosionStart) {
        float t = Time - ExplosionStart;
-
        float y = tetcenter.y / MaxHeight;
-       float x = 1 + t * y * y;
-       p = normalize(p) * length(p) * x;
-       tetcenter = normalize(tetcenter) * length(tetcenter) * x;
-       p.xz *= x;
-       tetcenter.xz *= x;
-
        implosion += t * (1 + randhash(tetid, 1));
        implosion *= y;
        implosion = clamp(implosion, 0, 1);
+
+       float tFinal = 5;
+
+       float x = 1 + tFinal * y * y;
+       vec3 p1 = normalize(p) * length(p) * x;
+       vec3 tetcenter1 = normalize(tetcenter) * length(tetcenter) * x;
+       p1.xz *= x;
+       tetcenter1.xz *= x;
+
+       p = easeOutCirc(t, p, p1, 100);
+       tetcenter = easeOutCirc(t, tetcenter, tetcenter1, 100);
     } 
 
     if (implosion >= 1) {
