@@ -38,7 +38,7 @@ struct ThreadParams {
     BuildingTemplate* Dest;
 };
 
-static void _GenerateBuilding(ThreadParams* params);
+void _GenerateBuilding(void* params);
 
 class CracksEffect : public Effect {
 public:
@@ -163,9 +163,10 @@ Buildings::Init()
      _cracks->Init();
 }
 
-static void
-_GenerateBuilding(ThreadParams* params)
+void
+_GenerateBuilding(void* vParams)
 {
+    ThreadParams* params = (ThreadParams*) vParams;
     float thickness = params->Thickness;
     float topRadius = params->TopRadius;
     float tetSize = params->TetSize;
