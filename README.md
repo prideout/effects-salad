@@ -28,7 +28,7 @@ Cherry Blossom / Grass / Country / moon:
   * [Cool sky and moon](http://www.flickr.com/photos/25259860/2403305820/)
   * [Koi](http://www.flickr.com/photos/jpinlac/4572623911/)
   * [Blossoms on water](http://www.flickr.com/photos/shanmoe/3529404508/)
-  * [Moon Ripples(http://www.flickr.com/photos/allybeag/2277580669/)
+  * [Moon Ripples](http://www.flickr.com/photos/allybeag/2277580669/)
   * [Moon](http://www.flickr.com/photos/penguinbush/2768719983/)
 
 Neo-Tokyo:
