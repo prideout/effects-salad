@@ -88,7 +88,7 @@ Tube::ComputeFrames(const Vec3List& centerline,
     glm::vec3 ni = n0, 
               si = b0, 
               ti = t0;
-    while(i < count-1) {
+    while(i < (int) count-1) {
         j = i + 1;
         glm::vec3 xi = centerline[i];     //centerline.subarray(i*3, i*3+3)
         glm::vec3 xj = centerline[j];     //.subarray(j*3, j*3+3)
