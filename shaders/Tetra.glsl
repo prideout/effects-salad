@@ -1,4 +1,4 @@
--- Simple.VS
+-- Cracks.VS
 
 layout(location = 0) in vec4 Position;
 layout(location = 4) in float Length;
@@ -14,7 +14,7 @@ void main()
     gl_Position = Projection * Modelview * Position;
 }
 
--- Simple.FS
+-- Cracks.FS
 
 in float vLength;
 out vec4 FragColor;
@@ -28,7 +28,6 @@ void main()
         discard;
         return;
     }
-    //FragColor = (vLength / 100.0) * Color;
     FragColor = Color;
     gl_FragDepth = gl_FragCoord.z + DepthOffset;
 }

@@ -1,5 +1,4 @@
 //
-// Add "CopyDepth" flag to Fullscreen
 // Radial blur per shadertoy -- Avoid HDR, just blur in a sep buffer
 //
 // Building destruction
@@ -142,7 +141,7 @@ Buildings::Init()
 
      // Compile shaders
      Programs& progs = Programs::GetInstance();
-     progs.Load("Tetra.Simple", false);
+     progs.Load("Tetra.Cracks", false);
      progs.Load("Tetra.Solid", false);
      progs.Load("Buildings.XZPlane", false);
 
@@ -288,7 +287,7 @@ CracksEffect::Draw()
     Programs& progs = Programs::GetInstance();
     PerspCamera surfaceCam = GetContext()->mainCam;
 
-    glUseProgram(progs["Tetra.Simple"]);
+    glUseProgram(progs["Tetra.Cracks"]);
     surfaceCam.Bind(glm::mat4());
     FOR_EACH(batch, _buildings->_batches) {
         FOR_EACH(instance, batch->Instances) {
@@ -303,7 +302,7 @@ CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
-    glUseProgram(progs["Tetra.Simple"]);
+    glUseProgram(progs["Tetra.Cracks"]);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform1f(u("Height"), instance.Height);
     glUniform3fv(u("Scale"), 1, ptr(scale));
