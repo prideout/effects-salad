@@ -1,16 +1,16 @@
-// TODO:
-// Peel off tetrahedra
+// Generate instances and templates with loops rather than unrolled code.
 // Stack buildings for a slightly more interesting effect
-// Buildings should have floors
 // Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
-// "Silent Replacement" of coarse buildings with tetified buildings
-// Destroy one-by-one
+// Secondary explosion effect: some tets pop off the top, right before explosion
+//
+// We're only rendering boundary tets right now, but we're not exploiting
+//   the massive memory savings.  Maybe buildings should have floors?
+//
 // Camera
 // Radial blur
 // DOF effect
 // Look at Akira references
 // Smoke
-//
 
 #include "glm/gtc/type_ptr.hpp"
 #include "fx/buildings.h"
@@ -86,8 +86,7 @@ Buildings::Init()
     params0.TetSize = 0.1f;
     params0.NumSides = 5;
     params0.Dest = &_templates[0];
-    _GenerateBuilding(&params0);
-    _UploadBuilding(params0);
+    tthread::thread thread0(_GenerateBuilding, &params0);
 
     ThreadParams params1 = {0};
     params1.Thickness = 2.5f;
@@ -95,8 +94,7 @@ Buildings::Init()
     params1.TetSize = 0.1f;
     params1.NumSides = 4;
     params1.Dest = &_templates[1];
-    _GenerateBuilding(&params1);
-    _UploadBuilding(params1);
+    tthread::thread thread1(_GenerateBuilding, &params1);
 
     ThreadParams params2 = {0};
     params2.Thickness = 2.5f;
@@ -104,8 +102,7 @@ Buildings::Init()
     params2.TopRadius =  1.2f;
     params2.NumSides = 3;
     params2.Dest = &_templates[2];
-    _GenerateBuilding(&params2);
-    _UploadBuilding(params2);
+    tthread::thread thread2(_GenerateBuilding, &params2);
 
     ThreadParams params3 = {0};
     params3.Thickness = 2.5f;
@@ -113,8 +110,7 @@ Buildings::Init()
     params3.TopRadius = 1;
     params3.NumSides = 24;
     params3.Dest = &_templates[3];
-    _GenerateBuilding(&params3);
-    _UploadBuilding(params3);
+    tthread::thread thread3(_GenerateBuilding, &params3);
 
      _batches[0].Template = &_templates[0];
      _batches[0].Instances.resize(1);
@@ -167,6 +163,17 @@ Buildings::Init()
          _batches[3].Instances[1].Hue = 0.1;
          _batches[3].Instances[1].ExplosionStart = 7.5;
      }
+
+     // Needs improvement:
+     // This waits on thread0 to finish, which isn't necessarily the fastest!
+     thread0.join();
+     _UploadBuilding(params0);
+     thread1.join();
+     _UploadBuilding(params1);
+     thread2.join();
+     _UploadBuilding(params2);
+     thread3.join();
+     _UploadBuilding(params3);
 
      // Compile shaders
      Programs& progs = Programs::GetInstance();
