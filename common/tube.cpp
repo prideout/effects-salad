@@ -82,7 +82,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     glm::vec3 p;
     float r = polygonRadius;
 
-    while (i < count) {
+    while (i < (int) count) {
         int v = 0;
 
         glm::mat3 basis(normals[i], binormals[i], tangents[i]);
@@ -125,7 +125,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     m = 0;
     glm::vec3 normal; 
     glm::vec3 center; 
-    while (i < count) {
+    while (i < (int) count) {
       int v = 0;
       while (v < n+1) {
         p.x = mesh[m+0];
