@@ -110,7 +110,7 @@ vec3 easeOutCirc(float t, vec3 x1, vec3 x2, float duration)
 	t /= d;
 	t--;
 	return c * sqrt(1 - t*t) + b;
-};
+}
 
 void main()
 {
