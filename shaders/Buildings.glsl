@@ -1,7 +1,7 @@
 -- XZPlane.VS
 
 uniform float Y = 0;
-uniform float Scale = 40;
+uniform float Scale = 100;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;

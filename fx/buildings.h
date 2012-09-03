@@ -15,7 +15,6 @@ struct BuildingTemplate {
 };
 
 struct BuildingInstance {
-    bool BoundariesOnly;
     bool EnableCullingPlane;
     float CullingPlaneY;
     glm::vec2 GroundPosition;
