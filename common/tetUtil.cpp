@@ -7,6 +7,7 @@
 #include <set>
 
 using namespace glm;
+using namespace std;
 
 // Thin wrapper for tetgen's "tetrahedralize" function.
 void
@@ -60,11 +61,11 @@ TetUtil::HullFrustum(float r1,
     
     // Rim points:
     for (float theta = 0; theta < twopi - dtheta / 2; theta += dtheta) {
-        float x1 = r1 * std::cos(theta);
-        float z1 = r1 * std::sin(theta);
+        float x1 = r1 * cos(theta);
+        float z1 = r1 * sin(theta);
         *coord++ = x1; *coord++ = y1; *coord++ = z1;
-        float x2 = r2 * std::cos(theta);
-        float z2 = r2 * std::sin(theta);
+        float x2 = r2 * cos(theta);
+        float z2 = r2 * sin(theta);
         *coord++ = x2; *coord++ = y2; *coord++ = z2;
     }
 
@@ -134,8 +135,8 @@ TetUtil::HullWheel(vec3 center,
     
     // Rim points:
     for (float theta = 0; theta < twopi - dtheta / 2; theta += dtheta) {
-        float x = radius * std::cos(theta);
-        float y = radius * std::sin(theta);
+        float x = radius * cos(theta);
+        float y = radius * sin(theta);
         *coord++ = z0;
         *coord++ = y;
         *coord++ = x;
@@ -329,7 +330,7 @@ void
 TetUtil::TrianglesFromHull(const tetgenio& hull,
                            Blob* indices)
 {
-    std::vector<int> dest;
+    vector<int> dest;
     int numFacets = hull.numberoffacets;
     const tetgenio::facet* facet = &hull.facetlist[0];
     for (; numFacets; ++facet, --numFacets) {
@@ -479,28 +480,29 @@ TetUtil::FindCracks(const tetgenio& tets,
                     int maxCrackLength)
 {
     const ivec4* neighbors = (const ivec4*) tets.neighborlist;
-    std::list<int> startingTets;
+    list<int> startingTets;
 
     // Find a starting tet along the bottom edge.
     int i = 0;
-    for (auto c = centroids.begin(); c != centroids.end(); ++c, ++i) {
+    FOR_EACH(c, centroids) {
         if (c->w > 3) {
             break;
         }
         if (c->y < startHeight) {
             startingTets.push_back(i);
         }
+        ++i;
     }
 
     printf("Forming %d cracks...\n", (int) startingTets.size());
-    std::vector<int> path;
-    std::set<int> pathSet;
+    vector<int> path;
+    set<int> pathSet;
     size_t crackStart = 0;
     int expectedEdgeCount = 0;
-    std::list<size_t> crackLengths; // number of edges per crack
+    list<size_t> crackLengths; // number of edges per crack
 
     // For each starting tet, form a crack upwards through the volume.
-    for (auto startTet = startingTets.begin(); startTet != startingTets.end(); ++startTet) {
+    FOR_EACH (startTet, startingTets) {
 
         int minIndex = *startTet;
         path.push_back(minIndex);
@@ -548,7 +550,7 @@ TetUtil::FindCracks(const tetgenio& tets,
     int chosenCorner = previousCorners.x;
     vec4 previousPoint = vec4(points[chosenCorner], lengthSoFar);
     int edgesWritten = 0;
-    for (auto tetIndex = ++path.begin(); tetIndex != path.end(); ++tetIndex) {
+    for (vector<int>::iterator tetIndex = ++path.begin(); tetIndex != path.end(); ++tetIndex) {
 
         ivec4 currentCorners = corners[*tetIndex];
         bool skip = false;
@@ -623,9 +625,9 @@ struct SortableTet
     int OriginalIndex;
 };
 
-typedef std::vector<SortableTet> SortableTetList;
+typedef vector<SortableTet> SortableTetList;
 
-struct _CompareTets : public std::binary_function<SortableTet,SortableTet,bool>
+struct _CompareTets : public binary_function<SortableTet,SortableTet,bool>
 {
 	inline bool operator()(const SortableTet& a, const SortableTet& b)
 	{
@@ -667,18 +669,18 @@ TetUtil::SortTetrahedra(Vec4List* tetData,
     }
 
     // Move boundary tets to the front.
-    std::sort(sortableList.begin(), sortableList.end(), _CompareTets());
+    sort(sortableList.begin(), sortableList.end(), _CompareTets());
 
     // Create a mapping from "old indices" to "new indices" and apply it to
     // the neighbor indices. -1 maps to -1 to handle absence-of-neighbor.
-    std::vector<int> mappingWithPad(sortableList.size() + 1);
+    vector<int> mappingWithPad(sortableList.size() + 1);
     int* mapping = &mappingWithPad[1];
     mapping[-1] = -1;
     int newIndex = 0;
-    for (auto s = sortableList.begin(); s != sortableList.end(); ++s) {
+    for (SortableTetList::iterator s = sortableList.begin(); s != sortableList.end(); ++s) {
         mapping[s->OriginalIndex] = newIndex++;
     }
-    for (auto s = sortableList.begin(); s != sortableList.end(); ++s) {
+    for (SortableTetList::iterator s = sortableList.begin(); s != sortableList.end(); ++s) {
         s->Neighbors.x = mapping[s->Neighbors.x];
         s->Neighbors.y = mapping[s->Neighbors.y];
         s->Neighbors.z = mapping[s->Neighbors.z];

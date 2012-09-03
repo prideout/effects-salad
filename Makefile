@@ -41,12 +41,12 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
-	CXXFLAGS := $(CXXFLAGS) --std=c++0x
+	CXXFLAGS := $(CXXFLAGS)
 	LIBS = -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
-	CXXFLAGS := $(CXXFLAGS) -Wc++11-extensions
+	CXXFLAGS := $(CXXFLAGS)
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o

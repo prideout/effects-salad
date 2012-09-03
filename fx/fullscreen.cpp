@@ -30,7 +30,7 @@ Fullscreen::Init()
 
     ivec2 size = ivec2(PezGetConfig().Width, PezGetConfig().Height);
 
-    if (!_customProgram.empty()) {
+    if (_customProgram.empty()) {
         glUseProgram(progs.Load("Fullscreen"));
         glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
         glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);

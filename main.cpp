@@ -57,11 +57,11 @@ static void _constructScene()
         ctx->mainCam.eye.y = 50;
 
         // Instance the effects, but do not place them into the scene graph:
-        auto fullscreen = new Fullscreen(Fullscreen::VignetteFlag |
-                                         Fullscreen::CopyDepthFlag |
-                                         Fullscreen::TeleLinesFlag);
-        auto buildings = new Buildings();
-        auto fps = new FpsOverlay();
+        Fullscreen* fullscreen = new Fullscreen(Fullscreen::VignetteFlag |
+                                                Fullscreen::CopyDepthFlag |
+                                                Fullscreen::TeleLinesFlag);
+        Buildings* buildings = new Buildings();
+        FpsOverlay* fps = new FpsOverlay();
 
         // Now, insert the effects into our poor man's "scene graph":
         ctx->drawables.push_back(fullscreen);
