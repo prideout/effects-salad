@@ -38,12 +38,6 @@ public:
 
 private:
 
-    void _GenerateBuilding(float thickness,
-                           float topRadius,
-                           float tetSize,
-                           int nSides,
-                           BuildingTemplate* dest);
-
     void _DrawBuilding(BuildingTemplate& templ,
                        BuildingInstance& instance);
 
