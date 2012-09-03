@@ -51,7 +51,7 @@ ifeq ($(UNAME), Darwin)
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -pthread -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a
+	LIBS = -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a
 endif
 
 
