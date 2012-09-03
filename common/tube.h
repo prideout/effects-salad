@@ -2,11 +2,14 @@
 
 #include "drawable.h"
 #include "typedefs.h"
+#include "vao.h"
 
 class Tube : public Drawable {
 public:
-    virtual void Init() {}
-    virtual void Draw() {}
+    Vao tube;
+
+    virtual void Init();
+    virtual void Draw();
     
     // Quick and dirty CPU-based 2D Bézier evaluator,
     // solely for purpose of converting coarse knot data

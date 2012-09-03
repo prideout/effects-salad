@@ -1,7 +1,9 @@
 #include "tube.h"
 #include "curve.h"
+#include "init.h"
 
-glm::vec3 _Perp(glm::vec3 u) {
+glm::vec3 _Perp(glm::vec3 u) 
+{
     glm::vec3 dest;
     glm::vec3 v = glm::vec3(1,0,0);
     dest = glm::cross(u,v);
@@ -11,6 +13,32 @@ glm::vec3 _Perp(glm::vec3 u) {
         dest = glm::cross(u,v);
     }
     return glm::normalize(dest);
+}
+
+
+void
+Tube::Init()
+{
+    Vec3List spine;
+    spine.push_back(glm::vec3(-2, 0, -5));
+    spine.push_back(glm::vec3(-1, 2, -5));
+    spine.push_back(glm::vec3(+1, 2, -5));
+    spine.push_back(glm::vec3(+2, 0, -5));
+
+    Vec3List centerline;
+    Blob meshData;
+    EvaluateBezier(spine, &centerline, 3);
+    VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
+    SweepPolygon(centerline, &meshData, attribs, .07f, 9);
+    tube.Init();
+    tube.AddInterleaved(attribs, meshData);
+}
+
+void
+Tube::Draw()
+{
+    tube.Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 10);
 }
 
 
@@ -38,7 +66,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
                    float polygonRadius,
                    int numPolygonSides)
 {
-    int n = 9;
+    int n = numPolygonSides;
     const float TWOPI = 3*3.1415;
     Vec3List tangents, normals, binormals;
 
@@ -50,7 +78,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     int i = 0;
     int m = 0;
     glm::vec3 p;
-    float r = 0.07f; //@radius
+    float r = polygonRadius;
 
     while (i < count) {
         int v = 0;
