@@ -30,6 +30,12 @@ Cherry Blossom / Grass / Country / moon:
   * [Blossoms on water](http://www.flickr.com/photos/shanmoe/3529404508/)
   * [Moon Ripples](http://www.flickr.com/photos/allybeag/2277580669/)
   * [Moon](http://www.flickr.com/photos/penguinbush/2768719983/)
+  * [Moon glow through branches](http://www.flickr.com/photos/35077273@N06/4312923500/)
+  * [Norway Northern Lights](http://www.youtube.com/watch?v=izYiDDt6d8s)
+  * [Milkyway not great](http://www.flickr.com/photos/37916495@N07/3667064453/)
+  * [Milkyway vignette](http://www.flickr.com/photos/41539320@N08/7289245018/)
+  * [Milkyway and bail](http://www.flickr.com/photos/blakesmithphotography/5489197061/)
+  * [Milkyway at Arosa](http://www.flickr.com/photos/reflection-stalker/7809105816/)
 
 Neo-Tokyo:
   * http://www.madmind.de/wp-content/uploads/2010/03/akira-neo-tokyo.jpg
