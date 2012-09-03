@@ -73,7 +73,9 @@ Tube::SweepPolygon(const Vec3List& centerline,
     // XXX(jcowles): ordering of params is slightly different from matrix order... see mat3 init below
     ComputeFrames(centerline, &tangents, &normals, &binormals);
     unsigned count = centerline.size();
-    FloatList mesh(count * (n+1) * 6, 0);
+    outputData->resize(count * (n+1) * 6);
+    unsigned char* mesh = &((*outputData)[0]);
+    //FloatList mesh(count * (n+1) * 6, 0);
     //mesh = new Float32Array(count * (n+1) * 6)
     int i = 0;
     int m = 0;
