@@ -35,6 +35,7 @@ SHARED := \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/noise/perlin.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
+	$(OBJDIR)/lib/tthread/tinythread.o \
 	$(OBJDIR)/lib/pez/pez.o
 
 UNAME := $(shell uname)
@@ -42,7 +43,7 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
 	CXXFLAGS := $(CXXFLAGS)
-	LIBS = -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
+	LIBS = -pthread -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
@@ -50,7 +51,7 @@ ifeq ($(UNAME), Darwin)
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a
+	LIBS = -pthread -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a
 endif
 
 
@@ -66,6 +67,7 @@ $(OBJDIR):
 	@mkdir -p $@
 	@mkdir -p $@/common
 	@mkdir -p $@/fx
+	@mkdir -p $@/lib/tthread
 	@mkdir -p $@/lib/pez
 	@mkdir -p $@/lib/lodepng
 	@mkdir -p $@/lib/noise

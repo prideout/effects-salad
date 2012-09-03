@@ -15,6 +15,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "fx/buildings.h"
 #include "glm/gtx/rotate_vector.hpp"
+#include "tthread/tinythread.h"
 #include "common/tetUtil.h"
 #include "common/init.h"
 #include "common/programs.h"
@@ -28,6 +29,16 @@ using glm::vec3;
 using glm::vec2;
 
 static bool SingleBuilding = false;
+
+struct ThreadParams {
+    float Thickness;
+    float TopRadius;
+    float TetSize;
+    int NumSides;
+    BuildingTemplate* Dest;
+};
+
+void _GenerateBuilding(void* params);
 
 class CracksEffect : public Effect {
 public:
@@ -59,27 +70,37 @@ Buildings::Init()
     _templates.resize(SingleBuilding ? 1 : 4);
     _batches.resize(_templates.size());
      
-    float thickness = 3;
-    float topRadius =  8.0f / 13.0f;
-    float tetSize = 0.1f;
-    int nSides = 5;
-    _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[0]);
+    ThreadParams params0;
+    params0.Thickness = 3;
+    params0.TopRadius =  8.0f / 13.0f;
+    params0.TetSize = 0.1f;
+    params0.NumSides = 5;
+    params0.Dest = &_templates[0];
+    _GenerateBuilding(&params0);
 
-     if (not SingleBuilding) {
-         thickness = 2.5f;
-         topRadius =  1.0f;
-         tetSize = 0.1f;
-         nSides = 4;
-         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[1]);
-         thickness = 2.5f;
-         topRadius =  1.2f;
-         nSides = 3;
-         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[2]);
-         thickness = 2.5f;
-         topRadius = 1;
-         nSides = 24;
-         _GenerateBuilding(thickness, topRadius, tetSize, nSides, &_templates[3]);
-     }
+    ThreadParams params1;
+    params1.Thickness = 2.5f;
+    params1.TopRadius =  1.0f;
+    params1.TetSize = 0.1f;
+    params1.NumSides = 4;
+    params1.Dest = &_templates[1];
+    _GenerateBuilding(&params1);
+
+    ThreadParams params2;
+    params2.Thickness = 2.5f;
+    params2.TetSize = 0.1f;
+    params2.TopRadius =  1.2f;
+    params2.NumSides = 3;
+    params2.Dest = &_templates[2];
+    _GenerateBuilding(&params2);
+
+    ThreadParams params3;
+    params3.Thickness = 2.5f;
+    params3.TetSize = 0.1f;
+    params3.TopRadius = 1;
+    params3.NumSides = 24;
+    params3.Dest = &_templates[3];
+    _GenerateBuilding(&params3);
 
      _batches[0].Template = &_templates[0];
      _batches[0].Instances.resize(1);
@@ -143,12 +164,15 @@ Buildings::Init()
 }
 
 void
-Buildings::_GenerateBuilding(float thickness,
-                             float topRadius,
-                             float tetSize,
-                             int nSides,
-                             BuildingTemplate* dest)
+_GenerateBuilding(void* vParams)
 {
+    ThreadParams* params = (ThreadParams*) vParams;
+    float thickness = params->Thickness;
+    float topRadius = params->TopRadius;
+    float tetSize = params->TetSize;
+    int nSides = params->NumSides;
+    BuildingTemplate* dest = params->Dest;
+
     // Create the outer skin
     tetgenio in;
     float r1 = 10.0f;  float r2 = r1 * topRadius;
