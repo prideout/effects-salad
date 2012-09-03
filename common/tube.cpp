@@ -90,28 +90,38 @@ Tube::SweepPolygon(const Vec3List& centerline,
         i++;
     }
 
-/*
-    # Next, populate normals:
-    [i, m] = [0, 0]
-    normal= vec3.create()
-    center = vec3.create()
-    while i < count
-      v = 0
-      while v < n+1
-        p[0] = mesh[m+0]
-        p[1] = mesh[m+1]
-        p[2] = mesh[m+2]
+    // Next, populate normals:
+    i = 0;
+    m = 0;
+    glm::vec3 normal; 
+    glm::vec3 center; 
+    while (i < count) {
+      int v = 0;
+      while (v < n+1) {
+        p.x = mesh[m+0];
+        p.y = mesh[m+1];
+        p.z = mesh[m+2];
+        center = centerline[i];
+        /*
         center[0] = centerline[i*3+0] # there has GOT to be a better way
         center[1] = centerline[i*3+1]
         center[2] = centerline[i*3+2]
-        vec3.direction(p, center, normal)
+        */
+        //vec3.direction(p, center, normal)
+        glm::vec3 normal = glm::normalize(p - center);
 
-        # Stamp n into 'm', skipping over the position:
-        mesh.set normal, m+3
-        [m, v] = [m+6,v+1]
-      i++
-    mesh
-    */
+        // Stamp n into 'm', skipping over the position:
+        //mesh.set normal, m+3
+        mesh[m+3+0] = normal.x;
+        mesh[m+3+1] = normal.y;
+        mesh[m+3+2] = normal.z;
+        m += 6;
+        v++;
+      }
+
+      i++;
+    }
+    //mesh
 }
 
 
