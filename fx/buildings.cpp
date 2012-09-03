@@ -97,7 +97,7 @@ Buildings::Init()
      _batches[0].Instances[0].GroundPosition = vec2(0, 0);
      _batches[0].Instances[0].Height = 1;
      _batches[0].Instances[0].Radius = 1;
-     _batches[0].Instances[0].Hue = 0.6;
+     _batches[0].Instances[0].Hue = 0.1;
 
      if (not SingleBuilding) {
          _batches[1].Template = &_templates[1];
@@ -209,11 +209,11 @@ Buildings::Update()
     if (SingleBuilding) {
         PerspCamera* camera = &GetContext()->mainCam;
         camera->eye.x = 0;
-        camera->eye.y = 20;
-        camera->eye.z = 40;
-        camera->center.y = 10;
+        camera->eye.y = 35;
+        camera->eye.z = 70;
+        camera->center.y = 20;
         if (SingleBuilding) {
-            camera->eye = glm::rotateY(camera->eye, time * 16);
+            camera->eye = glm::rotateY(camera->eye, time * 48);
         }
     }
     _cracks->Update();

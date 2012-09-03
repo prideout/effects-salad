@@ -17,7 +17,10 @@ void main()
 {
     vec2 tc = gl_FragCoord.xy * InverseViewport;
 
-    vec4 c = texture(SourceImage, tc);
-
+    vec4 c = textureLod(SourceImage, tc, 1.0);
+    c += textureLod(SourceImage, tc, 2.0);
+    c += textureLod(SourceImage, tc, 3.0);
+    c += textureLod(SourceImage, tc, 4.0);
+    c.w *= 2;
     FragColor = c;
 }

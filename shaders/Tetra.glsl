@@ -21,10 +21,11 @@ out vec4 FragColor;
 uniform vec4 Color = vec4(0, 0, 0, 0.75);
 uniform float Time;
 uniform float DepthOffset;
+uniform float GrowthRate = 20;
 
 void main()
 {
-    if (vLength > Time * 4) {
+    if (vLength > Time * GrowthRate) {
         discard;
         return;
     }
@@ -88,6 +89,7 @@ float randhash(uint seed, float b)
 uniform float Hue;
 uniform vec3 Translate;
 uniform vec3 Scale;
+uniform float HueVariation = 0.05;
 
 out vec3 vPosition;
 
@@ -101,9 +103,8 @@ void main()
         vColor = vec4(0);
     } else {
         float interiorHue = Hue;
-        float variationHue = 0.2;
         vFacetNormal = NormalMatrix * Normal;
-        float hue   = (neighbors == 4) ? interiorHue : Hue + variationHue * (randhash(tetid, 1.0) - 0.5);
+        float hue   = (neighbors == 4) ? interiorHue : Hue; // + HueVariation * (randhash(tetid, 1.0) - 0.5);
         float sat   = (neighbors == 4) ? 1.0 : 0.3;
         float value = (neighbors == 4) ? 0.3 : 0.7;
         vec3 hsv = vec3(hue, sat, value);
