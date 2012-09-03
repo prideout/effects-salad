@@ -41,6 +41,10 @@ public:
 
     void AddVertexAttribute(GLuint attrib, 
                             int componentCount, 
+                            const Blob& values);
+
+    void AddVertexAttribute(GLuint attrib, 
+                            int componentCount, 
                             const float* values,
                             int vertexCount);
 

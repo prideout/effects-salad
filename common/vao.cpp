@@ -102,6 +102,32 @@ Vao::AddVertexAttribute(GLuint attrib,
     pezCheck(glGetError() == GL_NO_ERROR, "Failed to add vertex attribute");
 }
 
+void 
+Vao::AddVertexAttribute(GLuint attrib, 
+                        int componentCount, 
+                        const Blob& values) {
+
+    // XXX: This always makes a new VBO, which really isn't necessary...
+
+    if (!vao) {
+        std::cerr << "Array object was not initialized" << std::endl;
+    }
+    glBindVertexArray(vao);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, 
+                 values.size(), 
+                 &values[0], 
+                 GL_STATIC_DRAW);
+
+    glVertexAttribPointer(attrib, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(attrib);
+    
+    pezCheck(glGetError() == GL_NO_ERROR, "Failed to add vertex attribute");
+}
+
 void
 Vao::AddIndices(const Blob& data) {
     if (!vao) {

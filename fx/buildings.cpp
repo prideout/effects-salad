@@ -30,15 +30,25 @@ using glm::vec2;
 
 static bool SingleBuilding = false;
 
+struct GpuParams {
+    Blob HullIndices;
+    Blob HullPoints;
+    Vec4List Centroids;
+    Blob FlattenedTets;
+    Blob Cracks;
+};
+
 struct ThreadParams {
     float Thickness;
     float TopRadius;
     float TetSize;
     int NumSides;
     BuildingTemplate* Dest;
+    GpuParams* GpuData;
 };
 
 void _GenerateBuilding(void* params);
+void _UploadBuilding(ThreadParams& params);
 
 class CracksEffect : public Effect {
 public:
@@ -70,37 +80,41 @@ Buildings::Init()
     _templates.resize(SingleBuilding ? 1 : 4);
     _batches.resize(_templates.size());
      
-    ThreadParams params0;
+    ThreadParams params0 = {0};
     params0.Thickness = 3;
     params0.TopRadius =  8.0f / 13.0f;
     params0.TetSize = 0.1f;
     params0.NumSides = 5;
     params0.Dest = &_templates[0];
     _GenerateBuilding(&params0);
+    _UploadBuilding(params0);
 
-    ThreadParams params1;
+    ThreadParams params1 = {0};
     params1.Thickness = 2.5f;
     params1.TopRadius =  1.0f;
     params1.TetSize = 0.1f;
     params1.NumSides = 4;
     params1.Dest = &_templates[1];
     _GenerateBuilding(&params1);
+    _UploadBuilding(params1);
 
-    ThreadParams params2;
+    ThreadParams params2 = {0};
     params2.Thickness = 2.5f;
     params2.TetSize = 0.1f;
     params2.TopRadius =  1.2f;
     params2.NumSides = 3;
     params2.Dest = &_templates[2];
     _GenerateBuilding(&params2);
+    _UploadBuilding(params2);
 
-    ThreadParams params3;
+    ThreadParams params3 = {0};
     params3.Thickness = 2.5f;
     params3.TetSize = 0.1f;
     params3.TopRadius = 1;
     params3.NumSides = 24;
     params3.Dest = &_templates[3];
     _GenerateBuilding(&params3);
+    _UploadBuilding(params3);
 
      _batches[0].Template = &_templates[0];
      _batches[0].Instances.resize(1);
@@ -172,6 +186,7 @@ _GenerateBuilding(void* vParams)
     float tetSize = params->TetSize;
     int nSides = params->NumSides;
     BuildingTemplate* dest = params->Dest;
+    GpuParams* gpuData = new GpuParams;
 
     // Create the outer skin
     tetgenio in;
@@ -180,15 +195,10 @@ _GenerateBuilding(void* vParams)
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
 
     // Create a cheap Vao for buildings that aren't self-destructing
-    Blob indices;
-    TetUtil::TrianglesFromHull(in, &indices);
-    dest->HullVao.Init();
-    dest->HullVao.AddVertexAttribute(AttrPositionFlag,
-                                     3,
-                                     in.pointlist,
-                                     in.numberofpoints);
-    dest->HullVao.AddIndices(indices);
-    
+    TetUtil::TrianglesFromHull(in, &gpuData->HullIndices);
+    gpuData->HullPoints.resize(sizeof(float) * 3 * in.numberofpoints);
+    memcpy(&gpuData->HullPoints[0], in.pointlist, gpuData->HullPoints.size());
+
     // Add inner walls
     y1 += thickness; y2 -= thickness;
     r1 -= thickness; r2 -= thickness;
@@ -207,25 +217,49 @@ _GenerateBuilding(void* vParams)
     dest->TotalTetCount = out.numberoftetrahedra;
 
     // Populate the per-tet texture data and move boundary tets to the front
-    Vec4List centroids;
-    TetUtil::SortTetrahedra(&centroids, out, &dest->BoundaryTetCount);
-    dest->CentroidTexture.Init(centroids);
+    TetUtil::SortTetrahedra(&gpuData->Centroids, out, &dest->BoundaryTetCount);
 
     // Create a flat list of non-indexed triangles
-    Blob massive;
     VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
-    TetUtil::PointsFromTets(out, attribs, &massive);
+    TetUtil::PointsFromTets(out, attribs, &gpuData->FlattenedTets);
+
+    // Non-indexed vertical crack lines
+    TetUtil::FindCracks(out, gpuData->Centroids, &gpuData->Cracks);
+
+    params->GpuData = gpuData;
+}
+
+void
+_UploadBuilding(ThreadParams& params)
+{
+    GpuParams* src = params.GpuData;
+    BuildingTemplate* dest = params.Dest;
+
+    // Cheap Vao for buildings that aren't self-destructing
+    dest->HullVao.Init();
+    dest->HullVao.AddVertexAttribute(AttrPositionFlag,
+                                     3,
+                                     src->HullPoints);
+    dest->HullVao.AddIndices(src->HullIndices);
+
+    // Texture buffer with centroids
+    dest->CentroidTexture.Init(src->Centroids);
+
+    // Huge buffer of non-indexed triangles
     dest->BuildingVao.Init();
-    dest->BuildingVao.AddInterleaved(attribs, massive);
+    VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
+    dest->BuildingVao.AddInterleaved(attribs, src->FlattenedTets);
     pezCheckGL("Bigass VBO for tets");
 
-    // Create an index buffer for vertical crack lines
-    Blob cracks;
-    TetUtil::FindCracks(out, centroids, &cracks);
+    // Non-indexed vertical crack lines
     dest->CracksVao.Init();
-    dest->CracksVao.AddInterleaved(AttrPositionFlag | AttrLengthFlag, cracks);
-    dest->NumCracks = (cracks.size() / sizeof(vec4)) / 2;
+    dest->CracksVao.AddInterleaved(AttrPositionFlag | AttrLengthFlag, src->Cracks);
+    dest->NumCracks = (src->Cracks.size() / sizeof(vec4)) / 2;
     pezCheckGL("Bigass VBO for cracks");
+
+    // Free CPU memory
+    delete src;
+    params.GpuData = 0;
 }
 
 void
