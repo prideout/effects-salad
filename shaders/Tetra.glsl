@@ -3,15 +3,20 @@
 layout(location = 0) in vec4 Position;
 layout(location = 4) in float Length;
 
+uniform vec3 Translate;
+uniform vec3 Scale;
+
 uniform mat4 Projection;
 uniform mat4 Modelview;
 
 out float vLength;
+out vec3 vPosition;
 
 void main()
 {
     vLength = Length;
-    gl_Position = Projection * Modelview * Position;
+    vPosition = Position.xyz * Scale + Translate;
+    gl_Position = Projection * Modelview * vec4(vPosition, 1);
 }
 
 -- Cracks.FS
@@ -43,6 +48,7 @@ uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
 uniform samplerBuffer CentroidTexture;
 uniform float CullY;
+uniform float Time;
 
 out vec4 vColor;
 out vec3 vFacetNormal;
@@ -90,6 +96,7 @@ uniform float Hue;
 uniform vec3 Translate;
 uniform vec3 Scale;
 uniform float HueVariation = 0.05;
+uniform float ExplosionStart = 3.0;
 
 out vec3 vPosition;
 
@@ -97,21 +104,61 @@ void main()
 {
     uint tetid = uint(gl_VertexID) / 12u;
     vec4 tetdata = texelFetch(CentroidTexture, int(tetid));
-    vec3 tetcenter = tetdata.rgb * Scale + Translate;
+    vec3 tetcenter = tetdata.rgb;
     int neighbors = int(tetdata.a);
     if (tetcenter.y > CullY) {
         vColor = vec4(0);
     } else {
         float interiorHue = Hue;
         vFacetNormal = NormalMatrix * Normal;
-        float hue   = (neighbors == 4) ? interiorHue : Hue; // + HueVariation * (randhash(tetid, 1.0) - 0.5);
+        float hue   = (neighbors == 4) ? interiorHue : Hue;
         float sat   = (neighbors == 4) ? 1.0 : 0.3;
         float value = (neighbors == 4) ? 0.3 : 0.7;
         vec3 hsv = vec3(hue, sat, value);
         vColor =  vec4(HSVtoRGB(hsv), 1.0);
     }
 
-    vPosition = Position.xyz * Scale + Translate;
+    vec3 p = Position.xyz;
+    vec3 scale = Scale;
+    float implosion = 0;
+    if (randhash(tetid, Time * 2) > 2.0) {
+       implosion = 0.25;
+    }
+
+    float MaxHeight = 20.0;
+    float BulgeDuration = 1.0;
+    float Bulgeness = 0.05;
+    if (Time > ExplosionStart - BulgeDuration) {
+        float t = Time - (ExplosionStart - BulgeDuration);
+        if (t > BulgeDuration) {
+            t = BulgeDuration;
+        }
+        scale += (MaxHeight*0.5 - abs(tetcenter.y - MaxHeight*0.5)) * Bulgeness * sin(t * t / BulgeDuration);
+    }
+
+    if (Time > ExplosionStart) {
+       float t = Time - ExplosionStart;
+
+       float y = tetcenter.y / MaxHeight;
+       float x = 1 + t * y * y;
+       p = normalize(p) * length(p) * x;
+       tetcenter = normalize(tetcenter) * length(tetcenter) * x;
+       p.xz *= x;
+       tetcenter.xz *= x;
+
+       implosion += t * (1 + randhash(tetid, 1));
+       implosion *= y;
+       implosion = clamp(implosion, 0, 1);
+    } 
+
+    if (implosion >= 1) {
+        gl_Position = vec4(0);
+        return;
+    }
+
+    p = mix(p, tetcenter, implosion);
+
+    vPosition = p * scale + Translate;
     gl_Position = Projection * Modelview * vec4(vPosition, 1);
 }
 

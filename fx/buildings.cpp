@@ -1,18 +1,12 @@
-//
-// Radial blur per shadertoy -- Avoid HDR, just blur in a sep buffer
-//
-// Building destruction
-//   1 Silently change facets into tets
-//   2 Grow glowing cracks along triangle edges from bottom up
-//   3 Progressively peel away tets from the top
-//   4 Make the cracks glow, perhaps with an HDR buffer
-//
+// TODO:
+// Peel off tetrahedra
 // Stack buildings for a slightly more interesting effect
-//
 // Buildings should have floors
-//
 // Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
+// "Silent Replacement" of coarse buildings with tetified buildings
+// Destroy one-by-one
 // Camera
+// Radial blur
 // DOF effect
 // Look at Akira references
 // Smoke
@@ -92,12 +86,13 @@ Buildings::Init()
      _batches[0].Template = &_templates[0];
      _batches[0].Instances.resize(1);
      _batches[0].Instances[0].BoundariesOnly = false;
-     _batches[0].Instances[0].EnableCullingPlane = true;
+     _batches[0].Instances[0].EnableCullingPlane = false;
      _batches[0].Instances[0].CullingPlaneY = 10.0;
      _batches[0].Instances[0].GroundPosition = vec2(0, 0);
-     _batches[0].Instances[0].Height = 1;
+     _batches[0].Instances[0].Height = 1.25;
      _batches[0].Instances[0].Radius = 1;
      _batches[0].Instances[0].Hue = 0.1;
+     _batches[0].Instances[0].ExplosionStart = 3.0;
 
      if (not SingleBuilding) {
          _batches[1].Template = &_templates[1];
@@ -259,8 +254,11 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform1f(u("Height"), instance.Height);
+    glUniform1f(u("Time"), GetContext()->elapsedTime);
     glUniform3fv(u("Scale"), 1, ptr(scale));
     glUniform1f(u("Hue"), instance.Hue);
+    glUniform1f(u("ExplosionStart"), instance.ExplosionStart);
+
     int n = instance.BoundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
     glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
 }
@@ -299,6 +297,11 @@ CracksEffect::Draw()
 void
 CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
+    float time = GetContext()->elapsedTime;
+    if (time > instance.ExplosionStart) {
+        return;
+    }
+
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
@@ -306,7 +309,7 @@ CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform1f(u("Height"), instance.Height);
     glUniform3fv(u("Scale"), 1, ptr(scale));
-    glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("Time"), time);
     glUniform1f(u("DepthOffset"), -0.0001f);
     glUniform4f(u("Color"), 0, 10, 10, 10);
     templ.CentroidTexture.Bind(0, "CentroidTexture");

@@ -21,6 +21,7 @@ struct BuildingInstance {
     float Height;
     float Radius;
     float Hue;
+    float ExplosionStart;
 };
 
 class CracksEffect;
