@@ -23,13 +23,8 @@ public:
 
     typedef unsigned int Mask;
 
-    Fullscreen(Mask mask, Effect* child = 0) :
-        Effect(), _mask(mask) {
-        clearColor = glm::vec4(0.1, 0.2, 0.4, 1);
-        if (child) {
-            _children.push_back(child);
-        }
-    }
+    Fullscreen(Mask mask, Effect* child = 0);
+    Fullscreen(std::string customProgram);
 
     virtual void AddChild(Effect* child);
     virtual ~Fullscreen() {}
@@ -42,5 +37,6 @@ private:
     Surface _surface;
     Vao _emptyVao;
     Mask _mask;
+    std::string _customProgram;
     EffectList _children;
 };

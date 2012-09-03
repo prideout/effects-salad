@@ -6,27 +6,47 @@
 using namespace std;
 using namespace glm;
 
+Fullscreen::Fullscreen(Mask mask, Effect* child) :
+    Effect(), _mask(mask)
+{
+    clearColor = glm::vec4(0.1, 0.2, 0.4, 1);
+    if (child) {
+        _children.push_back(child);
+    }
+}
+
+Fullscreen::Fullscreen(string customProgram) :
+    Effect(), _customProgram(customProgram)
+{
+    clearColor = glm::vec4(0.1, 0.2, 0.4, 1);
+}
+
 void
 Fullscreen::Init()
 {
     name = "Fullscreen";
     Effect::Init();
     Programs& progs = Programs::GetInstance();
-    glUseProgram(progs.Load("Fullscreen"));
-
-    glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
-    glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
-    glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
-    glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
-    glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
-
-    _emptyVao.InitEmpty();
 
     ivec2 size = ivec2(PezGetConfig().Width, PezGetConfig().Height);
 
-    if (_mask & ScanLinesFlag) {
-        size.y /= 2;
+    if (!_customProgram.empty()) {
+        glUseProgram(progs.Load("Fullscreen"));
+        glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
+        glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
+        glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
+        glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
+        glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
+        if (_mask & ScanLinesFlag) {
+            size.y /= 2;
+        }
+    } else {
+        progs.Load(_customProgram);
     }
+
+    _emptyVao.InitEmpty();
+
+
 
     GLenum internalFormat = GL_RGBA8;
     GLenum format = GL_RGBA;
@@ -90,7 +110,12 @@ Fullscreen::Draw()
 
     Programs& progs = Programs::GetInstance();
 
-    glUseProgram(progs["Fullscreen"]);
+    if (_customProgram.size()) {
+        glUseProgram(progs[_customProgram]);
+    } else {
+        glUseProgram(progs["Fullscreen"]);
+    }
+
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
 
     glUniform1i(u("SourceImage"), 0);
