@@ -60,7 +60,8 @@ static void _constructScene()
         Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag |
                                                  Fullscreen::TeleLinesFlag);
         Fullscreen* fullscreen2 = new Fullscreen("RadialBlur",
-                                                 Fullscreen::BlendFlag);
+                                                 Fullscreen::BlendFlag |
+                                                 Fullscreen::MipmapsFlag);
         fullscreen2->ShareDepth(fullscreen1);
         Buildings* buildings = new Buildings();
         FpsOverlay* fps = new FpsOverlay();

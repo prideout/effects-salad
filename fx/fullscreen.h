@@ -20,6 +20,7 @@ public:
         TeleLinesFlag  = 1 << 3,
         CopyDepthFlag  = 1 << 4,
         BlendFlag      = 1 << 5,
+        MipmapsFlag    = 1 << 6,
     };
 
     typedef unsigned int Mask;

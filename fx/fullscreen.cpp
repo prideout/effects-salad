@@ -49,7 +49,7 @@ Fullscreen::Init()
     GLenum internalFormat = GL_RGBA8;
     GLenum format = GL_RGBA;
     GLenum type = GL_UNSIGNED_BYTE;
-    GLenum filter = GL_LINEAR;
+    GLenum filter = (_mask & MipmapsFlag) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
     GLenum createDepth = true;
     if (_depthPeer) {
         _surface.Init(size, internalFormat, format, type, filter, false, &(_depthPeer->_surface));
@@ -116,6 +116,11 @@ Fullscreen::Draw()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _surface.texture);
+
+    if (_mask & MipmapsFlag) {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, _surface.depthTexture);
     glActiveTexture(GL_TEXTURE0);
