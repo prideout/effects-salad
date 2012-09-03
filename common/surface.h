@@ -21,7 +21,8 @@ public:
               GLenum format,
               GLenum type,
               GLenum filter,
-              bool createDepth);
+              bool createDepth,
+              Surface* depthPeer = 0);
 
     void Bind();
     void Unbind();

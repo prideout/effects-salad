@@ -57,16 +57,19 @@ static void _constructScene()
         ctx->mainCam.eye.y = 50;
 
         // Instance the effects, but do not place them into the scene graph:
-        Fullscreen* fullscreen = new Fullscreen(Fullscreen::VignetteFlag |
-                                                Fullscreen::CopyDepthFlag |
-                                                Fullscreen::TeleLinesFlag);
+        Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag |
+                                                 Fullscreen::TeleLinesFlag);
+        Fullscreen* fullscreen2 = new Fullscreen("RadialBlur",
+                                                 Fullscreen::BlendFlag);
+        fullscreen2->ShareDepth(fullscreen1);
         Buildings* buildings = new Buildings();
         FpsOverlay* fps = new FpsOverlay();
 
         // Now, insert the effects into our poor man's "scene graph":
-        ctx->drawables.push_back(fullscreen);
-          fullscreen->AddChild(buildings);
-        ctx->drawables.push_back(buildings->Cracks());
+        ctx->drawables.push_back(fullscreen1);
+          fullscreen1->AddChild(buildings);
+        ctx->drawables.push_back(fullscreen2);
+          fullscreen2->AddChild(buildings->Cracks());
         ctx->drawables.push_back(fps);
 
         shotMap["CityIntro"] = ctx;

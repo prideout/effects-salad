@@ -7,7 +7,7 @@ using namespace std;
 using namespace glm;
 
 Fullscreen::Fullscreen(Mask mask, Effect* child) :
-    Effect(), _mask(mask)
+    Effect(), _mask(mask), _depthPeer(0)
 {
     clearColor = glm::vec4(0.1, 0.2, 0.4, 1);
     if (child) {
@@ -15,10 +15,10 @@ Fullscreen::Fullscreen(Mask mask, Effect* child) :
     }
 }
 
-Fullscreen::Fullscreen(string customProgram) :
-    Effect(), _customProgram(customProgram)
+Fullscreen::Fullscreen(string customProgram, Mask mask) :
+    Effect(), _mask(mask), _customProgram(customProgram), _depthPeer(0)
 {
-    clearColor = glm::vec4(0.1, 0.2, 0.4, 1);
+    clearColor = glm::vec4(0, 0, 0, 0);
 }
 
 void
@@ -46,14 +46,16 @@ Fullscreen::Init()
 
     _emptyVao.InitEmpty();
 
-
-
     GLenum internalFormat = GL_RGBA8;
     GLenum format = GL_RGBA;
     GLenum type = GL_UNSIGNED_BYTE;
     GLenum filter = GL_LINEAR;
     GLenum createDepth = true;
-    _surface.Init(size, internalFormat, format, type, filter, createDepth);
+    if (_depthPeer) {
+        _surface.Init(size, internalFormat, format, type, filter, false, &(_depthPeer->_surface));
+    } else {
+        _surface.Init(size, internalFormat, format, type, filter, createDepth);
+    }
 
     pezCheckGL("Fullscreen::Init");
 
@@ -78,6 +80,12 @@ Fullscreen::AddChild(Effect* child)
 }
 
 void
+Fullscreen::ShareDepth(Fullscreen* depthPeer)
+{
+    _depthPeer = depthPeer;
+}
+
+void
 Fullscreen::Draw()
 {
     Effect::Draw();
@@ -93,7 +101,11 @@ Fullscreen::Draw()
     if (_children.size()) {
         glClearColor(clearColor.r, clearColor.g,
                      clearColor.b, clearColor.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
+        if (!_depthPeer) {
+            clearMask |= GL_DEPTH_BUFFER_BIT;
+        }
+        glClear(clearMask);
         FOR_EACH(child, _children) {
             (*child)->Draw();
         }
@@ -127,7 +139,16 @@ Fullscreen::Draw()
 
     _emptyVao.Bind();
 
+    if (_mask & BlendFlag) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glEnable(GL_DEPTH_TEST);
+
+    glDisable(GL_BLEND);
 
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Fullscreen::Draw");

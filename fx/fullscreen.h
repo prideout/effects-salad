@@ -19,15 +19,18 @@ public:
         ScanLinesFlag  = 1 << 2,
         TeleLinesFlag  = 1 << 3,
         CopyDepthFlag  = 1 << 4,
+        BlendFlag      = 1 << 5,
     };
 
     typedef unsigned int Mask;
 
     Fullscreen(Mask mask, Effect* child = 0);
-    Fullscreen(std::string customProgram);
-
-    virtual void AddChild(Effect* child);
+    Fullscreen(std::string customProgram, Mask mask = 0);
     virtual ~Fullscreen() {}
+
+    void AddChild(Effect* child);
+    void ShareDepth(Fullscreen* depthPeer);
+
     virtual void Init();
     virtual void Update();
     virtual void Draw();
@@ -39,4 +42,5 @@ private:
     Mask _mask;
     std::string _customProgram;
     EffectList _children;
+    Fullscreen* _depthPeer;
 };

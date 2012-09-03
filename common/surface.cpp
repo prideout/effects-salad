@@ -26,7 +26,8 @@ Surface::Init(ivec2 size,
               GLenum format,
               GLenum type,
               GLenum filter,
-              bool createDepth) {
+              bool createDepth,
+              Surface* depthPeer) {
 
     width = size.x;
     height = size.y;
@@ -46,8 +47,12 @@ Surface::Init(ivec2 size,
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Creation of the color texture for the FBO");
 
-    // create depth texture
-    if (createDepth) {
+    // share or create depth texture
+    if (depthPeer) {
+        pezCheck(!createDepth, "DepthPeer and CreateDepth are mutually exclusive.");
+        pezCheck(depthPeer->depthTexture, "DepthPeer has no depth buffer.  Has it been initialized?");
+        depthTexture = depthPeer->depthTexture;
+    } else if (createDepth) {
         glGenTextures(1, &depthTexture);
         glBindTexture(GL_TEXTURE_2D, depthTexture);
 
