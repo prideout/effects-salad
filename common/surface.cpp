@@ -36,8 +36,8 @@ Surface::Init(ivec2 size,
     // http://developer.apple.com/library/mac/#documentation/Darwin/Reference/Manpages/man3/glTexImage2D.3.html
 
     bool mipmapped = (filter == GL_LINEAR_MIPMAP_LINEAR);
-    GLenum magFilter = filter;
-    GLenum minFilter = mipmapped ? GL_LINEAR : filter;
+    GLenum minFilter = filter;
+    GLenum magFilter = mipmapped ? GL_LINEAR : filter;
 
     // create a color texture
     glGenTextures(1, &texture);
@@ -45,8 +45,8 @@ Surface::Init(ivec2 size,
     // XXX: on OSX, params *must* be set first
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, magFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     pezCheckGL("Creation of the color texture for the FBO");
