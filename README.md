@@ -24,6 +24,19 @@ Stills:
   * http://farm3.static.flickr.com/2475/3916967801_da152c16f7_b.jpg
   * http://farm3.static.flickr.com/2789/4333057631_0e1070bdfa_o.jpg
 
+Cherry Blossom / Grass / Country / moon:
+  * [Cool sky and moon](http://www.flickr.com/photos/25259860/2403305820/)
+  * [Koi](http://www.flickr.com/photos/jpinlac/4572623911/)
+  * [Blossoms on water](http://www.flickr.com/photos/shanmoe/3529404508/)
+  * [Moon Ripples](http://www.flickr.com/photos/allybeag/2277580669/)
+  * [Moon](http://www.flickr.com/photos/penguinbush/2768719983/)
+  * [Moon glow through branches](http://www.flickr.com/photos/35077273@N06/4312923500/)
+  * [Norway Northern Lights](http://www.youtube.com/watch?v=izYiDDt6d8s)
+  * [Milkyway not great](http://www.flickr.com/photos/37916495@N07/3667064453/)
+  * [Milkyway vignette](http://www.flickr.com/photos/41539320@N08/7289245018/)
+  * [Milkyway and bail](http://www.flickr.com/photos/blakesmithphotography/5489197061/)
+  * [Milkyway at Arosa](http://www.flickr.com/photos/reflection-stalker/7809105816/)
+
 Neo-Tokyo:
   * http://www.madmind.de/wp-content/uploads/2010/03/akira-neo-tokyo.jpg
   * http://2.bp.blogspot.com/-KW_k5R8wWis/TePH6x3de9I/AAAAAAAAAms/3POananT2ds/s1600/Akira_city.jpg
