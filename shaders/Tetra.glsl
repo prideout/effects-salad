@@ -163,13 +163,21 @@ void main()
        p1.xz *= x;
        tetcenter1.xz *= x;
 
-       p = easeOutCirc(t, p, p1, 100);
-       tetcenter = easeOutCirc(t, tetcenter, tetcenter1, 100);
-    } 
+       float FanOutSpeed = 100;
+       p = easeOutCirc(t, p, p1, FanOutSpeed);
+       tetcenter = easeOutCirc(t, tetcenter, tetcenter1, FanOutSpeed);
+    }
 
     if (implosion >= 1) {
         gl_Position = vec4(0);
         return;
+    }
+
+    float ExplosionDuration = 1;
+    float FadeDuration = 1;
+    if (Time > ExplosionStart + ExplosionDuration) {
+       float t = (Time - ExplosionStart - ExplosionDuration) / FadeDuration;
+       implosion = mix(implosion, 1, clamp(t, 0, 1));
     }
 
     p = mix(p, tetcenter, implosion);

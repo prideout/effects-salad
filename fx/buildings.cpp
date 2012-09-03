@@ -260,7 +260,10 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     glUniform1f(u("ExplosionStart"), instance.ExplosionStart);
 
     int n = instance.BoundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
+    glDisable(GL_BLEND);
 }
 
 Effect*
