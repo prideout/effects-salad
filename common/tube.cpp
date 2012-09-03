@@ -1,4 +1,5 @@
 #include "tube.h"
+#include "curve.h"
 
 glm::vec3 _Perp(glm::vec3 u) {
     glm::vec3 dest;
@@ -22,6 +23,10 @@ Tube::EvaluateBezier(const Vec3List& spine,
                      Vec3List* centerline,
                      int levelOfDetail)
 {
+    // TODO: make Eval take a pointer rather than returning a copy :/
+    int segs = spine.size() - 1;
+    float samples = levelOfDetail * segs;
+    *centerline = Bezier::Eval(samples, spine);
 }
 
 // Sweeps an n-sided polygon along a given centerline.
