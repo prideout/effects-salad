@@ -20,10 +20,10 @@ void
 Tube::Init()
 {
     Vec3List spine;
-    spine.push_back(glm::vec3(-2, 0, -15));
+    spine.push_back(glm::vec3(-8, 0, -15));
     spine.push_back(glm::vec3(-1, 2, -15));
     spine.push_back(glm::vec3(+1, 2, -15));
-    spine.push_back(glm::vec3(+2, 0, -15));
+    spine.push_back(glm::vec3(+8, 0, -15));
 
     int polys = 9;
     float radius = 1.5f;
@@ -75,7 +75,7 @@ Tube::Init()
 void
 Tube::Draw()
 {
-    glPointSize(8);
+    glPointSize(6);
     tube.Bind();
     glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
     glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
@@ -315,6 +315,12 @@ Tube::ComputeFrames(const Vec3List& centerline,
     b0 = glm::normalize(b0);
     Ns[0] = n0;
     Bs[0] = b0;
+
+    /*
+    Ts[0].x = 4;
+    Ts[0].y = 5;
+    Ts[0].z = 6;
+    */
 
     // Use parallel transport to sweep the frame
     i = 0;

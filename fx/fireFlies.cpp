@@ -22,6 +22,7 @@ void FireFlies::Init()
     _surface.Init();
     _quad.Init();
     _ground.Init();
+    _tube.Init();
 
     // --------------------------------------------------------------------- 
     // Fire Flies
@@ -113,6 +114,7 @@ void FireFlies::Init()
 void FireFlies::Update() {
     Effect::Update();
     _ground.Update();
+    _tube.Update();
 };
 
 void FireFlies::Draw() {
@@ -122,19 +124,23 @@ void FireFlies::Draw() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
     glUseProgram(progs["FireFlies.Flies"]);
 
         //_surface.Bind();
         PerspCamera oldCam = GetContext()->mainCam;
         PerspCamera& cam = GetContext()->mainCam;
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        //cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         cam.eye.y = .0;
-        cam.center = vec3(0,.8,0); //cameraPoints[counter];
+        cam.center= vec3(0,1,-15); //cameraPoints[counter];
+        float t = GetContext()->elapsedTime;
+        cam.eye = vec3(-5*sin(t), 5+-5*cos(t), -5*sin(t)); //cameraPoints[counter];
 
         // look where we are walking
-        cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
-        cam.center.y = 0;
+        //cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
+        //cam.center.y = 0;
         cam.Bind(glm::mat4());
+        _tube.Draw();
         
         /*
         glClearColor(.0,.0,.9,1);
@@ -150,6 +156,7 @@ void FireFlies::Draw() {
         glPointSize(.5);
         _stars.Bind();
         glDrawArrays(GL_POINTS, 0, _stars.vertexCount);
+        _tube.DrawFrames();
 
         _ground.Draw();
 

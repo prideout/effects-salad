@@ -8,6 +8,7 @@
 #include "common/normalField.h"
 #include "common/surface.h"
 #include "common/texture.h"
+#include "common/tube.h"
 #include "common/quad.h"
 
 #include "fx/ground.h"
@@ -20,6 +21,7 @@ class FireFlies : public Effect {
     Surface _surface;
     Ground _ground;
     Quad _quad;
+    Tube _tube;
     AnimCurve<glm::vec3> cameraPoints;
     unsigned counter;
 
