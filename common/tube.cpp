@@ -25,7 +25,7 @@ Tube::Init()
     //spine.push_back(glm::vec3(-1, 2, -25));
     //spine.push_back(glm::vec3(+1, 2, -25));
     //spine.push_back(glm::vec3(+18, 0, -25));
-    int polys = 4;
+    int polys = 8;
     float radius = 0.2f;
     int LOD = 4;
     Vec3List centerline;
@@ -124,7 +124,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     ComputeFrames(centerline, &tangents, &normals, &binormals);
     unsigned count = centerline.size();
     outputData->resize(count * (n) * 6 * sizeof(float));
-    std::cout << "Max Index: " << count * (n) << std::endl;
+    //std::cout << "Max Index: " << count * (n) << std::endl;
     float* mesh = (float*)(&((*outputData)[0]));
     //FloatList mesh(count * (n+1) * 6, 0);
     //mesh = new Float32Array(count * (n+1) * 6)
@@ -148,6 +148,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
         float theta = 0;
         float dtheta = TWOPI / n;
         
+        /*
         std::cout << "[ \n";
         for (int r = 0; r < 3; r++) {
             std::cout << "  [ ";
@@ -157,7 +158,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
             std::cout << "  ]\n";
         }
         std::cout << "]\n";
-
+        */
 
         while (v < n) {
             float x = r*cos(theta);
@@ -174,11 +175,12 @@ Tube::SweepPolygon(const Vec3List& centerline,
             mesh[m+0] = p.x;
             mesh[m+1] = p.y;
             mesh[m+2] = p.z;
+            /*
             std::cout << "( "
                 << p.x << ", "
                 << p.y << ", "
                 << p.z << ")\n";
-            
+            */
             m = m + 6;
             v++;
             theta += dtheta;
@@ -247,18 +249,10 @@ Tube::GetIndices(const Vec3List& centerline,
             tri[0] = v+next+numPolygonSides;//+1;
             tri[1] = v+next;
             tri[2] = v+j;
-            std::cout 
-                    << tri[0] << ", "
-                    << tri[1] << ", "
-                    << tri[2] << ") -- ";
             tri = (unsigned*)(&rawBuffer[0]) + ptr + 3; //rawBuffer.subarray(ptr+3, ptr+6)
             tri[0] = v+j;
             tri[1] = v+j+numPolygonSides;//+1;
             tri[2] = v+next+numPolygonSides;//+1;
-            std::cout 
-                    << (unsigned)tri[0] << ", "
-                    << (unsigned)tri[1] << ", "
-                    << (unsigned)tri[2] << ")\n";
             ptr += 6;
         }
       v += numPolygonSides;//+1;
@@ -305,10 +299,6 @@ Tube::ComputeFrames(const Vec3List& centerline,
             j = i;
         }
         Ts[i] = glm::normalize(centerline[ii] - centerline[j]);
-        std::cout << 
-            " j: " << j << 
-            " i: " << ii << 
-            " count: " << count << "\n";
     }
 
     // Allocate some temporaries for vector math
