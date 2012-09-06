@@ -78,7 +78,7 @@ Tube::Draw()
     glPointSize(6);
     tube.Bind();
     glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
-    glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
+    //glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
     //glDrawElements(GL_TRIANGLES, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
     //glDrawElements(GL_POINTS, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
 }
@@ -316,7 +316,6 @@ Tube::ComputeFrames(const Vec3List& centerline,
     Bs[0] = b0;
 
     /*
-    Ts[0].x = 4;
     Ts[0].y = 5;
     Ts[0].z = 6;
     */

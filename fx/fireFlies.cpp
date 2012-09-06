@@ -100,8 +100,9 @@ void FireFlies::Init()
         //-9.5176629202812819, 0, 3.6461550396041615
         };
     Vec3List cvs;
-    for(unsigned i = 0; i < sizeof(cameraPath) / sizeof(float); i+=3) {
-        cvs.push_back( 1.f * vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
+    int cvCount = sizeof(cameraPath) / sizeof(float);
+    for(unsigned i = 0; i < cvCount; i+=3) {
+        cvs.push_back(vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
     }
     _tube.cvs = cvs;
     _tube.Init();
