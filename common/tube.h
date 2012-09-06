@@ -7,6 +7,7 @@
 
 class Tube : public Drawable {
 public:
+    Vec3List cvs;
     Vao tube;
     NormalField normVis;
     NormalField binormVis;

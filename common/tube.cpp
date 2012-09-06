@@ -1,5 +1,6 @@
 #include "tube.h"
 #include "curve.h"
+#include "demoContext.h"
 #include "init.h"
 
 glm::vec3 _Perp(glm::vec3 u) 
@@ -19,15 +20,14 @@ glm::vec3 _Perp(glm::vec3 u)
 void
 Tube::Init()
 {
-    Vec3List spine;
-    spine.push_back(glm::vec3(-8, 0, -15));
-    spine.push_back(glm::vec3(-1, 2, -15));
-    spine.push_back(glm::vec3(+1, 2, -15));
-    spine.push_back(glm::vec3(+8, 0, -15));
-
-    int polys = 9;
-    float radius = 1.5f;
-    int LOD = 2;
+    Vec3List spine = cvs;
+    //spine.push_back(glm::vec3(-18, 0, -25));
+    //spine.push_back(glm::vec3(-1, 2, -25));
+    //spine.push_back(glm::vec3(+1, 2, -25));
+    //spine.push_back(glm::vec3(+18, 0, -25));
+    int polys = 4;
+    float radius = 0.2f;
+    int LOD = 4;
     Vec3List centerline;
     Blob meshData;
     EvaluateBezier(spine, &centerline, LOD);
@@ -77,8 +77,10 @@ Tube::Draw()
 {
     glPointSize(6);
     tube.Bind();
-    glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
     glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
+    //glDrawElements(GL_TRIANGLES, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
+    //glDrawElements(GL_POINTS, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
 }
 
 void
@@ -115,14 +117,14 @@ Tube::SweepPolygon(const Vec3List& centerline,
                    int numPolygonSides)
 {
     int n = numPolygonSides;
-    const float TWOPI = 3*3.1415;
+    const float TWOPI = 2*3.1415;
     Vec3List tangents, normals, binormals;
 
     // XXX(jcowles): ordering of params is slightly different from matrix order... see mat3 init below
     ComputeFrames(centerline, &tangents, &normals, &binormals);
     unsigned count = centerline.size();
-    outputData->resize(count * (n+1) * 6 * sizeof(float));
-    std::cout << "Max Index: " << count * (n+1) << std::endl;
+    outputData->resize(count * (n) * 6 * sizeof(float));
+    std::cout << "Max Index: " << count * (n) << std::endl;
     float* mesh = (float*)(&((*outputData)[0]));
     //FloatList mesh(count * (n+1) * 6, 0);
     //mesh = new Float32Array(count * (n+1) * 6)
@@ -131,6 +133,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     glm::vec3 p;
     float r = polygonRadius;
 
+    pezCheck(normals.size() == centerline.size(), "Number of normals != number of center line points");
     while (i < int(count)) {
         int v = 0;
 
@@ -156,7 +159,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
         std::cout << "]\n";
 
 
-        while (v < n+1) {
+        while (v < n) {
             float x = r*cos(theta);
             float y = r*sin(theta);
             float z = 0;
@@ -192,7 +195,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     glm::vec3 center; 
     while (i < (int) count) {
       int v = 0;
-      while (v < n+1) {
+      while (v < n) {
         pezCheck((m+3+2)*sizeof(float) < outputData->size(), "Invalid size: %d !< %d", (m+3+2)*sizeof(float), outputData->size());
         p.x = mesh[m+0];
         p.y = mesh[m+1];
@@ -241,7 +244,7 @@ Tube::GetIndices(const Vec3List& centerline,
         while (++j < numPolygonSides) {
             int next = (j + 1) % numPolygonSides; 
             unsigned* tri = (unsigned*)(&rawBuffer[0]) + ptr;//rawBuffer.subarray(ptr+0, ptr+3)
-            tri[0] = v+next+numPolygonSides+1;
+            tri[0] = v+next+numPolygonSides;//+1;
             tri[1] = v+next;
             tri[2] = v+j;
             std::cout 
@@ -250,17 +253,17 @@ Tube::GetIndices(const Vec3List& centerline,
                     << tri[2] << ") -- ";
             tri = (unsigned*)(&rawBuffer[0]) + ptr + 3; //rawBuffer.subarray(ptr+3, ptr+6)
             tri[0] = v+j;
-            tri[1] = v+j+numPolygonSides+1;
-            tri[2] = v+next+numPolygonSides+1;
+            tri[1] = v+j+numPolygonSides;//+1;
+            tri[2] = v+next+numPolygonSides;//+1;
             std::cout 
                     << (unsigned)tri[0] << ", "
                     << (unsigned)tri[1] << ", "
                     << (unsigned)tri[2] << ")\n";
             ptr += 6;
         }
-      v += numPolygonSides+1;
+      v += numPolygonSides;//+1;
     }
-
+    
     target->AddIndices(rawBuffer);
     //triangles = rawBuffer;
 }
@@ -295,11 +298,16 @@ Tube::ComputeFrames(const Vec3List& centerline,
     // Obtain unit-length tangent vectors
     int i = -1;
     while(++i < count) {
+        int ii = i;
         int j = (i+1+tangentSmoothness) % (count);
-        Ts[j] = glm::normalize(centerline[i] - centerline[j]);
+        if (j < i) {
+            ii = j;
+            j = i;
+        }
+        Ts[i] = glm::normalize(centerline[ii] - centerline[j]);
         std::cout << 
             " j: " << j << 
-            " i: " << i << 
+            " i: " << ii << 
             " count: " << count << "\n";
     }
 
@@ -308,6 +316,7 @@ Tube::ComputeFrames(const Vec3List& centerline,
               nj, bj, tj;
 
     // Create a somewhat-arbitrary initial frame (n0, b0, t0)
+    //Ts[0] = -1.f*Ts[0];
     t0 = Ts[0];
     n0 = _Perp(t0);
     b0 = glm::cross(t0, n0);
@@ -342,6 +351,7 @@ Tube::ComputeFrames(const Vec3List& centerline,
         ni = nj; 
         ++i;
     }
+    //Ts[0].x = 10;
 
     // originally returned: [ Noramls, Binormals, Tangents ]
 }

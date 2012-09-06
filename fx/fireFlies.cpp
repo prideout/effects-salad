@@ -22,7 +22,6 @@ void FireFlies::Init()
     _surface.Init();
     _quad.Init();
     _ground.Init();
-    _tube.Init();
 
     // --------------------------------------------------------------------- 
     // Fire Flies
@@ -104,6 +103,8 @@ void FireFlies::Init()
     for(unsigned i = 0; i < sizeof(cameraPath) / sizeof(float); i+=3) {
         cvs.push_back( 1.f * vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
     }
+    _tube.cvs = cvs;
+    _tube.Init();
 
     // XXX: this is time independent right now
     //      need to make it explicit in time if we're going to keep the camera motion
@@ -130,15 +131,16 @@ void FireFlies::Draw() {
         //_surface.Bind();
         PerspCamera oldCam = GetContext()->mainCam;
         PerspCamera& cam = GetContext()->mainCam;
-        //cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
-        cam.eye.y = .0;
-        cam.center= vec3(0,1,-15); //cameraPoints[counter];
+        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        //cam.eye.y = .0;
+        //cam.center= vec3(0,1,-15); //cameraPoints[counter];
         float t = GetContext()->elapsedTime;
-        cam.eye = vec3(-5*sin(t), 5+-5*cos(t), -5*sin(t)); //cameraPoints[counter];
+        //cam.eye = vec3(-5*sin(t/2), 5+-5*cos(t/2), -5-5*sin(t/2)); //cameraPoints[counter];
+        cam.eye.y += 1.5;
 
         // look where we are walking
-        //cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
-        //cam.center.y = 0;
+        cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
+        cam.center.y += 1.5;
         cam.Bind(glm::mat4());
         _tube.Draw();
         
