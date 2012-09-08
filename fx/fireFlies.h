@@ -12,6 +12,7 @@
 #include "common/quad.h"
 
 #include "fx/ground.h"
+#include "fx/milkyway.h"
 
 
 class FireFlies : public Effect {
@@ -23,6 +24,7 @@ class FireFlies : public Effect {
     Quad _quad;
     Tube _tube;
     AnimCurve<glm::vec3> cameraPoints;
+    Milkyway _milkyway;
     unsigned counter;
 
 public:

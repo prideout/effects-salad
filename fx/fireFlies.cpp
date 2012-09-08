@@ -22,6 +22,7 @@ void FireFlies::Init()
     _surface.Init();
     _quad.Init();
     _ground.Init();
+    _milkyway.Init();
 
     // --------------------------------------------------------------------- 
     // Fire Flies
@@ -132,6 +133,7 @@ void FireFlies::Update() {
     Effect::Update();
     _ground.Update();
     _tube.Update();
+    _milkyway.Update();
 };
 
 void FireFlies::Draw() {
@@ -149,18 +151,19 @@ void FireFlies::Draw() {
         PerspCamera& cam = GetContext()->mainCam;
         //cam.eye.y = .0;
         cam.center= vec3(0,1,-15); //cameraPoints[counter];
-        //float t = GetContext()->elapsedTime;
+        float t = GetContext()->elapsedTime;
+        cam.center= vec3(0,3*sin(t/2),3*cos(t/2)); //cameraPoints[counter];
         cam.eye.x = 0;
         cam.eye.y = .5;
         cam.eye.z = 0;
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        //cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         //cam.eye = vec3(-5*sin(t/2), 5+-5*cos(t/2), -5-5*sin(t/2)); //cameraPoints[counter];
 
         // look where we are walking
-        cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
+        //cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
         //cam.center.y += .5;
         cam.Bind(glm::mat4());
-        _tube.Draw();
+        //_tube.Draw();
         
         /*
         glClearColor(.0,.0,.9,1);
@@ -180,6 +183,9 @@ void FireFlies::Draw() {
 
         _ground.Draw();
 
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    _milkyway.Draw();
+
     cam = oldCam;
 
     /*
@@ -190,7 +196,6 @@ void FireFlies::Draw() {
     _quad.Draw();
     */
     counter++;
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
 };

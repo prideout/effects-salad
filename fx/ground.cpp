@@ -131,7 +131,13 @@ void Ground::Init() {
         pezCheck(i*4+3 < grass.size());
 
         float x = ground[index+0] + 1*(rand() / float(RAND_MAX));
+
+        // XXX: This is actually wrong, because this blade isn't at the actual 
+        //      vertex, it's been displaced in X and Z, so the height should be
+        //      read from the perlin noise function, not from the original vertex
+        //      height
         float y = ground[index+1];
+
         float z = ground[index+2] + 1*(rand() / float(RAND_MAX));
         grass[i*8+0+0] = x;
         grass[i*8+0+1] = y;
