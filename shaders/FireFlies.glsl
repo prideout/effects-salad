@@ -120,7 +120,7 @@ out vec4 FragColor;
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.05, .2, .02, 1.0);
+    FragColor = vec4(.05, .2, .02, .5);
 }
 
 

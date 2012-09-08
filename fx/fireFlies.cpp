@@ -98,6 +98,21 @@ void FireFlies::Init()
         -11.948432946684054, 0, 7.3094281779858079,
         -9.483426722726314,  0, 3.6461550396041615,
         //-9.5176629202812819, 0, 3.6461550396041615
+        /*
+        0, -1.9873866943023757, 3.9720817637136108,
+        0, -1.231492554543711, 0.76853040949831852,
+        0, -0.94353288225469822, -0.059353648332600442,
+        0, 0.01033353220266591, -0.041356168814537256,
+        0, 0.96419994666003006, -0.023358689296474069,
+        0, 0.60425035629876134, 2.568278361304662,
+        0, 1.0181923852142203, 3.9720817637136108,
+        0, 1.6301066888283759, 2.3523086070879016,
+        0, 0.44227304063618833, -0.041356168814537145,
+        0, 1.9720587996715817, -0.059353648332600442,
+        0, 3.5018445587069751, -0.07735112785066374,
+        0, 3.3578647225624669, 3.1981901444368832,
+        0, 3.0339100912373258, 3.9540842841955484
+        */
         };
     Vec3List cvs;
     int cvCount = sizeof(cameraPath) / sizeof(float);
@@ -132,16 +147,18 @@ void FireFlies::Draw() {
         //_surface.Bind();
         PerspCamera oldCam = GetContext()->mainCam;
         PerspCamera& cam = GetContext()->mainCam;
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         //cam.eye.y = .0;
-        //cam.center= vec3(0,1,-15); //cameraPoints[counter];
+        cam.center= vec3(0,1,-15); //cameraPoints[counter];
         //float t = GetContext()->elapsedTime;
+        cam.eye.x = 0;
+        cam.eye.y = .5;
+        cam.eye.z = 0;
+        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         //cam.eye = vec3(-5*sin(t/2), 5+-5*cos(t/2), -5-5*sin(t/2)); //cameraPoints[counter];
-        cam.eye.y += .5;
 
         // look where we are walking
         cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
-        cam.center.y += .5;
+        //cam.center.y += .5;
         cam.Bind(glm::mat4());
         _tube.Draw();
         

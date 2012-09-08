@@ -26,7 +26,9 @@ void Ground::Init() {
     IndexList indices;
     const int SIZE = 150;
     const float SCALE = 1;
+    const int GRASS_COUNT = SIZE*SIZE*10;
     glm::vec3 cent(0,-2,0);
+
 
     // don't mess with Y because it isn't effected by SIZE
     cent.x = cent.x - float(SIZE/2.*SCALE);
@@ -61,10 +63,7 @@ void Ground::Init() {
 
     // initialize the normals list
     FloatList normals;
-    normals.reserve(ground.size());
-    FOR_EACH(p, ground) {
-        normals.push_back(0);
-    }
+    normals.resize(ground.size());
 
     // calculate vertex normals
     // since we just generated the triangle indices, use them here
@@ -123,9 +122,32 @@ void Ground::Init() {
     }
     //FOR_EACH(n, normals) 
     //    std::cout << *n << std::endl;
+    FloatList grass(GRASS_COUNT*8, 0);
+    for (int i = 0; i < GRASS_COUNT; i++) {
+        int index = rand() % (ground.size()/4); 
+        index *= 4;
+        pezCheck(index >= 0, "Grass index must be >= 0 (%d)", index);
+        pezCheck(index+2 < ground.size(), "Grass index must be < ground.size()");
+        pezCheck(i*4+3 < grass.size());
+
+        float x = ground[index+0] + 1*(rand() / float(RAND_MAX));
+        float y = ground[index+1];
+        float z = ground[index+2] + 1*(rand() / float(RAND_MAX));
+        grass[i*8+0+0] = x;
+        grass[i*8+0+1] = y;
+        grass[i*8+0+2] = z;
+        grass[i*8+0+3] = ground[index+3];
+
+        grass[i*8+4+0] = x+normals[index+0];
+        grass[i*8+4+1] = y+normals[index+1];
+        grass[i*8+4+2] = z+normals[index+2];
+        grass[i*8+4+3] = ground[index+3];
+    }
 
     _ground = Vao(4, ground, indices);
     _ground.AddVertexAttribute(AttrNormal, 4, normals);
+
+    _grass = Vao(4, grass);
 
     _normals = NormalField(4, ground, 4, normals, 1);
     _normals.Init();
@@ -148,8 +170,17 @@ void Ground::Draw() {
     _ground.Bind();
     glDrawElements(GL_TRIANGLE_STRIP, _ground.indexCount, GL_UNSIGNED_INT, NULL);
 
+
     glUseProgram(progs["FireFlies.Grass"]);
     cam.Bind(glm::mat4());
     _normals.Draw();
+
+    glPointSize(4);
+    _grass.Bind();
+    // Progressively add grass (for debugging)
+    int t = int(GetContext()->elapsedTime*100000) % (_grass.vertexCount+1);
+    t = _grass.vertexCount;
+    //glDrawArrays(GL_POINTS, 0, t);
+    glDrawArrays(GL_LINES,0, t);
 }
 

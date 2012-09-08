@@ -10,6 +10,7 @@
 
 class Ground : public Effect {
     Vao _ground;
+    Vao _grass;
     NormalField _normals;
 
 public:
