@@ -37,6 +37,12 @@ Cherry Blossom / Grass / Country / moon:
   * [Milkyway and bail](http://www.flickr.com/photos/blakesmithphotography/5489197061/)
   * [Milkyway at Arosa](http://www.flickr.com/photos/reflection-stalker/7809105816/)
 
+Cherry Tree Structure:
+  * [Tree branches under](http://singlemomwithlove.com/wp-content/uploads/2011/12/Cherry-Trees.jpg)
+  * [Tree far away](http://vikneshan.files.wordpress.com/2008/09/cherrytree.jpg)
+  * [Painted/Artistic](http://lucien0maverick.files.wordpress.com/2012/08/cherry-tree-by-alex-khrapko.jpg)
+  * [Multiple trunks](http://westofpersia.files.wordpress.com/2010/04/bbg-garden-cherry-tree-path.jpg)
+
 Neo-Tokyo:
   * http://www.madmind.de/wp-content/uploads/2010/03/akira-neo-tokyo.jpg
   * http://2.bp.blogspot.com/-KW_k5R8wWis/TePH6x3de9I/AAAAAAAAAms/3POananT2ds/s1600/Akira_city.jpg
