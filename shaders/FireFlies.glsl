@@ -123,7 +123,7 @@ out vec4 FragColor;
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    float r = clamp(1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
+    float r = clamp(.2+1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
     FragColor = r*vec4(.05, .2, .02, 1.);
 }
 
