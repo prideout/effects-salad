@@ -178,6 +178,7 @@ void Ground::Draw() {
 
 
     glUseProgram(progs["FireFlies.Grass"]);
+    glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     cam.Bind(glm::mat4());
     glEnable(GL_BLEND);
     _normals.Draw();

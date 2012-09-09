@@ -31,9 +31,9 @@ void FireFlies::Init()
     // XXX: need to call srand in a more common location
     srand(0);
     for (int i = 0; i < 1000; i ++) {
-        float x = 80*(rand() / float(RAND_MAX)) - 40; 
+        float x = 150*(rand() / float(RAND_MAX)) - 75; 
         float y = 3*(rand() / float(RAND_MAX)) - 2; 
-        float z = 80*(rand() / float(RAND_MAX)) - 40; 
+        float z = 150*(rand() / float(RAND_MAX)) - 75; 
         //n = noise.Get(
         //std::cout << x << ", " << y << ", " << z << "\n";
         _fliesCpu.push_back(x);

@@ -113,6 +113,8 @@ void main()
 
 -- Grass.FS
 
+uniform vec3 Eye;
+
 //in vec3 vNormal;
 in vec4 vPosition;
 //in vec2 vUvCoord;
@@ -121,7 +123,8 @@ out vec4 FragColor;
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.05, .2, .02, .5);
+    float r = clamp(1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
+    FragColor = r*vec4(.05, .2, .02, 1.);
 }
 
 
