@@ -156,8 +156,8 @@ void FireFlies::Draw() {
         cam.eye.x = 0;
         cam.eye.y = .5;
         cam.eye.z = 0;
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
-        //cam.eye = vec3(-5*sin(t/2), 5+-5*cos(t/2), -5-5*sin(t/2)); //cameraPoints[counter];
+        //cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        cam.eye = vec3(-15*sin(t/2), 5+-5*cos(t/2), -15-5*sin(t/2)); //cameraPoints[counter];
 
         // look where we are walking
         cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];

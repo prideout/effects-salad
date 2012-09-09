@@ -158,19 +158,13 @@ float snoise(vec2 v)
 in vec4 vPosition;
 in vec2 vUvCoord;
 out vec4 FragColor;
-uniform vec3 Eye;
-uniform vec3 Center;
 uniform float Azimuth;
+uniform float Altitude;
 
 void main()
 {
-    // TODO: shift the altitude to CPU also
-    vec3 lookDir = (Center - Eye);
-
     // compute the azimuth and altitude (thank you, undergrad astronomy :)
     
-    float altitude = dot(lookDir, normalize(vec3(lookDir.x,0,lookDir.z)));
-
     // TODO: Azimuth should be spherically warped; maybe a plane deformation
     // Reflect noise across the sky, given that Azimuth in [-1,1] and uv.u in [-1,1]
     float u = Azimuth + .4*vUvCoord.x;
@@ -183,7 +177,7 @@ void main()
     // adjust the noise scale
     u *= 1;
 
-    FragColor = vec4(.0, .0, .2*snoise(vec2(u, altitude+vUvCoord.y)), 1.0);
+    FragColor = vec4(.0, .0, .2*snoise(vec2(u, Altitude+vUvCoord.y)), 1.0);
 }
 
 

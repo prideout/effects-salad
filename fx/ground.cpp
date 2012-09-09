@@ -179,6 +179,7 @@ void Ground::Draw() {
 
     glUseProgram(progs["FireFlies.Grass"]);
     cam.Bind(glm::mat4());
+    glEnable(GL_BLEND);
     _normals.Draw();
 
     glPointSize(4);
@@ -188,5 +189,6 @@ void Ground::Draw() {
     t = _grass.vertexCount;
     //glDrawArrays(GL_POINTS, 0, t);
     glDrawArrays(GL_LINES,0, t);
+    glDisable(GL_BLEND);
 }
 

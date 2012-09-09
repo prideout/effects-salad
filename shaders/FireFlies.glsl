@@ -94,7 +94,8 @@ void main()
     //float specular = 5 * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
 
     //FragColor = NdotHV * vec4(.7, .7, .2, 1.0);
-    FragColor = r * vec4(.22, .15, .0, 1.0);
+    FragColor = r * vec4(.098, .063, .02, .2);
+    //FragColor = r * vec4(.22, .15, .0, 1.0);
 }
 
 -- Stars.FS
