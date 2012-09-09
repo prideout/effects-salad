@@ -160,20 +160,30 @@ in vec2 vUvCoord;
 out vec4 FragColor;
 uniform vec3 Eye;
 uniform vec3 Center;
+uniform float Azimuth;
 
 void main()
 {
-    // maybe this should be done on the CPU(?)
-    vec3 lookDir = normalize(Center - Eye);
+    // TODO: shift the altitude to CPU also
+    vec3 lookDir = (Center - Eye);
 
     // compute the azimuth and altitude (thank you, undergrad astronomy :)
-    // X and Z determine azimuth
-    float azimuth = dot(lookDir, vec3(0,lookDir.y,lookDir.z));
+    
     float altitude = dot(lookDir, normalize(vec3(lookDir.x,0,lookDir.z)));
 
-    float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.0, .0, .2*snoise(2*vUvCoord+2*vec2(azimuth, altitude)), 1.0);
-    //FragColor = vec4(.0, .0, clamp(s, 0.0, 1.0), 1.0);
+    // TODO: Azimuth should be spherically warped; maybe a plane deformation
+    // Reflect noise across the sky, given that Azimuth in [-1,1] and uv.u in [-1,1]
+    float u = Azimuth + .4*vUvCoord.x;
+    if (u < 0) {
+        u = -Azimuth - .4*vUvCoord.x;
+    } 
+    if (u > 1) {
+        u = 2 - u;
+    }
+    // adjust the noise scale
+    u *= 1;
+
+    FragColor = vec4(.0, .0, .2*snoise(vec2(u, altitude+vUvCoord.y)), 1.0);
 }
 
 
@@ -201,9 +211,10 @@ void main()
     vNormal = NormalMatrix * Normal;
     */
     vPosition = Position;
-    vPosition.z = .9999999;
+    vPosition.z = .999990;
     vPosition.w = 1.0;
     vUvCoord = UvCoord;
+    //gl_Position = vPosition;
     //gl_Position = Projection * Modelview * vPosition;
     gl_Position = vPosition;
     //vNormal = normalize(Normal.xyz);

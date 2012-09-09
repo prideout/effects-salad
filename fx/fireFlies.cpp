@@ -152,15 +152,15 @@ void FireFlies::Draw() {
         //cam.eye.y = .0;
         cam.center= vec3(0,1,-15); //cameraPoints[counter];
         float t = GetContext()->elapsedTime;
-        cam.center= vec3(0,3*sin(t/2),3*cos(t/2)); //cameraPoints[counter];
+        cam.center= vec3(3*sin(t),0,3*cos(t)); //cameraPoints[counter];
         cam.eye.x = 0;
         cam.eye.y = .5;
         cam.eye.z = 0;
-        //cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         //cam.eye = vec3(-5*sin(t/2), 5+-5*cos(t/2), -5-5*sin(t/2)); //cameraPoints[counter];
 
         // look where we are walking
-        //cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
+        cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
         //cam.center.y += .5;
         cam.Bind(glm::mat4());
         //_tube.Draw();
