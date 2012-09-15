@@ -73,6 +73,12 @@ Tube::Init()
 }
 
 void
+Tube::Update()
+{
+
+}
+
+void
 Tube::Draw()
 {
     glPointSize(6);
