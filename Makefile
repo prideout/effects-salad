@@ -10,6 +10,7 @@ SHARED := \
 	$(OBJDIR)/common/curve.o \
 	$(OBJDIR)/common/demoContext.o \
 	$(OBJDIR)/common/tetUtil.o \
+	$(OBJDIR)/common/terrainUtil.o \
 	$(OBJDIR)/common/drawable.o \
 	$(OBJDIR)/common/effect.o \
 	$(OBJDIR)/common/init.o \

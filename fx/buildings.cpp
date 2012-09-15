@@ -1,8 +1,8 @@
-// Add rectangle support to BuildingInstance
-// Stack buildings for a slightly more interesting effect
+// Stack some buildings
 // Use long parabolas for the falling tets
 // Secondary explosion effect: some tets pop off the top, right before explosion
-// Voronoi divisions
+// Voronoi divisions of the city
+// Use terrain
 //
 // Better radial blur?
 // Street lamps, ground-level detail, low-flying camera
