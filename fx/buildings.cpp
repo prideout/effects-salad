@@ -79,56 +79,47 @@ Buildings::Init()
     #include "fx/buildings.inl"
 
     _batches.resize(_templates.size());
+    for (size_t i = 0; i < _templates.size(); ++i) {
+        _batches[i].Template = &_templates[i];
+    }
 
-    _batches[0].Template = &_templates[0];
-    _batches[0].Instances.resize(1);
-    _batches[0].Instances[0].EnableCullingPlane = false;
-    _batches[0].Instances[0].CullingPlaneY = 10.0;
-    _batches[0].Instances[0].GroundPosition = vec2(0, 0);
-    _batches[0].Instances[0].Height = 1.25;
-    _batches[0].Instances[0].Radius = 1;
-    _batches[0].Instances[0].Hue = 0.1;
-    _batches[0].Instances[0].ExplosionStart = 3.0;
+    const vec2 extent(80, 80);
+    const int numCols = 8;
+    const int numRows = 8;
+    const vec2 cellSize(extent.x / float(numCols),
+                        extent.y / float(numRows));
 
-    _batches[1].Template = &_templates[1];
-    _batches[1].Instances.resize(2);
-    _batches[1].Instances[0].EnableCullingPlane = false;
-    _batches[1].Instances[0].GroundPosition = vec2(-20, 0);
-    _batches[1].Instances[0].Height = 0.5;
-    _batches[1].Instances[0].Radius = 1.0;
-    _batches[1].Instances[0].Hue = 0.3;
-    _batches[1].Instances[0].ExplosionStart = 5.0;
-    _batches[1].Instances[1] = _batches[1].Instances[0];
-    _batches[1].Instances[1].GroundPosition = vec2(12, 12);
-    _batches[1].Instances[1].Height = 0.3;
-    _batches[1].Instances[1].Radius = 1.2;
+    float explosionStart = 3.0;
+    vec2 groundPos;
 
-    _batches[2].Template = &_templates[2];
-    _batches[2].Instances.resize(2);
-    _batches[2].Instances[0].EnableCullingPlane = false;
-    _batches[2].Instances[0].GroundPosition = vec2(-15, 30);
-    _batches[2].Instances[0].Height = 1.3;
-    _batches[2].Instances[0].Radius = 1.0;
-    _batches[2].Instances[0].Hue = 0.1;
-    _batches[2].Instances[0].ExplosionStart = 6.0;
-    _batches[2].Instances[1] = _batches[2].Instances[0];
-    _batches[2].Instances[1].GroundPosition = vec2(15, 30);
-    _batches[2].Instances[1].Height = 2.0;
-    
-    _batches[3].Template = &_templates[3];
-    _batches[3].Instances.resize(2);
-    _batches[3].Instances[0].EnableCullingPlane = false;
-    _batches[3].Instances[0].GroundPosition = vec2(0, -30);
-    _batches[3].Instances[0].Height = 1.4;
-    _batches[3].Instances[0].Radius = 0.8;
-    _batches[3].Instances[0].Hue = 0.0;
-    _batches[3].Instances[0].ExplosionStart = 7.0;
-    _batches[3].Instances[1] = _batches[3].Instances[0];
-    _batches[3].Instances[1].GroundPosition = vec2(13, -28);
-    _batches[3].Instances[1].Radius = 0.4;
-    _batches[3].Instances[1].Height = 0.4;
-    _batches[3].Instances[1].Hue = 0.1;
-    _batches[3].Instances[1].ExplosionStart = 7.5;
+    BuildingInstance inst;
+    groundPos.x = -0.5 * extent.x + 0.5 * cellSize.y;
+    for (int col = 0; col < numCols; ++col) {
+        groundPos.y = -0.5 * extent.y + 0.5 * cellSize.y;
+        for (int row = 0; row < numRows; ++row) {
+
+            inst.GroundPosition = groundPos;
+            inst.EnableCullingPlane = false;
+            inst.Height = 0.5 + 1.0 * (rand() % 100) / 100.0f;
+
+            // Some outliers
+            if (rand() % 10 == 0) {
+                inst.Height += 0.5;
+            }
+
+            inst.Radius = 0.5f - 0.5 * (rand() % 10) / 10.0f;
+            inst.Hue = (rand() % 100) / 100.0f;
+            inst.ExplosionStart = 3.0f + 10.0f * (rand() % 100) / 100.0f;
+            explosionStart += 3.0f;
+
+            size_t templ = rand() % _batches.size();
+            BuildingBatch& batch = _batches[templ];
+            batch.Instances.push_back(inst);
+
+            groundPos.y += cellSize.y;
+        }
+        groundPos.x += cellSize.x;
+    }
 
     for (size_t i = 0; i < threads.size(); ++i) {
         threads[i]->join();
@@ -371,7 +362,7 @@ CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform1f(u("Height"), instance.Height);
     glUniform3fv(u("Scale"), 1, ptr(scale));
-    glUniform1f(u("Time"), time);
+    glUniform1f(u("Time"), time - instance.ExplosionStart + 3.0);
     glUniform1f(u("DepthOffset"), -0.0001f);
     glUniform4f(u("Color"), 0, 10, 10, 10);
     templ.CentroidTexture.Bind(0, "CentroidTexture");
