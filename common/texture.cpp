@@ -29,7 +29,8 @@ Texture::Bind(int stage, std::string sampler) {
 //
 
 BufferTexture::BufferTexture() :
-    Texture()
+    Texture(),
+    drawType(GL_STATIC_DRAW)
 {
     target = GL_TEXTURE_BUFFER;
 }
@@ -37,8 +38,7 @@ BufferTexture::BufferTexture() :
 void
 BufferTexture::Init(GLenum internalFormat,
                     unsigned int sizeInBytes,
-                    const GLvoid* data,
-                    GLenum drawType)
+                    const GLvoid* data)
 {
     glGenTextures(1, &handle);
     pezCheck(glGetError() == GL_NO_ERROR, "BufferTexture gen failed");
@@ -78,6 +78,11 @@ BufferTexture::Init(const Vec4List& data)
 void
 BufferTexture::GenMipmaps() {
     pezFatal("GenMipmaps failed: BufferTexture cannot have mipmaps");
+}
+
+void
+BufferTexture::Rebuffer(const FloatList& data) {
+    glBufferData(target, data.size()*4, &data[0], drawType);
 }
 
 //

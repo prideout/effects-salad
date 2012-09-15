@@ -1,83 +1,3 @@
--- Ground.FS
-in vec3 vNormal;
-in vec4 vPosition;
-//in vec2 vUvCoord;
-out vec4 FragColor;
-uniform vec3 Eye;
-
-
-void main()
-{
-    vec3 light = normalize(vec3(1., 1., 1.) + Eye);
-    //float s = vUvCoord.x + vUvCoord.y;
-    //float r = min(1, max(10-sqrt(vPosition.x * vPosition.x + vPosition.z * vPosition.z), 0));
-    //float r = clamp(1-.15*distance(eye, vPosition.xyz), 0., 1.);
-    float r = clamp(.3+snoise(vPosition.xz/25.)+2*.5, 0., 1.);
-    r = r*clamp(1-.045*distance(Eye.xyz, vPosition.xyz), 0., 1.);
-
-    // blinn-phong (in progress)
-    //float NdotHV = max(dot(vNormal, light),0.0);
-    //float specular = 5 * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
-
-    //FragColor = NdotHV * vec4(.7, .7, .2, 1.0);
-    FragColor = r * vec4(.22, .15, .0, 1.0);
-}
-
--- Stars.FS
-
-//in vec3 vNormal;
-in vec4 vPosition;
-//in vec2 vUvCoord;
-out vec4 FragColor;
-
-void main()
-{
-    //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.5, .5, .5, 1.0);
-}
-
--- Grass.FS
-
-//in vec3 vNormal;
-in vec4 vPosition;
-//in vec2 vUvCoord;
-out vec4 FragColor;
-
-void main()
-{
-    //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.05, .2, .02, .5);
-}
-
-
--- Grass.VS
-layout(location = 0) in vec4 Position;
-layout(location = 1) in vec4 Normal;
-//layout(location = 2) in vec2 UvCoord;
-
-out vec4 vPosition;
-//out vec2 vUvCoord;
-out vec3 vNormal;
-
-uniform mat4 Projection;
-uniform mat4 Modelview;
-uniform mat4 ViewMatrix;
-uniform mat4 ModelMatrix;
-/*
-uniform mat3 NormalMatrix;
-*/
-void main()
-{
-    /*
-    vPosition = (Modelview * Position).xyz;
-    gl_Position = Projection * Modelview * Position;
-    vNormal = NormalMatrix * Normal;
-    */
-    vPosition = Position;
-    gl_Position = Projection * Modelview * vPosition;
-    vNormal = normalize(Normal.xyz);
-}
-
 -- Sky.FS
 
 // --------------------- ( NOISE LIB CODE ) --------------------------------
@@ -180,14 +100,37 @@ void main()
     FragColor = vec4(.0, .0, .2*snoise(vec2(u, Altitude+vUvCoord.y)), 1.0);
 }
 
+-- Sky.GS
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+in vec4 evPosition[3];
+in vec2 evUvCoord[3];
+
+out vec2 vUvCoord;
+out vec4 vPosition;
+
+void main()
+{
+    // 3 corners of the triangle:
+    for (int i = 0; i < 3; i++) {
+        vUvCoord = evUvCoord[i];
+        vPosition = evPosition[i];
+        gl_Position = evPosition[i];
+        EmitVertex();
+    }
+
+    EndPrimitive();
+}
 
 -- Sky.VS
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec4 Normal;
 layout(location = 2) in vec2 UvCoord;
 
-out vec4 vPosition;
-out vec2 vUvCoord;
+out vec4 evPosition;
+out vec2 evUvCoord;
 //out vec3 vNormal;
 
 uniform mat4 Projection;
@@ -204,59 +147,14 @@ void main()
     gl_Position = Projection * Modelview * Position;
     vNormal = NormalMatrix * Normal;
     */
-    vPosition = Position;
-    vPosition.z = .999990;
-    vPosition.w = 1.0;
-    vUvCoord = UvCoord;
-    //gl_Position = vPosition;
-    //gl_Position = Projection * Modelview * vPosition;
-    gl_Position = vPosition;
+    evPosition = Position;
+    evPosition.z = .999990;
+    evPosition.w = 1.0;
+    evUvCoord = UvCoord;
+    //gl_Position = evPosition;
+    //gl_Position = Projection * Modelview * evPosition;
+    gl_Position = evPosition;
     //vNormal = normalize(Normal.xyz);
 }
 
--- Blur.FS
 
-//in vec3 vNormal;
-in vec4 vPosition;
-in vec2 vUvCoord;
-out vec4 FragColor;
-
-uniform sampler2D Tex;
-
-void main()
-{
-    float s = vUvCoord.x + vUvCoord.y;
-    vec4 tval = texture(Tex, vUvCoord);
-    //FragColor = vec4(1., 1., 1., 1.0); //tval;
-    FragColor = tval;
-}
-
-
--- Blur.VS
-layout(location = 0) in vec2 Position;
-layout(location = 2) in vec2 UvCoord;
-
-out vec4 vPosition;
-out vec2 vUvCoord;
-//out vec3 vNormal;
-
-uniform mat4 Projection;
-uniform mat4 Modelview;
-uniform mat4 ViewMatrix;
-uniform mat4 ModelMatrix;
-/*
-uniform mat3 NormalMatrix;
-*/
-void main()
-{
-    /*
-    vPosition = (Modelview * Position).xyz;
-    gl_Position = Projection * Modelview * Position;
-    vNormal = NormalMatrix * Normal;
-    */
-    vPosition.xy = Position.xy;
-    //vPosition.z = -2;
-    vPosition.w = 1.0;
-    vUvCoord = UvCoord;
-    gl_Position = Projection * Modelview * vPosition;
-}

@@ -11,7 +11,7 @@ void Milkyway::Init() {
     Effect::Init();
 
     Programs& progs = Programs::GetInstance();
-    glUseProgram(progs.Load("Milkyway.Sky"));
+    glUseProgram(progs.Load("Milkyway.Sky", true));
     _skyQuad.Init();
 }
 
