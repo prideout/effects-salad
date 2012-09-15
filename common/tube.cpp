@@ -108,10 +108,9 @@ Tube::Update()
     float time = GetContext()->elapsedTime;
     FloatList scalesTmp(_segCount, 0);
     for(unsigned i = 0; i < _segCount; i++) {
-        float p = 1 - (i / float(_segCount * fract(time)));
+        float p = 1 - (i / float(_segCount * (fract(time/ 4) )));
         float s = Lerp(0, 1, p);
-        scalesTmp[i] = s; //float(i+int(time*50) % _segCount) / _segCount;
-        std::cout << scalesTmp[i] << std::endl;
+        scalesTmp[i] = s; 
     }
     scales.Rebuffer(scalesTmp);
     //float(i) / centerline.size();
