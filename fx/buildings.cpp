@@ -1,8 +1,12 @@
-// Render hulls for pre-exploded bldgs, skip draw calls for dead buildings
-// Generate instances and templates with loops rather than unrolled code.
-// Stack buildings for a slightly more interesting effect
-// Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
+// Stack some buildings
+// Use long parabolas for the falling tets
 // Secondary explosion effect: some tets pop off the top, right before explosion
+// Voronoi divisions of the city
+// Use terrain
+//
+// Better radial blur?
+// Street lamps, ground-level detail, low-flying camera
+// Dual viewports for street-level view?
 //
 // We're only rendering boundary tets right now, but we're not exploiting
 //   the massive memory savings.  Maybe buildings should have floors?
@@ -28,8 +32,6 @@ using glm::mat4;
 using glm::mat3;
 using glm::vec3;
 using glm::vec2;
-
-static bool SingleBuilding = false;
 
 struct GpuParams {
     Blob HullIndices;
@@ -76,122 +78,84 @@ Buildings::~Buildings()
 void
 Buildings::Init()
 {
-    _emptyVao.InitEmpty();
+    vector<tthread::thread*> threads;
+    vector<ThreadParams> params;
 
-    _templates.resize(SingleBuilding ? 1 : 4);
+    #include "fx/buildings.inl"
+
     _batches.resize(_templates.size());
-     
-    ThreadParams params0 = {0};
-    params0.Thickness = 3;
-    params0.TopRadius =  8.0f / 13.0f;
-    params0.TetSize = 0.1f;
-    params0.NumSides = 5;
-    params0.Dest = &_templates[0];
-    tthread::thread thread0(_GenerateBuilding, &params0);
-    //thread0.join();
-    //_UploadBuilding(params0);
+    for (size_t i = 0; i < _templates.size(); ++i) {
+        _batches[i].Template = &_templates[i];
+    }
 
-    ThreadParams params1 = {0};
-    params1.Thickness = 3.0f;
-    params1.TopRadius =  1.0f;
-    params1.TetSize = 0.1f;
-    params1.NumSides = 4;
-    params1.Dest = &_templates[1];
-    tthread::thread thread1(_GenerateBuilding, &params1);
-    //thread1.join();
-    //_UploadBuilding(params1);
+    const vec2 extent(80, 80);
+    const int numCols = 12;
+    const int numRows = 12;
+    const vec2 cellSize(extent.x / float(numCols),
+                        extent.y / float(numRows));
 
-    ThreadParams params2 = {0};
-    params2.Thickness = 3.0f;
-    params2.TetSize = 0.1f;
-    params2.TopRadius =  1.2f;
-    params2.NumSides = 3;
-    params2.Dest = &_templates[2];
-    tthread::thread thread2(_GenerateBuilding, &params2);
-    //thread2.join();
-    //_UploadBuilding(params2);
+    vec2 groundPos;
 
-    ThreadParams params3 = {0};
-    params3.Thickness = 3.0f;
-    params3.TetSize = 0.1f;
-    params3.TopRadius = 1;
-    params3.NumSides = 16;
-    params3.Dest = &_templates[3];
-    tthread::thread thread3(_GenerateBuilding, &params3);
-    //thread3.join();
-    //_UploadBuilding(params3);
+    BuildingInstance inst;
+    groundPos.x = -0.5 * extent.x + 0.5 * cellSize.y;
+    for (int col = 0; col < numCols; ++col) {
+        groundPos.y = -0.5 * extent.y + 0.5 * cellSize.y;
+        for (int row = 0; row < numRows; ++row) {
 
-     _batches[0].Template = &_templates[0];
-     _batches[0].Instances.resize(1);
-     _batches[0].Instances[0].EnableCullingPlane = false;
-     _batches[0].Instances[0].CullingPlaneY = 10.0;
-     _batches[0].Instances[0].GroundPosition = vec2(0, 0);
-     _batches[0].Instances[0].Height = 1.25;
-     _batches[0].Instances[0].Radius = 1;
-     _batches[0].Instances[0].Hue = 0.1;
-     _batches[0].Instances[0].ExplosionStart = 3.0;
+            inst.GroundPosition = groundPos;
+            inst.EnableCullingPlane = false;
+            inst.ExplosionStart = 1000.0f; // don't explode
+            size_t templ;
 
-     if (not SingleBuilding) {
-         _batches[1].Template = &_templates[1];
-         _batches[1].Instances.resize(2);
-         _batches[1].Instances[0].EnableCullingPlane = false;
-         _batches[1].Instances[0].GroundPosition = vec2(-20, 0);
-         _batches[1].Instances[0].Height = 0.5;
-         _batches[1].Instances[0].Radius = 1.0;
-         _batches[1].Instances[0].Hue = 0.3;
-         _batches[1].Instances[0].ExplosionStart = 5.0;
-         _batches[1].Instances[1] = _batches[1].Instances[0];
-         _batches[1].Instances[1].GroundPosition = vec2(12, 12);
-         _batches[1].Instances[1].Height = 0.3;
-         _batches[1].Instances[1].Radius = 1.2;
+            // Low-lying buildings
+            if (rand() % 3 != 0) {
+                float height = 0.2 + 0.5 * (rand() % 10) / 10.0f;
+                float radiusx = 0.1f + 0.3 * (rand() % 10) / 10.0f;
+                float radiusz = 0.1f + 0.3 * (rand() % 10) / 10.0f;
+                inst.Scale = vec3(radiusx, height, radiusz);
+                templ = 1;
 
-         _batches[2].Template = &_templates[2];
-         _batches[2].Instances.resize(2);
-         _batches[2].Instances[0].EnableCullingPlane = false;
-         _batches[2].Instances[0].GroundPosition = vec2(-15, 30);
-         _batches[2].Instances[0].Height = 1.3;
-         _batches[2].Instances[0].Radius = 1.0;
-         _batches[2].Instances[0].Hue = 0.1;
-         _batches[2].Instances[0].ExplosionStart = 6.0;
-         _batches[2].Instances[1] = _batches[2].Instances[0];
-         _batches[2].Instances[1].GroundPosition = vec2(15, 30);
-         _batches[2].Instances[1].Height = 2.0;
+            // Skyscrapers
+            } else {
+                templ = rand() % _batches.size();
+                float height = 0.5 + 1.0 * (rand() % 100) / 100.0f;
+                if (rand() % 10 == 0) {
+                    height += 0.5;
+                }
+                float radius = 0.5f - 0.5 * (rand() % 10) / 10.0f;
+                inst.Scale = vec3(radius, height, radius);
 
-         _batches[3].Template = &_templates[3];
-         _batches[3].Instances.resize(2);
-         _batches[3].Instances[0].EnableCullingPlane = false;
-         _batches[3].Instances[0].GroundPosition = vec2(0, -30);
-         _batches[3].Instances[0].Height = 1.4;
-         _batches[3].Instances[0].Radius = 0.8;
-         _batches[3].Instances[0].Hue = 0.0;
-         _batches[3].Instances[0].ExplosionStart = 7.0;
-         _batches[3].Instances[1] = _batches[3].Instances[0];
-         _batches[3].Instances[1].GroundPosition = vec2(13, -28);
-         _batches[3].Instances[1].Radius = 0.4;
-         _batches[3].Instances[1].Height = 0.4;
-         _batches[3].Instances[1].Hue = 0.1;
-         _batches[3].Instances[1].ExplosionStart = 7.5;
-     }
+                // Only half of them actually explode
+                if (rand() % 2 == 0) {
+                    inst.ExplosionStart = 3.0f + 10.0f * (rand() % 100) / 100.0f;
+                }
+            }
 
-     // Needs improvement:
-     // This waits on thread0 to finish, which isn't necessarily the fastest!
-     thread0.join();
-     _UploadBuilding(params0);
-     thread1.join();
-     _UploadBuilding(params1);
-     thread2.join();
-     _UploadBuilding(params2);
-     thread3.join();
-     _UploadBuilding(params3);
+            inst.Hue = (rand() % 100) / 100.0f;
 
-     // Compile shaders
-     Programs& progs = Programs::GetInstance();
-     progs.Load("Tetra.Cracks", false);
-     progs.Load("Tetra.Solid", false);
-     progs.Load("Buildings.XZPlane", false);
-     progs.Load("Buildings.Facets", true);
+            BuildingBatch& batch = _batches[templ];
+            batch.Instances.push_back(inst);
 
-     _cracks->Init();
+            groundPos.y += cellSize.y;
+        }
+        groundPos.x += cellSize.x;
+    }
+
+    for (size_t i = 0; i < threads.size(); ++i) {
+        threads[i]->join();
+        _UploadBuilding(params[i]);
+        delete threads[i];
+    }
+    
+    // Compile shaders
+    Programs& progs = Programs::GetInstance();
+    progs.Load("Tetra.Cracks", false);
+    progs.Load("Tetra.Solid", false);
+    progs.Load("Buildings.XZPlane", false);
+    progs.Load("Buildings.Facets", true);
+    
+    _emptyVao.InitEmpty();
+    _cracks->Init();
 }
 
 void
@@ -334,7 +298,7 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
-    vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
+    vec3 scale = instance.Scale;
 
     float time = GetContext()->elapsedTime;
     bool boundariesOnly = (time < instance.ExplosionStart);
@@ -413,12 +377,11 @@ CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
-    vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
+    vec3 scale = instance.Scale;
     glUseProgram(progs["Tetra.Cracks"]);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
-    glUniform1f(u("Height"), instance.Height);
     glUniform3fv(u("Scale"), 1, ptr(scale));
-    glUniform1f(u("Time"), time);
+    glUniform1f(u("Time"), time - instance.ExplosionStart + 3.0);
     glUniform1f(u("DepthOffset"), -0.0001f);
     glUniform4f(u("Color"), 0, 10, 10, 10);
     templ.CentroidTexture.Bind(0, "CentroidTexture");
