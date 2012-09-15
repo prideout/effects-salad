@@ -7,6 +7,13 @@
 
 class Tube : public Drawable {
 public:
+    // The curve parameter in [0..1] indicating what percentage
+    // of the curve to draw. Setting this value will cause update
+    // to apply changes to the widths of this curve.
+    float t;
+
+    Tube() : Drawable(), t(0) {}
+
     Vec3List cvs;
     Vao tube;
     NormalField normVis;
@@ -15,6 +22,7 @@ public:
 
     virtual void Init();
     virtual void Draw();
+    virtual void Update();
     virtual void DrawFrames();
     
     // Quick and dirty CPU-based 2D Bézier evaluator,

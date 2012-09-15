@@ -37,7 +37,8 @@ BufferTexture::BufferTexture() :
 void
 BufferTexture::Init(GLenum internalFormat,
                     unsigned int sizeInBytes,
-                    const GLvoid* data)
+                    const GLvoid* data,
+                    GLenum drawType)
 {
     glGenTextures(1, &handle);
     pezCheck(glGetError() == GL_NO_ERROR, "BufferTexture gen failed");
@@ -48,7 +49,8 @@ BufferTexture::Init(GLenum internalFormat,
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(target, vbo);
-    glBufferData(target, sizeInBytes, data, GL_STATIC_DRAW);
+
+    glBufferData(target, sizeInBytes, data, drawType);
     pezCheck(glGetError() == GL_NO_ERROR, "TEXTURE_BUFFER population failed");
 
     glTexBuffer(target, internalFormat, vbo);

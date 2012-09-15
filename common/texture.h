@@ -28,7 +28,8 @@ public:
 
     void Init(GLenum format,
               unsigned sizeInBytes,
-              const GLvoid* data); 
+              const GLvoid* data,
+              GLenum drawType = GL_STATIC_DRAW); 
 
     template <typename T>
     void Init(GLenum format, std::vector<T> data) {
