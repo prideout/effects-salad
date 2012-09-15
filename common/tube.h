@@ -2,20 +2,32 @@
 
 #include "drawable.h"
 #include "normalField.h"
+#include "texture.h"
 #include "typedefs.h"
 #include "vao.h"
 
 class Tube : public Drawable {
+    int _segCount;
 public:
     // The curve parameter in [0..1] indicating what percentage
     // of the curve to draw. Setting this value will cause update
     // to apply changes to the widths of this curve.
     float t;
+    int sidesPerSlice;
 
-    Tube() : Drawable(), t(0) {}
+    // GPU Mode causes the frames and widths to be bound and require
+    // a special vertex shader to do posing on the GPU
+    bool gpuMode;
+
+    Tube() : Drawable(), _segCount(0), t(0), sidesPerSlice(8), gpuMode(true) {}
 
     Vec3List cvs;
     Vao tube;
+    
+    BufferTexture centers;
+    BufferTexture frames;
+    BufferTexture scales;
+
     NormalField normVis;
     NormalField binormVis;
     NormalField tanVis;
@@ -38,6 +50,9 @@ public:
     // Populates a buffer with interleaved positions & normals.
     static void
     SweepPolygon(const Vec3List& centerline,
+                 const Vec3List& tangents,
+                 const Vec3List& normals,
+                 const Vec3List& binormals,
                  Blob* outputData,
                  VertexAttribMask requestedAttribs,
                  float polygonRadius,

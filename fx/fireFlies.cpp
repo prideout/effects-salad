@@ -17,6 +17,7 @@ void FireFlies::Init()
 
     glUseProgram(progs.Load("FireFlies.Blur"));
     glUseProgram(progs.Load("FireFlies.Stars", "FireFlies.Stars.FS", "FireFlies.Flies.VS"));
+    glUseProgram(progs.Load("FireFlies.Tube", "FireFlies.Flies.FS", "FireFlies.Tube.VS"));
     glUniform1i(u("Tex"), 1);
 
     _surface.Init();
@@ -162,8 +163,13 @@ void FireFlies::Draw() {
         // look where we are walking
         cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
         //cam.center.y += .5;
+
+        glUseProgram(progs["FireFlies.Tube"]);
         cam.Bind(glm::mat4());
-        //_tube.Draw();
+        _tube.Draw();
+
+        glUseProgram(progs["FireFlies.Flies"]);
+        cam.Bind(glm::mat4());
         
         /*
         glClearColor(.0,.0,.9,1);

@@ -25,20 +25,43 @@ Tube::Init()
     //spine.push_back(glm::vec3(-1, 2, -25));
     //spine.push_back(glm::vec3(+1, 2, -25));
     //spine.push_back(glm::vec3(+18, 0, -25));
-    int polys = 8;
+    int polys = sidesPerSlice;
     float radius = 0.2f;
     int LOD = 4;
     Vec3List centerline;
     Blob meshData;
     EvaluateBezier(spine, &centerline, LOD);
+    _segCount = centerline.size();
+
     VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
-    SweepPolygon(centerline, &meshData, attribs, radius, polys);
-    tube.Init();
-    tube.AddInterleaved(attribs, meshData);
-    GetIndices(centerline, polys, &tube);
 
     Vec3List tangents, normals, binormals;
     ComputeFrames(centerline, &tangents, &normals, &binormals);
+    Vec3List framesTmp(centerline.size() * 3, glm::vec3());
+    FloatList scalesTmp(centerline.size() * 1, 0);
+    for (unsigned i = 0; i < centerline.size(); i++) {
+        pezCheck(i*3+2 < framesTmp.size(), "Out of bounds FRAMES access!");
+        pezCheck(i < scalesTmp.size(), "Out of bounds SCALES access!");
+
+        scalesTmp[i] = 1.0; 
+        //std::cout << scalesTmp[i] << std::endl;
+
+        framesTmp[i*3+0] = normals[i];
+        framesTmp[i*3+1] = binormals[i];
+        framesTmp[i*3+2] = tangents[i];
+    }
+    centers.Init(centerline);
+    frames.Init(framesTmp);
+
+    scales.drawType = GL_DYNAMIC_DRAW;
+    scales.Init(scalesTmp);
+
+    SweepPolygon(centerline, 
+                 tangents, normals, binormals, 
+                 &meshData, attribs, radius, polys);
+    tube.Init();
+    tube.AddInterleaved(attribs, meshData);
+    GetIndices(centerline, polys, &tube);
  
     FloatList vpoints(centerline.size()*3,0);
     FloatList vnormals(centerline.size()*3,0);
@@ -72,21 +95,46 @@ Tube::Init()
     tanVis.Init();
 }
 
+float
+Lerp(float v0, float v1, float t) {
+    if (t > 1.0) t = 1.0;
+    if (t < .0) t = .0;
+    return (1-t) * v0 + t*v1;
+}
+
 void
 Tube::Update()
 {
-
+    float time = GetContext()->elapsedTime;
+    FloatList scalesTmp(_segCount, 0);
+    for(unsigned i = 0; i < _segCount; i++) {
+        float p = 1 - (i / float(_segCount * fract(time)));
+        float s = Lerp(0, 1, p);
+        scalesTmp[i] = s; //float(i+int(time*50) % _segCount) / _segCount;
+        std::cout << scalesTmp[i] << std::endl;
+    }
+    scales.Rebuffer(scalesTmp);
+    //float(i) / centerline.size();
 }
 
 void
 Tube::Draw()
 {
     glPointSize(6);
+    if (gpuMode) {
+        centers.Bind(0, "Centerline");
+        frames.Bind(1, "Frames");
+        scales.Bind(2, "Scales");
+    }
     tube.Bind();
+    glUniform1i(u("VertsPerSlice"), sidesPerSlice);
     glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
+
     //glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
     //glDrawElements(GL_TRIANGLES, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
     //glDrawElements(GL_POINTS, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
+
+
 }
 
 void
@@ -117,6 +165,9 @@ Tube::EvaluateBezier(const Vec3List& spine,
 // Populates a buffer with interleaved positions and/or normals.
 /*static*/ void
 Tube::SweepPolygon(const Vec3List& centerline,
+                   const Vec3List& tangents,
+                   const Vec3List& normals,
+                   const Vec3List& binormals,
                    Blob* outputData,
                    VertexAttribMask requestedAttribs,
                    float polygonRadius,
@@ -124,10 +175,8 @@ Tube::SweepPolygon(const Vec3List& centerline,
 {
     int n = numPolygonSides;
     const float TWOPI = 2*3.1415;
-    Vec3List tangents, normals, binormals;
 
     // XXX(jcowles): ordering of params is slightly different from matrix order... see mat3 init below
-    ComputeFrames(centerline, &tangents, &normals, &binormals);
     unsigned count = centerline.size();
     outputData->resize(count * (n) * 6 * sizeof(float));
     //std::cout << "Max Index: " << count * (n) << std::endl;
@@ -170,11 +219,17 @@ Tube::SweepPolygon(const Vec3List& centerline,
             float x = r*cos(theta);
             float y = r*sin(theta);
             float z = 0;
-            p = basis * glm::vec3(x,y,z);
+
+            // XXX if GPU mode, don't transform
+            //p = basis * glm::vec3(x,y,z);
+            p = glm::vec3(x,y,z);
+
             //mat3.multiplyVec3(basis, [x,y,z], p)
+            /*
             p.x += centerline[i].x;
             p.y += centerline[i].y;
             p.z += centerline[i].z;
+            */
 
             // Stamp p into 'm', skipping over the normal:
             /* mesh.set p, m */
@@ -204,7 +259,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
     while (i < (int) count) {
       int v = 0;
       while (v < n) {
-        pezCheck((m+3+2)*sizeof(float) < outputData->size(), "Invalid size: %d !< %d", (m+3+2)*sizeof(float), outputData->size());
+        pezCheck((m+3+2)*sizeof(float) < outputData->size(), "(TubeNormals) Invalid size: %d !< %d", (m+3+2)*sizeof(float), outputData->size());
         p.x = mesh[m+0];
         p.y = mesh[m+1];
         p.z = mesh[m+2];
@@ -222,6 +277,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
         mesh[m+3+0] = normal.x;
         mesh[m+3+1] = normal.y;
         mesh[m+3+2] = normal.z;
+
         m += 6;
         v++;
       }

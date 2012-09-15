@@ -23,13 +23,13 @@ public:
 
 class BufferTexture : public Texture {
 public:
+    GLenum drawType;
     
     BufferTexture();
 
     void Init(GLenum format,
               unsigned sizeInBytes,
-              const GLvoid* data,
-              GLenum drawType = GL_STATIC_DRAW); 
+              const GLvoid* data); 
 
     template <typename T>
     void Init(GLenum format, std::vector<T> data) {
@@ -39,6 +39,9 @@ public:
     void Init(const FloatList& data);
     void Init(const Vec3List& data);
     void Init(const Vec4List& data);
+
+    void Rebuffer(const FloatList& data);
+
     virtual void GenMipmaps();
 };
 
