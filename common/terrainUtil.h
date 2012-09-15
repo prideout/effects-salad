@@ -12,4 +12,10 @@ namespace TerrainUtil
     void ComputeNormals(const FloatList& points,
                         const IndexList& indices,                    
                         FloatList* normals);
+
+    void Smooth(int size,
+                float scale,
+                FloatList* points,
+                FloatList* normals,
+                IndexList* indices);
 }

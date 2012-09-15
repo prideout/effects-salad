@@ -54,6 +54,7 @@ private:
     TemplateList _templates;
     BatchList _batches;
     Vao _emptyVao;
+    Vao _terrainVao;
     CracksEffect* _cracks;
 
     friend class CracksEffect;

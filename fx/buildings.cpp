@@ -1,8 +1,11 @@
-// Stack some buildings
+// Add "composite" support building instance: cube-on-cube, cylinder-on-cube
 // Use long parabolas for the falling tets
 // Secondary explosion effect: some tets pop off the top, right before explosion
+
+// Cracks on window, with viewport shattering?
+// Viewport with "map view"?  Could help with path-finding...
+
 // Voronoi divisions of the city
-// Use terrain
 //
 // Better radial blur?
 // Street lamps, ground-level detail, low-flying camera
@@ -26,6 +29,7 @@
 #include "common/programs.h"
 #include "common/camera.h"
 #include "common/demoContext.h"
+#include "common/terrainUtil.h"
 
 using namespace std;
 using glm::mat4;
@@ -78,24 +82,36 @@ Buildings::~Buildings()
 void
 Buildings::Init()
 {
+    // Kick off the threads that tetify the building templates
     vector<tthread::thread*> threads;
     vector<ThreadParams> params;
-
     #include "fx/buildings.inl"
 
+    // Tessellate the ground
+    if (true) {
+        FloatList ground;
+        FloatList normals;
+        IndexList indices;
+        const int SIZE = 150;
+        const float SCALE = 0.25;
+        TerrainUtil::Smooth(SIZE, SCALE, &ground, &normals, &indices);
+        _terrainVao = Vao(3, ground, indices);
+        _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
+    }
+
+    // Allocate batches for each template
     _batches.resize(_templates.size());
     for (size_t i = 0; i < _templates.size(); ++i) {
         _batches[i].Template = &_templates[i];
     }
 
+    // Stamp down the buildings in a grid
     const vec2 extent(80, 80);
     const int numCols = 12;
     const int numRows = 12;
     const vec2 cellSize(extent.x / float(numCols),
                         extent.y / float(numRows));
-
     vec2 groundPos;
-
     BuildingInstance inst;
     groundPos.x = -0.5 * extent.x + 0.5 * cellSize.y;
     for (int col = 0; col < numCols; ++col) {
@@ -126,12 +142,10 @@ Buildings::Init()
                 inst.Scale = vec3(radius, height, radius);
 
                 // Only half of them actually explode
-                if (rand() % 2 == 0) {
-                    inst.ExplosionStart = 3.0f + 10.0f * (rand() % 100) / 100.0f;
-                }
+                inst.ExplosionStart = 3.0f + 10.0f * (rand() % 100) / 100.0f;
             }
 
-            inst.Hue = (rand() % 100) / 100.0f;
+            inst.Hue = 0.4 + 0.2 * (rand() % 100) / 100.0f;
 
             BuildingBatch& batch = _batches[templ];
             batch.Instances.push_back(inst);
@@ -140,12 +154,6 @@ Buildings::Init()
         }
         groundPos.x += cellSize.x;
     }
-
-    for (size_t i = 0; i < threads.size(); ++i) {
-        threads[i]->join();
-        _UploadBuilding(params[i]);
-        delete threads[i];
-    }
     
     // Compile shaders
     Programs& progs = Programs::GetInstance();
@@ -153,9 +161,18 @@ Buildings::Init()
     progs.Load("Tetra.Solid", false);
     progs.Load("Buildings.XZPlane", false);
     progs.Load("Buildings.Facets", true);
+    progs.Load("Buildings.Terrain", false);
     
+    // Misc initialization
     _emptyVao.InitEmpty();
     _cracks->Init();
+
+    // Wait for the tetrahedralization to finish
+    for (size_t i = 0; i < threads.size(); ++i) {
+        threads[i]->join();
+        _UploadBuilding(params[i]);
+        delete threads[i];
+    }
 }
 
 void
@@ -284,24 +301,36 @@ Buildings::Draw()
     }
 
     // Draw floor
-    glDisable(GL_CULL_FACE);
-    glUseProgram(progs["Buildings.XZPlane"]);
-    surfaceCam.Bind(glm::mat4());
-    _emptyVao.Bind();
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    if (false) {
+        glDisable(GL_CULL_FACE);
+        glUseProgram(progs["Buildings.XZPlane"]);
+        surfaceCam.Bind(glm::mat4());
+        _emptyVao.Bind();
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+
+    // Draw terrain
+    if (true) {
+        glDisable(GL_CULL_FACE);
+        glUseProgram(progs["Buildings.Terrain"]);
+        surfaceCam.Bind(glm::mat4());
+        _terrainVao.Bind();
+        glDrawElements(GL_TRIANGLE_STRIP, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
+    }
 }
 
 void
 Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
     const float ExplosionDuration = 1.5;
+    const float BulgeDuration = 1.0;
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = instance.Scale;
 
     float time = GetContext()->elapsedTime;
-    bool boundariesOnly = (time < instance.ExplosionStart);
+    bool boundariesOnly = time < (instance.ExplosionStart - BulgeDuration);
     bool completelyDestroyed = (time > instance.ExplosionStart + ExplosionDuration);
 
     if (completelyDestroyed) {
