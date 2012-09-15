@@ -189,6 +189,7 @@ Buildings::Init()
      progs.Load("Tetra.Cracks", false);
      progs.Load("Tetra.Solid", false);
      progs.Load("Buildings.XZPlane", false);
+     progs.Load("Buildings.Facets", true);
 
      _cracks->Init();
 }
@@ -253,7 +254,7 @@ _UploadBuilding(ThreadParams& params)
 
     // Cheap Vao for buildings that aren't self-destructing
     dest->HullVao.Init();
-    dest->HullVao.AddVertexAttribute(AttrPositionFlag,
+    dest->HullVao.AddVertexAttribute(AttrPosition,
                                      3,
                                      src->HullPoints);
     dest->HullVao.AddIndices(src->HullIndices);
@@ -308,6 +309,8 @@ Buildings::Draw()
     PerspCamera surfaceCam = GetContext()->mainCam;
 
     // Draw buildings
+    glUseProgram(progs["Buildings.Facets"]);
+    surfaceCam.Bind(glm::mat4());
     glUseProgram(progs["Tetra.Solid"]);
     surfaceCam.Bind(glm::mat4());
     FOR_EACH(batch, _batches) {
@@ -327,7 +330,7 @@ Buildings::Draw()
 void
 Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
-    const float ExplosionDuration = 1.0;
+    const float ExplosionDuration = 1.5;
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
@@ -341,17 +344,21 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
         return;
     }
 
-    glUseProgram(progs["Tetra.Solid"]);
-    templ.CentroidTexture.Bind(0, "CentroidTexture");
+    if (boundariesOnly) {
+        glUseProgram(progs["Buildings.Facets"]);
+    } else {
+        glUseProgram(progs["Tetra.Solid"]);
+        templ.CentroidTexture.Bind(0, "CentroidTexture");
+    }
+
     glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
-    glUniform1f(u("Height"), instance.Height);
     glUniform1f(u("Time"), time);
     glUniform3fv(u("Scale"), 1, ptr(scale));
     glUniform1f(u("Hue"), instance.Hue);
     glUniform1f(u("ExplosionStart"), instance.ExplosionStart);
 
-    if (false && boundariesOnly) {
+    if (boundariesOnly) {
         templ.HullVao.Bind();
         glDrawElements(GL_TRIANGLES, templ.HullVao.indexCount, GL_UNSIGNED_INT, 0);
         return;
