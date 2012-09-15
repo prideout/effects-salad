@@ -3,16 +3,7 @@
 #include "common/vao.h"
 #include "common/texture.h"
 #include "common/effect.h"
-
-struct BuildingTemplate {
-    BufferTexture CentroidTexture;
-    int TotalTetCount;
-    int BoundaryTetCount;
-    Vao BuildingVao;
-    Vao CracksVao;
-    Vao HullVao;
-    int NumCracks;
-};
+#include "fx/cityThreads.h"
 
 struct BuildingInstance {
     bool EnableCullingPlane;

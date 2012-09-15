@@ -30,6 +30,7 @@ SHARED := \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/fireFlies.o \
 	$(OBJDIR)/fx/buildings.o \
+	$(OBJDIR)/fx/cityThreads.o \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/fx/quads.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
