@@ -1,3 +1,4 @@
+// Render hulls for pre-exploded bldgs, skip draw calls for dead buildings
 // Generate instances and templates with loops rather than unrolled code.
 // Stack buildings for a slightly more interesting effect
 // Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
@@ -87,30 +88,38 @@ Buildings::Init()
     params0.NumSides = 5;
     params0.Dest = &_templates[0];
     tthread::thread thread0(_GenerateBuilding, &params0);
+    //thread0.join();
+    //_UploadBuilding(params0);
 
     ThreadParams params1 = {0};
-    params1.Thickness = 2.5f;
+    params1.Thickness = 3.0f;
     params1.TopRadius =  1.0f;
     params1.TetSize = 0.1f;
     params1.NumSides = 4;
     params1.Dest = &_templates[1];
     tthread::thread thread1(_GenerateBuilding, &params1);
+    //thread1.join();
+    //_UploadBuilding(params1);
 
     ThreadParams params2 = {0};
-    params2.Thickness = 2.5f;
+    params2.Thickness = 3.0f;
     params2.TetSize = 0.1f;
     params2.TopRadius =  1.2f;
     params2.NumSides = 3;
     params2.Dest = &_templates[2];
     tthread::thread thread2(_GenerateBuilding, &params2);
+    //thread2.join();
+    //_UploadBuilding(params2);
 
     ThreadParams params3 = {0};
-    params3.Thickness = 2.5f;
+    params3.Thickness = 3.0f;
     params3.TetSize = 0.1f;
     params3.TopRadius = 1;
-    params3.NumSides = 24;
+    params3.NumSides = 16;
     params3.Dest = &_templates[3];
     tthread::thread thread3(_GenerateBuilding, &params3);
+    //thread3.join();
+    //_UploadBuilding(params3);
 
      _batches[0].Template = &_templates[0];
      _batches[0].Instances.resize(1);
@@ -318,16 +327,22 @@ Buildings::Draw()
 void
 Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
+    const float ExplosionDuration = 2.0;
+
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
 
     float time = GetContext()->elapsedTime;
     bool boundariesOnly = (time < instance.ExplosionStart);
+    bool completelyDestroyed = (time > instance.ExplosionStart + ExplosionDuration);
+
+    if (completelyDestroyed) {
+        return;
+    }
 
     glUseProgram(progs["Tetra.Solid"]);
     templ.CentroidTexture.Bind(0, "CentroidTexture");
-    templ.BuildingVao.Bind();
     glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform1f(u("Height"), instance.Height);
@@ -336,15 +351,16 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
     glUniform1f(u("Hue"), instance.Hue);
     glUniform1f(u("ExplosionStart"), instance.ExplosionStart);
 
-    int n = boundariesOnly ? templ.BoundaryTetCount : templ.TotalTetCount;
-    if (not boundariesOnly) {
-        glEnable(GL_BLEND);
+    if (false && boundariesOnly) {
+        templ.HullVao.Bind();
+        glDrawElements(GL_TRIANGLES, templ.HullVao.indexCount, GL_UNSIGNED_INT, 0);
+        return;
     }
 
-    // Hmm, explosions still look ok when I do this:
-    n = templ.BoundaryTetCount;
-
+    templ.BuildingVao.Bind();
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    int n = templ.BoundaryTetCount;
     glDrawArrays(GL_TRIANGLES, 0, n * 4 * 3);
     glDisable(GL_BLEND);
 }

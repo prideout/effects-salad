@@ -554,15 +554,23 @@ TetUtil::FindCracks(const tetgenio& tets,
         for (int i = 0; i < maxCrackLength; i++) {
 
             ivec4 n0 = neighbors[previous];
+
+            // Order small-valence tets first; this makes the crack prefer
+            // the surface over the interior.
+            #if 0
+            // Well, it doesn't seem to help.  Turning off for now.
+            n0.x = n0.x < 0 ? 0 : n0.x;
+            n0.y = n0.y < 0 ? 0 : n0.y;
+            n0.z = n0.z < 0 ? 0 : n0.z;
+            n0.w = n0.w < 0 ? 0 : n0.w;
             ivec4 n1 = ivec4(centroids[n0.x].w,
                              centroids[n0.y].w,
                              centroids[n0.z].w,
                              centroids[n0.w].w);
+            ivec4 n = indirect_sort(n0, n1);
+            #endif
 
-            // Order small-valence tets first; this makes the crack prefer
-            // the surface over the interior.
-            // Well, it doesn't seem to help.  Turning off for now.
-            ivec4 n = n0; // indirect_sort(n0, n1);
+            ivec4 n = n0;
 
             // Find the "highest altitude" neighbor that we haven't chosen before
             vec4 c0 = centroids[n.x];
@@ -570,10 +578,15 @@ TetUtil::FindCracks(const tetgenio& tets,
             vec4 c2 = centroids[n.z];
             vec4 c3 = centroids[n.w];
             int nTallest = n.x;
-            if (c1.y > centroids[nTallest].y && pathSet.find(n.y) == pathSet.end()) nTallest = n.y;
-            if (c2.y > centroids[nTallest].y && pathSet.find(n.z) == pathSet.end()) nTallest = n.z;
-            if (c3.y > centroids[nTallest].y && pathSet.find(n.w) == pathSet.end()) nTallest = n.w;
-        
+
+            if (nTallest < 0) {
+                break;
+            }
+
+            if (n.y >= 0 && c1.y > centroids[nTallest].y && pathSet.find(n.y) == pathSet.end()) nTallest = n.y;
+            if (n.z >= 0 && c2.y > centroids[nTallest].y && pathSet.find(n.z) == pathSet.end()) nTallest = n.z;
+            if (n.w >= 0 && c3.y > centroids[nTallest].y && pathSet.find(n.w) == pathSet.end()) nTallest = n.w;
+
             // Give up if the only way to go is down
             if (centroids[nTallest].y < centroids[minIndex].y) {
                 break;
