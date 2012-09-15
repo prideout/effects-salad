@@ -18,8 +18,7 @@ struct BuildingInstance {
     bool EnableCullingPlane;
     float CullingPlaneY;
     glm::vec2 GroundPosition;
-    float Height;
-    float Radius;
+    glm::vec3 Scale;
     float Hue;
     float ExplosionStart;
 };

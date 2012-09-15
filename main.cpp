@@ -58,7 +58,7 @@ static void _constructScene()
 
         // Instance the effects, but do not place them into the scene graph:
         Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag |
-                                                 0/*Fullscreen::TeleLinesFlag*/);
+                                                 Fullscreen::TeleLinesFlag);
         Fullscreen* fullscreen2 = new Fullscreen("RadialBlur",
                                                  Fullscreen::BlendFlag |
                                                  Fullscreen::MipmapsFlag);

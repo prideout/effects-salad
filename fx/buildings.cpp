@@ -1,7 +1,12 @@
-// Generate instances and templates with loops rather than unrolled code.
+// Add rectangle support to BuildingInstance
 // Stack buildings for a slightly more interesting effect
-// Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
+// Use long parabolas for the falling tets
 // Secondary explosion effect: some tets pop off the top, right before explosion
+// Voronoi divisions
+//
+// Better radial blur?
+// Street lamps, ground-level detail, low-flying camera
+// Dual viewports for street-level view?
 //
 // We're only rendering boundary tets right now, but we're not exploiting
 //   the massive memory savings.  Maybe buildings should have floors?
@@ -84,12 +89,11 @@ Buildings::Init()
     }
 
     const vec2 extent(80, 80);
-    const int numCols = 8;
-    const int numRows = 8;
+    const int numCols = 12;
+    const int numRows = 12;
     const vec2 cellSize(extent.x / float(numCols),
                         extent.y / float(numRows));
 
-    float explosionStart = 3.0;
     vec2 groundPos;
 
     BuildingInstance inst;
@@ -100,19 +104,35 @@ Buildings::Init()
 
             inst.GroundPosition = groundPos;
             inst.EnableCullingPlane = false;
-            inst.Height = 0.5 + 1.0 * (rand() % 100) / 100.0f;
+            inst.ExplosionStart = 1000.0f; // don't explode
+            size_t templ;
 
-            // Some outliers
-            if (rand() % 10 == 0) {
-                inst.Height += 0.5;
+            // Low-lying buildings
+            if (rand() % 3 != 0) {
+                float height = 0.2 + 0.5 * (rand() % 10) / 10.0f;
+                float radiusx = 0.1f + 0.3 * (rand() % 10) / 10.0f;
+                float radiusz = 0.1f + 0.3 * (rand() % 10) / 10.0f;
+                inst.Scale = vec3(radiusx, height, radiusz);
+                templ = 1;
+
+            // Skyscrapers
+            } else {
+                templ = rand() % _batches.size();
+                float height = 0.5 + 1.0 * (rand() % 100) / 100.0f;
+                if (rand() % 10 == 0) {
+                    height += 0.5;
+                }
+                float radius = 0.5f - 0.5 * (rand() % 10) / 10.0f;
+                inst.Scale = vec3(radius, height, radius);
+
+                // Only half of them actually explode
+                if (rand() % 2 == 0) {
+                    inst.ExplosionStart = 3.0f + 10.0f * (rand() % 100) / 100.0f;
+                }
             }
 
-            inst.Radius = 0.5f - 0.5 * (rand() % 10) / 10.0f;
             inst.Hue = (rand() % 100) / 100.0f;
-            inst.ExplosionStart = 3.0f + 10.0f * (rand() % 100) / 100.0f;
-            explosionStart += 3.0f;
 
-            size_t templ = rand() % _batches.size();
             BuildingBatch& batch = _batches[templ];
             batch.Instances.push_back(inst);
 
@@ -278,7 +298,7 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
-    vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
+    vec3 scale = instance.Scale;
 
     float time = GetContext()->elapsedTime;
     bool boundariesOnly = (time < instance.ExplosionStart);
@@ -357,10 +377,9 @@ CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
-    vec3 scale = vec3(instance.Radius, instance.Height, instance.Radius);
+    vec3 scale = instance.Scale;
     glUseProgram(progs["Tetra.Cracks"]);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
-    glUniform1f(u("Height"), instance.Height);
     glUniform3fv(u("Scale"), 1, ptr(scale));
     glUniform1f(u("Time"), time - instance.ExplosionStart + 3.0);
     glUniform1f(u("DepthOffset"), -0.0001f);

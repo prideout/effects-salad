@@ -26,6 +26,6 @@ threads.push_back(new tthread::thread(_GenerateBuilding, &params[2]));
 params[3].Thickness = 3.0f;
 params[3].TetSize = 0.1f;
 params[3].TopRadius = 1;
-params[3].NumSides = 16;
+params[3].NumSides = 32;
 params[3].Dest = &_templates[3];
 threads.push_back(new tthread::thread(_GenerateBuilding, &params[3]));
