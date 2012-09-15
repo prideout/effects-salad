@@ -1,4 +1,3 @@
-// Render hulls for pre-exploded bldgs, skip draw calls for dead buildings
 // Generate instances and templates with loops rather than unrolled code.
 // Stack buildings for a slightly more interesting effect
 // Build city using simplistic 2D packing of triangles, pentagons, circles, and squares
@@ -28,8 +27,6 @@ using glm::mat4;
 using glm::mat3;
 using glm::vec3;
 using glm::vec2;
-
-static bool SingleBuilding = false;
 
 struct GpuParams {
     Blob HullIndices;
@@ -76,122 +73,78 @@ Buildings::~Buildings()
 void
 Buildings::Init()
 {
-    _emptyVao.InitEmpty();
+    vector<tthread::thread*> threads;
+    vector<ThreadParams> params;
 
-    _templates.resize(SingleBuilding ? 1 : 4);
+    #include "fx/buildings.inl"
+
     _batches.resize(_templates.size());
-     
-    ThreadParams params0 = {0};
-    params0.Thickness = 3;
-    params0.TopRadius =  8.0f / 13.0f;
-    params0.TetSize = 0.1f;
-    params0.NumSides = 5;
-    params0.Dest = &_templates[0];
-    tthread::thread thread0(_GenerateBuilding, &params0);
-    //thread0.join();
-    //_UploadBuilding(params0);
 
-    ThreadParams params1 = {0};
-    params1.Thickness = 3.0f;
-    params1.TopRadius =  1.0f;
-    params1.TetSize = 0.1f;
-    params1.NumSides = 4;
-    params1.Dest = &_templates[1];
-    tthread::thread thread1(_GenerateBuilding, &params1);
-    //thread1.join();
-    //_UploadBuilding(params1);
+    _batches[0].Template = &_templates[0];
+    _batches[0].Instances.resize(1);
+    _batches[0].Instances[0].EnableCullingPlane = false;
+    _batches[0].Instances[0].CullingPlaneY = 10.0;
+    _batches[0].Instances[0].GroundPosition = vec2(0, 0);
+    _batches[0].Instances[0].Height = 1.25;
+    _batches[0].Instances[0].Radius = 1;
+    _batches[0].Instances[0].Hue = 0.1;
+    _batches[0].Instances[0].ExplosionStart = 3.0;
 
-    ThreadParams params2 = {0};
-    params2.Thickness = 3.0f;
-    params2.TetSize = 0.1f;
-    params2.TopRadius =  1.2f;
-    params2.NumSides = 3;
-    params2.Dest = &_templates[2];
-    tthread::thread thread2(_GenerateBuilding, &params2);
-    //thread2.join();
-    //_UploadBuilding(params2);
+    _batches[1].Template = &_templates[1];
+    _batches[1].Instances.resize(2);
+    _batches[1].Instances[0].EnableCullingPlane = false;
+    _batches[1].Instances[0].GroundPosition = vec2(-20, 0);
+    _batches[1].Instances[0].Height = 0.5;
+    _batches[1].Instances[0].Radius = 1.0;
+    _batches[1].Instances[0].Hue = 0.3;
+    _batches[1].Instances[0].ExplosionStart = 5.0;
+    _batches[1].Instances[1] = _batches[1].Instances[0];
+    _batches[1].Instances[1].GroundPosition = vec2(12, 12);
+    _batches[1].Instances[1].Height = 0.3;
+    _batches[1].Instances[1].Radius = 1.2;
 
-    ThreadParams params3 = {0};
-    params3.Thickness = 3.0f;
-    params3.TetSize = 0.1f;
-    params3.TopRadius = 1;
-    params3.NumSides = 16;
-    params3.Dest = &_templates[3];
-    tthread::thread thread3(_GenerateBuilding, &params3);
-    //thread3.join();
-    //_UploadBuilding(params3);
+    _batches[2].Template = &_templates[2];
+    _batches[2].Instances.resize(2);
+    _batches[2].Instances[0].EnableCullingPlane = false;
+    _batches[2].Instances[0].GroundPosition = vec2(-15, 30);
+    _batches[2].Instances[0].Height = 1.3;
+    _batches[2].Instances[0].Radius = 1.0;
+    _batches[2].Instances[0].Hue = 0.1;
+    _batches[2].Instances[0].ExplosionStart = 6.0;
+    _batches[2].Instances[1] = _batches[2].Instances[0];
+    _batches[2].Instances[1].GroundPosition = vec2(15, 30);
+    _batches[2].Instances[1].Height = 2.0;
+    
+    _batches[3].Template = &_templates[3];
+    _batches[3].Instances.resize(2);
+    _batches[3].Instances[0].EnableCullingPlane = false;
+    _batches[3].Instances[0].GroundPosition = vec2(0, -30);
+    _batches[3].Instances[0].Height = 1.4;
+    _batches[3].Instances[0].Radius = 0.8;
+    _batches[3].Instances[0].Hue = 0.0;
+    _batches[3].Instances[0].ExplosionStart = 7.0;
+    _batches[3].Instances[1] = _batches[3].Instances[0];
+    _batches[3].Instances[1].GroundPosition = vec2(13, -28);
+    _batches[3].Instances[1].Radius = 0.4;
+    _batches[3].Instances[1].Height = 0.4;
+    _batches[3].Instances[1].Hue = 0.1;
+    _batches[3].Instances[1].ExplosionStart = 7.5;
 
-     _batches[0].Template = &_templates[0];
-     _batches[0].Instances.resize(1);
-     _batches[0].Instances[0].EnableCullingPlane = false;
-     _batches[0].Instances[0].CullingPlaneY = 10.0;
-     _batches[0].Instances[0].GroundPosition = vec2(0, 0);
-     _batches[0].Instances[0].Height = 1.25;
-     _batches[0].Instances[0].Radius = 1;
-     _batches[0].Instances[0].Hue = 0.1;
-     _batches[0].Instances[0].ExplosionStart = 3.0;
-
-     if (not SingleBuilding) {
-         _batches[1].Template = &_templates[1];
-         _batches[1].Instances.resize(2);
-         _batches[1].Instances[0].EnableCullingPlane = false;
-         _batches[1].Instances[0].GroundPosition = vec2(-20, 0);
-         _batches[1].Instances[0].Height = 0.5;
-         _batches[1].Instances[0].Radius = 1.0;
-         _batches[1].Instances[0].Hue = 0.3;
-         _batches[1].Instances[0].ExplosionStart = 5.0;
-         _batches[1].Instances[1] = _batches[1].Instances[0];
-         _batches[1].Instances[1].GroundPosition = vec2(12, 12);
-         _batches[1].Instances[1].Height = 0.3;
-         _batches[1].Instances[1].Radius = 1.2;
-
-         _batches[2].Template = &_templates[2];
-         _batches[2].Instances.resize(2);
-         _batches[2].Instances[0].EnableCullingPlane = false;
-         _batches[2].Instances[0].GroundPosition = vec2(-15, 30);
-         _batches[2].Instances[0].Height = 1.3;
-         _batches[2].Instances[0].Radius = 1.0;
-         _batches[2].Instances[0].Hue = 0.1;
-         _batches[2].Instances[0].ExplosionStart = 6.0;
-         _batches[2].Instances[1] = _batches[2].Instances[0];
-         _batches[2].Instances[1].GroundPosition = vec2(15, 30);
-         _batches[2].Instances[1].Height = 2.0;
-
-         _batches[3].Template = &_templates[3];
-         _batches[3].Instances.resize(2);
-         _batches[3].Instances[0].EnableCullingPlane = false;
-         _batches[3].Instances[0].GroundPosition = vec2(0, -30);
-         _batches[3].Instances[0].Height = 1.4;
-         _batches[3].Instances[0].Radius = 0.8;
-         _batches[3].Instances[0].Hue = 0.0;
-         _batches[3].Instances[0].ExplosionStart = 7.0;
-         _batches[3].Instances[1] = _batches[3].Instances[0];
-         _batches[3].Instances[1].GroundPosition = vec2(13, -28);
-         _batches[3].Instances[1].Radius = 0.4;
-         _batches[3].Instances[1].Height = 0.4;
-         _batches[3].Instances[1].Hue = 0.1;
-         _batches[3].Instances[1].ExplosionStart = 7.5;
-     }
-
-     // Needs improvement:
-     // This waits on thread0 to finish, which isn't necessarily the fastest!
-     thread0.join();
-     _UploadBuilding(params0);
-     thread1.join();
-     _UploadBuilding(params1);
-     thread2.join();
-     _UploadBuilding(params2);
-     thread3.join();
-     _UploadBuilding(params3);
-
-     // Compile shaders
-     Programs& progs = Programs::GetInstance();
-     progs.Load("Tetra.Cracks", false);
-     progs.Load("Tetra.Solid", false);
-     progs.Load("Buildings.XZPlane", false);
-     progs.Load("Buildings.Facets", true);
-
-     _cracks->Init();
+    for (size_t i = 0; i < threads.size(); ++i) {
+        threads[i]->join();
+        _UploadBuilding(params[i]);
+        delete threads[i];
+    }
+    
+    // Compile shaders
+    Programs& progs = Programs::GetInstance();
+    progs.Load("Tetra.Cracks", false);
+    progs.Load("Tetra.Solid", false);
+    progs.Load("Buildings.XZPlane", false);
+    progs.Load("Buildings.Facets", true);
+    
+    _emptyVao.InitEmpty();
+    _cracks->Init();
 }
 
 void

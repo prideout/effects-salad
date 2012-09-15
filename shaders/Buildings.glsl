@@ -139,6 +139,15 @@ void main()
 
 -- XZPlane.FS
 
+out vec4 FragColor;
+
+void main()
+{
+    FragColor = vec4(1);
+}
+
+-- XZPlane.CrapAO.FS
+
 in vec4 vPosition;
 out vec4 FragColor;
 
