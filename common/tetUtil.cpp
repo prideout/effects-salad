@@ -573,10 +573,10 @@ TetUtil::FindCracks(const tetgenio& tets,
             ivec4 n = n0;
 
             // Find the "highest altitude" neighbor that we haven't chosen before
-            vec4 c0 = centroids[n.x];
-            vec4 c1 = centroids[n.y];
-            vec4 c2 = centroids[n.z];
-            vec4 c3 = centroids[n.w];
+            vec4 c0 = centroids[n.x < 0 ? 0 : n.x];
+            vec4 c1 = centroids[n.y < 0 ? 0 : n.y];
+            vec4 c2 = centroids[n.z < 0 ? 0 : n.z];
+            vec4 c3 = centroids[n.w < 0 ? 0 : n.w];
             int nTallest = n.x;
 
             if (nTallest < 0) {

@@ -207,7 +207,7 @@ _GenerateBuilding(void* vParams)
     // Create the outer skin
     tetgenio in;
     float r1 = 10.0f;  float r2 = r1 * topRadius;
-    float y1 = 0;     float y2 = 20.0f;
+    float y1 = 0;      float y2 = 20.0f;
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
 
     // Create a cheap Vao for buildings that aren't self-destructing
@@ -327,7 +327,7 @@ Buildings::Draw()
 void
 Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
-    const float ExplosionDuration = 2.0;
+    const float ExplosionDuration = 1.0;
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
