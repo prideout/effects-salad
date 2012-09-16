@@ -1,23 +1,3 @@
--- Cracks.VS
-
-layout(location = 0) in vec4 Position;
-layout(location = 4) in float Length;
-
-uniform vec3 Translate;
-uniform vec3 Scale;
-
-uniform mat4 Projection;
-uniform mat4 Modelview;
-
-out float vLength;
-out vec3 vPosition;
-
-void main()
-{
-    vLength = Length;
-    vPosition = Position.xyz * Scale + Translate;
-    gl_Position = Projection * Modelview * vec4(vPosition, 1);
-}
 
 -- Cracks.FS
 
@@ -27,10 +7,13 @@ uniform vec4 Color = vec4(0, 0, 0, 0.75);
 uniform float Time;
 uniform float DepthOffset;
 uniform float GrowthRate = 20;
+uniform float ExplosionStart;
 
 void main()
 {
-    if (vLength > Time * GrowthRate) {
+    float t = Time - ExplosionStart + 3;
+
+    if (vLength > t * GrowthRate) {
         discard;
         return;
     }
@@ -42,6 +25,7 @@ void main()
 
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec3 Normal;
+layout(location = 4) in float Length;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -50,7 +34,9 @@ uniform samplerBuffer CentroidTexture;
 uniform float CullY;
 uniform float Time;
 
+out float vLength;
 out vec4 vColor;
+out vec3 vPosition;
 out vec3 vFacetNormal;
 
 vec3 HSVtoRGB(vec3 color)
@@ -98,8 +84,6 @@ uniform vec3 Scale;
 uniform float HueVariation = 0.05;
 uniform float ExplosionStart = 3.0;
 
-out vec3 vPosition;
-
 // http://gizma.com/easing
 
 vec3 easeOutCirc(float t, vec3 x1, vec3 x2, float duration)
@@ -114,6 +98,8 @@ vec3 easeOutCirc(float t, vec3 x1, vec3 x2, float duration)
 
 void main()
 {
+    vLength = Length;
+
     uint tetid = uint(gl_VertexID) / 12u;
     vec4 tetdata = texelFetch(CentroidTexture, int(tetid));
     vec3 tetcenter = tetdata.rgb;

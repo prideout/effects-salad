@@ -21,6 +21,7 @@ public:
         CopyDepthFlag  = 1 << 4,
         BlendFlag      = 1 << 5,
         MipmapsFlag    = 1 << 6,
+        AdditiveFlag   = 1 << 7,
     };
 
     typedef unsigned int Mask;

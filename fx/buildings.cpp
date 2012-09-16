@@ -157,7 +157,7 @@ Buildings::Init()
     
     // Compile shaders
     Programs& progs = Programs::GetInstance();
-    progs.Load("Tetra.Cracks", false);
+    progs.Load("Tetra.Cracks", "Tetra.Cracks.FS", "Tetra.Solid.VS");
     progs.Load("Tetra.Solid", false);
     progs.Load("Buildings.XZPlane", false);
     progs.Load("Buildings.Facets", true);
@@ -400,19 +400,34 @@ void
 CracksEffect::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
     float time = GetContext()->elapsedTime;
-    if (time > instance.ExplosionStart) {
+
+    const float ExplosionDuration = 1.5;
+    bool completelyDestroyed = (time > instance.ExplosionStart + ExplosionDuration);
+
+    if (completelyDestroyed) {
         return;
     }
+
+    // Near the end, put EVERYTHING on fire!
+    float explosionStart = instance.ExplosionStart;
+    float apocalypseTime = 6;
+    if (time > apocalypseTime && explosionStart > 900.0f) {
+        time -= apocalypseTime;
+        explosionStart = 3;
+    }
+
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = instance.Scale;
     glUseProgram(progs["Tetra.Cracks"]);
+    glUniform1f(u("CullY"), 999);
     glUniform3fv(u("Translate"), 1, ptr(xlate));
     glUniform3fv(u("Scale"), 1, ptr(scale));
-    glUniform1f(u("Time"), time - instance.ExplosionStart + 3.0);
+    glUniform1f(u("Time"), time);
     glUniform1f(u("DepthOffset"), -0.0001f);
-    glUniform4f(u("Color"), 0, 10, 10, 10);
+    glUniform4f(u("Color"), 1, 0.2, 0.3, 10);
+    glUniform1f(u("ExplosionStart"), explosionStart);
     templ.CentroidTexture.Bind(0, "CentroidTexture");
     templ.BuildingVao.Bind();
     templ.CracksVao.Bind();

@@ -146,7 +146,11 @@ Fullscreen::Draw()
 
     if (_mask & BlendFlag) {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if (_mask & AdditiveFlag) {
+            glBlendFunc(GL_ONE, GL_ONE);
+        } else {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
     }
 
     glDisable(GL_DEPTH_TEST);
