@@ -23,6 +23,7 @@ public:
 
 class BufferTexture : public Texture {
 public:
+    GLuint vbo;
     GLenum drawType;
     
     BufferTexture();

@@ -225,7 +225,7 @@ void main()
 
     float scale = texelFetch(Scales, id).r;
     float minScale = .012;
-    vPosition.xyz = Position.xyz * scale * (3 + sin(id/2)) ;
+    vPosition.xyz = Position.xyz * scale * (5 + 2*sin(id/2)) ;
     vPosition.w = 1.0;
 
     float oldScale = texelFetch(Scales, id-1).r;

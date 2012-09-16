@@ -30,6 +30,7 @@ Texture::Bind(int stage, std::string sampler) {
 
 BufferTexture::BufferTexture() :
     Texture(),
+    vbo(0),
     drawType(GL_STATIC_DRAW)
 {
     target = GL_TEXTURE_BUFFER;
@@ -46,7 +47,6 @@ BufferTexture::Init(GLenum internalFormat,
     glBindTexture(target, handle);
     pezCheck(glGetError() == GL_NO_ERROR, "Bind BufferTexture failed");
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(target, vbo);
 
@@ -82,6 +82,8 @@ BufferTexture::GenMipmaps() {
 
 void
 BufferTexture::Rebuffer(const FloatList& data) {
+    pezCheck(vbo != 0, "Invalid VBO in BufferTexture");
+    glBindBuffer(target, vbo);
     glBufferData(target, data.size()*4, &data[0], drawType);
 }
 

@@ -112,7 +112,6 @@ Tube::Update()
     FloatList scalesTmp(_segCount, 0);
     drawCount = 0;
     float timeToGrow = 10;
-    //float percentDone = (int(time) % int(timeToGrow) + fract(time)) / timeToGrow;
     float segTime = timeToGrow / _segCount;
 
     for(unsigned i = 0; i < _segCount; i++) {
@@ -123,7 +122,7 @@ Tube::Update()
         float s = Lerp(0, 1, segGrowth);
         */
 
-
+        
         float segStartTime = i * segTime;
         float s = Lerp(0, 1, (time - segStartTime) / timeToGrow);
 
@@ -131,11 +130,9 @@ Tube::Update()
         //float s = Lerp(0, 1, p);
         scalesTmp[i] = s; 
         if (s > 0) {
-            //std::cout << s << std::endl;
             drawCount += sidesPerSlice*3*2;
         }
     }
-            //std::cout << std::endl;
     scales.Rebuffer(scalesTmp);
     //float(i) / centerline.size();
 }
@@ -144,15 +141,13 @@ void
 Tube::Draw()
 {
     glPointSize(6);
-    if (gpuMode) {
-        centers.Bind(0, "Centerline");
-        frames.Bind(1, "Frames");
-        scales.Bind(2, "Scales");
-    }
+    centers.Bind(0, "Centerline");
+    frames.Bind(1, "Frames");
+    scales.Bind(2, "Scales");
     tube.Bind();
     glUniform1i(u("VertsPerSlice"), sidesPerSlice);
-    //glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, NULL);
-    glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, NULL);
+    //glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
 
     //glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
     //glDrawElements(GL_TRIANGLES, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
