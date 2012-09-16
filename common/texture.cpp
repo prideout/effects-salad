@@ -66,7 +66,13 @@ BufferTexture::Init(const FloatList& data)
 void
 BufferTexture::Init(const Vec3List& data)
 {
-    Init(GL_RGB32F, data.size() * 12, &data[0].x);
+    // XXX: nVidia mac driver doesn't like GL_RGB32F, convert to RGBA
+    Vec4List copy;
+    copy.reserve(data.size());
+    FOR_EACH(v3it, data) {
+        copy.push_back(glm::vec4(*v3it, 3.1415));
+    }
+    Init(GL_RGBA32F, copy.size() * 16, &copy[0].x);
 }
 
 void
