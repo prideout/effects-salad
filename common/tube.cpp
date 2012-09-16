@@ -21,11 +21,6 @@ void
 Tube::Init()
 {
     Vec3List spine = cvs;
-    //spine.push_back(glm::vec3(-18, 0, -25));
-    //spine.push_back(glm::vec3(-1, 2, -25));
-    //spine.push_back(glm::vec3(+1, 2, -25));
-    //spine.push_back(glm::vec3(+18, 0, -25));
-    int polys = sidesPerSlice;
     float radius = 0.2f;
     int LOD = 4;
     Vec3List centerline;
@@ -44,7 +39,6 @@ Tube::Init()
         pezCheck(i < scalesTmp.size(), "Out of bounds SCALES access!");
 
         scalesTmp[i] = 1.0; 
-        //std::cout << scalesTmp[i] << std::endl;
 
         framesTmp[i*3+0] = normals[i];
         framesTmp[i*3+1] = binormals[i];
@@ -61,10 +55,10 @@ Tube::Init()
 
     SweepPolygon(centerline, 
                  tangents, normals, binormals, 
-                 &meshData, attribs, radius, polys);
+                 &meshData, attribs, radius, sidesPerSlice);
     tube.Init();
     tube.AddInterleaved(attribs, meshData);
-    GetIndices(centerline, polys, &tube);
+    GetIndices(centerline, sidesPerSlice, &tube);
  
     FloatList vpoints(centerline.size()*3,0);
     FloatList vnormals(centerline.size()*3,0);
@@ -113,6 +107,7 @@ Tube::Update()
     drawCount = 0;
     float timeToGrow = 10;
     float segTime = timeToGrow / _segCount;
+    float prev = 0;
 
     for(unsigned i = 0; i < _segCount; i++) {
         // Grow one segment at a time:
@@ -121,7 +116,6 @@ Tube::Update()
         float segGrowth = (time - segStartTime) / segTime;
         float s = Lerp(0, 1, segGrowth);
         */
-
         
         float segStartTime = i * segTime;
         float s = Lerp(0, 1, (time - segStartTime) / timeToGrow);
@@ -129,12 +123,14 @@ Tube::Update()
         //float p = 1 - (i / float(_segCount * (fract(time/ 80) )));
         //float s = Lerp(0, 1, p);
         scalesTmp[i] = s; 
-        if (s > 0) {
+        if (s > 0 or prev > 0) {
             drawCount += sidesPerSlice*3*2;
         }
+        prev = s;
     }
+
+    // Send the scales out to the GPU
     scales.Rebuffer(scalesTmp);
-    //float(i) / centerline.size();
 }
 
 void
