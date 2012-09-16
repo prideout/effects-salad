@@ -202,10 +202,8 @@ void main()
 
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec4 Normal;
-//layout(location = 2) in vec2 UvCoord;
 
 out vec4 vPosition;
-//out vec2 vUvCoord;
 out vec3 vNormal;
 
 uniform mat4 Projection;
@@ -218,16 +216,8 @@ uniform samplerBuffer Centerline;
 uniform samplerBuffer Frames;
 uniform samplerBuffer Scales;
 
-/*
-uniform mat3 NormalMatrix;
-*/
 void main()
 {
-    /*
-    vPosition = (Modelview * Position).xyz;
-    gl_Position = Projection * Modelview * Position;
-    vNormal = NormalMatrix * Normal;
-    */
     int id = gl_VertexID / VertsPerSlice;
     mat3 basis = mat3(texelFetch(Frames, id*3+0).rgb,
                       texelFetch(Frames, id*3+1).rgb,
@@ -238,7 +228,6 @@ void main()
     vPosition.xyz = Position.xyz * scale * (3 + sin(id/2)) ;
     vPosition.w = 1.0;
 
-#if 1
     float oldScale = texelFetch(Scales, id-1).r;
     if (id > 0 && scale == 0 && oldScale > 0) {
         float pct = clamp(oldScale / minScale, 0.0, 1.0);
@@ -251,14 +240,7 @@ void main()
         vPosition.xyz = 1*basis*vPosition.xyz;
         vPosition.xyz += texelFetch(Centerline, id).rgb;
     }
-#endif
-    //    vPosition.xyz = 1*basis*vPosition.xyz;
-    //    vPosition.xyz += texelFetch(Centerline, id).rgb;
 
-    //vPosition = vec4(basis * (vPosition.xyz * scale) + texelFetch(Centerline, id).rgb, 1.0);
-    //vPosition = Position + vec4(texelFetch(Centerline, gl_VertexID/8).rgb, 0.0);
-    //vPosition.y += float(gl_VertexID/8) / 2.;
-    //vPosition = Position + vec4(texelFetch(Centerline, int(SliceId)).rgb, 0.0);
     gl_Position = Projection * Modelview * vPosition;
     vNormal = normalize(Normal.xyz);
 }
