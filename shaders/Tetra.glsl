@@ -137,7 +137,7 @@ void main()
     if (Time > ExplosionStart) {
        float t = Time - ExplosionStart;
        float y = tetcenter.y / MaxHeight;
-       implosion += t * (1 + randhash(tetid, 1));
+       implosion += t;
        implosion *= y;
        implosion = clamp(implosion, 0, 1);
 
@@ -146,8 +146,15 @@ void main()
        float x = 1 + tFinal * y * y;
        vec3 p1 = normalize(p) * length(p) * x;
        vec3 tetcenter1 = normalize(tetcenter) * length(tetcenter) * x;
-       p1.xz *= x;
-       tetcenter1.xz *= x;
+
+       const float expandRate = 1.25;
+       p1.xz *= expandRate * x;
+       tetcenter1.xz *= expandRate * x;
+
+       const float fallRate = 1.25;
+       float t2 = (t*fallRate) * (t*fallRate);
+       p1.y -= t2*t2;
+       tetcenter.y -= t2*t2;
 
        float FanOutSpeed = 100;
        p = easeOutCirc(t, p, p1, FanOutSpeed);
