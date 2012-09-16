@@ -275,7 +275,8 @@ void _pezFatal(const char* pStr, va_list a)
     vsnprintf(msg, countof(msg), pStr, a);
     puts(msg);
     puts("\n");
-    exit(1);
+    //exit(1);
+    abort();
 }
 
 void pezFatal(const char* pStr, ...)

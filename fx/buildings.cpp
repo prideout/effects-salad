@@ -148,6 +148,15 @@ Buildings::Init()
 
             inst.Hue = 0.4 + 0.2 * (rand() % 100) / 100.0f;
 
+            // Turn off a bunch of buildings for debugging
+            #if 1
+            int yy = -3;
+            int xx = 0;
+            if (col+xx < 5 || col+xx > 8 || row+yy < 5 || row+yy > 8) {
+                inst.ExplosionStart = -1000;
+            }
+            #endif
+
             BuildingBatch& batch = _batches[templ];
             batch.Instances.push_back(inst);
 
@@ -276,6 +285,13 @@ Buildings::Update()
     camera->eye.z = 70;
     camera->center.y = 20;
     camera->eye = glm::rotateY(camera->eye, time * 48);
+
+    // Debugging
+    camera->eye.x = 10;
+    camera->eye.y = 35 - 5;
+    camera->eye.z = 70;
+    camera->center.x = 10;
+    camera->center.y = 20 - 5;
 
     _cracks->Update();
 }
