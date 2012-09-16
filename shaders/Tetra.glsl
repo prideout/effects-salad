@@ -79,10 +79,17 @@ float randhash(uint seed, float b)
 }
 
 uniform float Hue;
+uniform float ChipTime;
 uniform vec3 Translate;
 uniform vec3 Scale;
+uniform mat3 TetSpin;
 uniform float HueVariation = 0.05;
 uniform float ExplosionStart = 3.0;
+
+const float MaxHeight = 20.0;
+const float BulgeDuration = 1.0;
+const float Bulgeness = 0.05;
+const float ChipOffDuration = 3.0;
 
 // http://gizma.com/easing
 
@@ -104,6 +111,7 @@ void main()
     vec4 tetdata = texelFetch(CentroidTexture, int(tetid));
     vec3 tetcenter = tetdata.rgb;
     int neighbors = int(tetdata.a);
+    
     if (tetcenter.y > CullY) {
         vColor = vec4(0);
     } else {
@@ -118,14 +126,40 @@ void main()
 
     vec3 p = Position.xyz;
     vec3 scale = Scale;
+
+    // ChipOff
+    if (randhash(tetid, 10) < 0.01 && tetcenter.y > 5.0) {
+
+        float t = ChipTime;
+        if (t > 2.0) {
+            gl_Position = vec4(0);
+            return;
+        }
+
+        vec3 tilt = vec3(0, 1, 0);
+        vec3 direction = normalize(tilt + p - vec3(0, Position.y, 0));
+        float speed = 20;
+
+        // Spin around the tet center
+        p -= tetcenter;
+        p = TetSpin * p;
+        
+        // Honor the per-building transform
+        p = tetcenter * scale + Translate + p;
+
+        // Make it fly horizontally
+        p += direction * t * speed;
+
+        vPosition = p;
+        gl_Position = Projection * Modelview * vec4(p, 1);
+        return;
+    }
+
     float implosion = 0;
     if (randhash(tetid, Time * 2) > 2.0) {
        implosion = 0.25;
     }
 
-    float MaxHeight = 20.0;
-    float BulgeDuration = 1.0;
-    float Bulgeness = 0.05;
     if (Time > ExplosionStart - BulgeDuration) {
         float t = Time - (ExplosionStart - BulgeDuration);
         if (t > BulgeDuration) {

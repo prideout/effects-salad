@@ -149,13 +149,14 @@ Buildings::Init()
             inst.Hue = 0.4 + 0.2 * (rand() % 100) / 100.0f;
 
             // Turn off a bunch of buildings for debugging
-            #if 1
-            int yy = -3;
-            int xx = 0;
-            if (col+xx < 5 || col+xx > 8 || row+yy < 5 || row+yy > 8) {
-                inst.ExplosionStart = -1000;
+            bool debug = false;
+            if (debug) {
+                int yy = -3;
+                int xx = 0;
+                if (col+xx < 5 || col+xx > 8 || row+yy < 5 || row+yy > 8) {
+                    inst.ExplosionStart = -1000;
+                }
             }
-            #endif
 
             BuildingBatch& batch = _batches[templ];
             batch.Instances.push_back(inst);
@@ -287,11 +288,13 @@ Buildings::Update()
     camera->eye = glm::rotateY(camera->eye, time * 48);
 
     // Debugging
-    camera->eye.x = 10;
-    camera->eye.y = 35 - 5;
-    camera->eye.z = 70;
-    camera->center.x = 10;
-    camera->center.y = 20 - 5;
+    if (true) {
+        camera->eye.x = 10;
+        camera->eye.y = 35 - 5;
+        camera->eye.z = 70;
+        camera->center.x = 10;
+        camera->center.y = 20 - 5;
+    }
 
     _cracks->Update();
 }
@@ -341,24 +344,33 @@ Buildings::_DrawBuilding(BuildingTemplate& templ, BuildingInstance& instance)
 {
     const float ExplosionDuration = 1.5;
     const float BulgeDuration = 1.0;
+    const float ChipOffDuration = 3;
 
     Programs& progs = Programs::GetInstance();
     vec3 xlate = vec3(instance.GroundPosition.x, 0, instance.GroundPosition.y);
     vec3 scale = instance.Scale;
 
     float time = GetContext()->elapsedTime;
-    bool boundariesOnly = time < (instance.ExplosionStart - BulgeDuration);
+    bool boundariesOnly = time < (instance.ExplosionStart - BulgeDuration - ChipOffDuration);
     bool completelyDestroyed = (time > instance.ExplosionStart + ExplosionDuration);
 
     if (completelyDestroyed) {
         return;
     }
 
+    float chipTime = time - (instance.ExplosionStart - BulgeDuration - ChipOffDuration);
+    vec3 axis = glm::normalize(vec3(1, 1, 0));
+    float theta = chipTime * 600;
+    mat4 tetSpin4 = glm::rotate(theta, axis);
+    mat3 tetSpin = glm::mat3(tetSpin4);
+
     if (boundariesOnly) {
         glUseProgram(progs["Buildings.Facets"]);
     } else {
         glUseProgram(progs["Tetra.Solid"]);
         templ.CentroidTexture.Bind(0, "CentroidTexture");
+        glUniform1f(u("ChipTime"), chipTime);
+        glUniformMatrix3fv(u("TetSpin"), 1, 0, ptr(tetSpin));
     }
 
     glUniform1f(u("CullY"), instance.EnableCullingPlane ? instance.CullingPlaneY : 999);

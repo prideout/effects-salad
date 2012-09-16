@@ -72,6 +72,7 @@ static void _constructScene()
           fullscreen1->AddChild(buildings);
         ctx->drawables.push_back(fullscreen2);
           fullscreen2->AddChild(buildings->Cracks());
+          //fullscreen2->AddChild(buildings->Whiteout(fullscreen2));
         ctx->drawables.push_back(fps);
 
         shotMap["CityIntro"] = ctx;
