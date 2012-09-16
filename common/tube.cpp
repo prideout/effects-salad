@@ -56,6 +56,9 @@ Tube::Init()
     scales.drawType = GL_DYNAMIC_DRAW;
     scales.Init(scalesTmp);
 
+    // XXX: processing scales twice needlessly 
+    Update();
+
     SweepPolygon(centerline, 
                  tangents, normals, binormals, 
                  &meshData, attribs, radius, polys);
@@ -107,11 +110,32 @@ Tube::Update()
 {
     float time = GetContext()->elapsedTime;
     FloatList scalesTmp(_segCount, 0);
+    drawCount = 0;
+    float timeToGrow = 10;
+    //float percentDone = (int(time) % int(timeToGrow) + fract(time)) / timeToGrow;
+    float segTime = timeToGrow / _segCount;
+
     for(unsigned i = 0; i < _segCount; i++) {
-        float p = 1 - (i / float(_segCount * (fract(time/ 4) )));
-        float s = Lerp(0, 1, p);
+        // Grow one segment at a time:
+        /*
+        float segStartTime = i * segTime;
+        float segGrowth = (time - segStartTime) / segTime;
+        float s = Lerp(0, 1, segGrowth);
+        */
+
+
+        float segStartTime = i * segTime;
+        float s = Lerp(0, 1, (time - segStartTime) / timeToGrow);
+
+        //float p = 1 - (i / float(_segCount * (fract(time/ 80) )));
+        //float s = Lerp(0, 1, p);
         scalesTmp[i] = s; 
+        if (s > 0) {
+            //std::cout << s << std::endl;
+            drawCount += sidesPerSlice*3*2;
+        }
     }
+            //std::cout << std::endl;
     scales.Rebuffer(scalesTmp);
     //float(i) / centerline.size();
 }
@@ -127,6 +151,7 @@ Tube::Draw()
     }
     tube.Bind();
     glUniform1i(u("VertsPerSlice"), sidesPerSlice);
+    //glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, NULL);
     glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
 
     //glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);

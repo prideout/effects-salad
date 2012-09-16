@@ -233,7 +233,29 @@ void main()
                       texelFetch(Frames, id*3+1).rgb,
                       texelFetch(Frames, id*3+2).rgb);
 
-    vPosition = vec4(basis * (Position.xyz * texelFetch(Scales, id).r) + texelFetch(Centerline, id).rgb, 1.0);
+    float scale = texelFetch(Scales, id).r;
+    float minScale = .012;
+    vPosition.xyz = Position.xyz * scale * (3 + sin(id/2)) ;
+    vPosition.w = 1.0;
+
+#if 1
+    float oldScale = texelFetch(Scales, id-1).r;
+    if (id > 0 && scale == 0 && oldScale > 0) {
+        float pct = clamp(oldScale / minScale, 0.0, 1.0);
+        mat3 basis2 = mat3(texelFetch(Frames, (id-1)*3+0).rgb,
+                           texelFetch(Frames, (id-1)*3+1).rgb,
+                           texelFetch(Frames, (id-1)*3+2).rgb);
+        vPosition.xyz = mix(basis2*vPosition.xyz, basis*vPosition.xyz, pct);
+        vPosition.xyz += mix(texelFetch(Centerline, id-1).rgb, texelFetch(Centerline, id).rgb, pct);
+    } else {
+        vPosition.xyz = 1*basis*vPosition.xyz;
+        vPosition.xyz += texelFetch(Centerline, id).rgb;
+    }
+#endif
+    //    vPosition.xyz = 1*basis*vPosition.xyz;
+    //    vPosition.xyz += texelFetch(Centerline, id).rgb;
+
+    //vPosition = vec4(basis * (vPosition.xyz * scale) + texelFetch(Centerline, id).rgb, 1.0);
     //vPosition = Position + vec4(texelFetch(Centerline, gl_VertexID/8).rgb, 0.0);
     //vPosition.y += float(gl_VertexID/8) / 2.;
     //vPosition = Position + vec4(texelFetch(Centerline, int(SliceId)).rgb, 0.0);

@@ -14,12 +14,13 @@ public:
     // to apply changes to the widths of this curve.
     float t;
     int sidesPerSlice;
+    int drawCount;
 
     // GPU Mode causes the frames and widths to be bound and require
     // a special vertex shader to do posing on the GPU
     bool gpuMode;
 
-    Tube() : Drawable(), _segCount(0), t(0), sidesPerSlice(8), gpuMode(true) {}
+    Tube() : Drawable(), _segCount(0), t(0), sidesPerSlice(8), drawCount(0), gpuMode(true) {}
 
     Vec3List cvs;
     Vao tube;
