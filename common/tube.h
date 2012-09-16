@@ -9,14 +9,12 @@
 class Tube : public Drawable {
     int _segCount;
 public:
-    // The curve parameter in [0..1] indicating what percentage
-    // of the curve to draw. Setting this value will cause update
-    // to apply changes to the widths of this curve.
-    float t;
+    float startTime;
+    float timeToGrow;
     int sidesPerSlice;
     int drawCount;
 
-    Tube() : Drawable(), _segCount(0), t(0), sidesPerSlice(8), drawCount(0) {}
+    Tube() : Drawable(), _segCount(0), startTime(0), timeToGrow(9), sidesPerSlice(8), drawCount(0) {}
 
     Vec3List cvs;
     Vao tube;

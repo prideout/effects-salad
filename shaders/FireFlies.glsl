@@ -210,7 +210,11 @@ uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
+
+uniform int Slices;
 uniform int VertsPerSlice;
+uniform float Time;
+uniform float TimeToGrow;
 
 uniform samplerBuffer Centerline;
 uniform samplerBuffer Frames;
@@ -218,26 +222,42 @@ uniform samplerBuffer Scales;
 
 void main()
 {
-    int id = gl_VertexID / VertsPerSlice;
+    int id = int(gl_VertexID / VertsPerSlice);
+
+    // the time when this slices starts
+    float sliceTime = (TimeToGrow / Slices);
+    float sliceStartTime = id * sliceTime;
+
+    // The percent complete for the current slice given the current time
+    // Segments at the end grow faster so they can reach their max size by the end of the grow time
+    // if there is a tapering to the scales, this effect shouldn't be noticable
+    // I'm not sure if I like this, because the trunk grows too slowly
+    float s = mix(0.0, 1.0, clamp((Time - sliceStartTime) / (TimeToGrow - sliceStartTime), 0., 1.));
+    float s0 = mix(0.0, 1.0, clamp((Time - (id-1)*sliceTime) / (TimeToGrow - (id-1)*sliceTime), 0., 1.));
+
     mat3 basis = mat3(texelFetch(Frames, id*3+0).rgb,
                       texelFetch(Frames, id*3+1).rgb,
                       texelFetch(Frames, id*3+2).rgb);
 
-    float scale = texelFetch(Scales, id).r;
-    float minScale = .012;
-    vPosition.xyz = Position.xyz * scale * (5 + 2*sin(id/2)) ;
+    float scale = s*texelFetch(Scales, id).r;
     vPosition.w = 1.0;
 
+    if (s == 89) {
+        vPosition.xyz = vec3(0,0,0);
+    } else {
+    vPosition.xyz = Position.xyz * scale; // * (5 + sin(id/2));
+    }
+
     float oldScale = texelFetch(Scales, id-1).r;
-    if (id > 0 && scale == 0 && oldScale > 0) {
-        float pct = clamp(oldScale / minScale, 0.0, 1.0);
+    if ((s == 0 && s0 > 0)) { //id > 0 && scale == 0 && oldScale > 0) {
+        float pct = clamp((Time-(id-1)*sliceTime) / sliceTime, 0., 1.);
         mat3 basis2 = mat3(texelFetch(Frames, (id-1)*3+0).rgb,
                            texelFetch(Frames, (id-1)*3+1).rgb,
                            texelFetch(Frames, (id-1)*3+2).rgb);
         vPosition.xyz = mix(basis2*vPosition.xyz, basis*vPosition.xyz, pct);
         vPosition.xyz += mix(texelFetch(Centerline, id-1).rgb, texelFetch(Centerline, id).rgb, pct);
     } else {
-        vPosition.xyz = 1*basis*vPosition.xyz;
+        vPosition.xyz = basis*vPosition.xyz;
         vPosition.xyz += texelFetch(Centerline, id).rgb;
     }
 

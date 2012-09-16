@@ -16,13 +16,21 @@ glm::vec3 _Perp(glm::vec3 u)
     return glm::normalize(dest);
 }
 
+float
+_Lerp(float v0, float v1, float t) {
+    if (t > 1.0) t = 1.0;
+    if (t < .0) t = .0;
+    return (1-t) * v0 + t*v1;
+}
+
+
 
 void
 Tube::Init()
 {
     Vec3List spine = cvs;
     float radius = 0.2f;
-    int LOD = 4;
+    int LOD = 5;
     Vec3List centerline;
     Blob meshData;
     EvaluateBezier(spine, &centerline, LOD);
@@ -38,7 +46,7 @@ Tube::Init()
         pezCheck(i*3+2 < framesTmp.size(), "Out of bounds FRAMES access!");
         pezCheck(i < scalesTmp.size(), "Out of bounds SCALES access!");
 
-        scalesTmp[i] = 1.0; 
+        scalesTmp[i] = _Lerp(1.2, .0, i / float(centerline.size()-1) ); 
 
         framesTmp[i*3+0] = normals[i];
         framesTmp[i*3+1] = binormals[i];
@@ -50,15 +58,14 @@ Tube::Init()
     scales.drawType = GL_DYNAMIC_DRAW;
     scales.Init(scalesTmp);
 
-    // XXX: processing scales twice needlessly 
-    Update();
-
     SweepPolygon(centerline, 
                  tangents, normals, binormals, 
                  &meshData, attribs, radius, sidesPerSlice);
     tube.Init();
     tube.AddInterleaved(attribs, meshData);
     GetIndices(centerline, sidesPerSlice, &tube);
+
+    drawCount = tube.indexCount;
  
     FloatList vpoints(centerline.size()*3,0);
     FloatList vnormals(centerline.size()*3,0);
@@ -92,16 +99,13 @@ Tube::Init()
     tanVis.Init();
 }
 
-float
-Lerp(float v0, float v1, float t) {
-    if (t > 1.0) t = 1.0;
-    if (t < .0) t = .0;
-    return (1-t) * v0 + t*v1;
-}
-
 void
 Tube::Update()
 {
+    // CPU based implementation, saved here as a fallback if we need to 
+    // free up some GPU time
+
+    #if 0
     float time = GetContext()->elapsedTime;
     FloatList scalesTmp(_segCount, 0);
     drawCount = 0;
@@ -114,14 +118,14 @@ Tube::Update()
         /*
         float segStartTime = i * segTime;
         float segGrowth = (time - segStartTime) / segTime;
-        float s = Lerp(0, 1, segGrowth);
+        float s = _Lerp(0, 1, segGrowth);
         */
         
         float segStartTime = i * segTime;
-        float s = Lerp(0, 1, (time - segStartTime) / timeToGrow);
+        float s = _Lerp(0, 1, (time - segStartTime) / timeToGrow);
 
         //float p = 1 - (i / float(_segCount * (fract(time/ 80) )));
-        //float s = Lerp(0, 1, p);
+        //float s = _Lerp(0, 1, p);
         scalesTmp[i] = s; 
         if (s > 0 or prev > 0) {
             drawCount += sidesPerSlice*3*2;
@@ -131,25 +135,24 @@ Tube::Update()
 
     // Send the scales out to the GPU
     scales.Rebuffer(scalesTmp);
+    #endif
 }
 
 void
 Tube::Draw()
 {
+    if (startTime == 0) startTime = GetContext()->elapsedTime;
     glPointSize(6);
     centers.Bind(0, "Centerline");
     frames.Bind(1, "Frames");
     scales.Bind(2, "Scales");
     tube.Bind();
+    glUniform1i(u("Slices"), _segCount);
     glUniform1i(u("VertsPerSlice"), sidesPerSlice);
+    //glUniform1f(u("Time"), timeToGrow - 1);
+    glUniform1f(u("Time"), GetContext()->elapsedTime - startTime);
+    glUniform1f(u("TimeToGrow"), timeToGrow);
     glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, NULL);
-    //glDrawElements(GL_TRIANGLES, tube.indexCount, GL_UNSIGNED_INT, NULL);
-
-    //glDrawElements(GL_POINTS, tube.indexCount, GL_UNSIGNED_INT, NULL);
-    //glDrawElements(GL_TRIANGLES, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
-    //glDrawElements(GL_POINTS, int(2*GetContext()->elapsedTime) % (tube.indexCount+1), GL_UNSIGNED_INT, NULL);
-
-
 }
 
 void
