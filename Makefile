@@ -34,6 +34,7 @@ SHARED := \
 	$(OBJDIR)/fx/milkyway.o \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/fx/quads.o \
+	$(OBJDIR)/fx/tree.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/noise/perlin.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
