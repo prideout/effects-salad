@@ -1,10 +1,11 @@
-// Add "composite" support building instance: cube-on-cube, cylinder-on-cube
 // Use long parabolas for the falling tets
-// Secondary explosion effect: some tets pop off the top, right before explosion
+// Camera shake
+// Secondary explosion effect: some tets pop off the top, right before explosion, with motion blur
 
 // Cracks on window, with viewport shattering?
 // Viewport with "map view"?  Could help with path-finding...
 
+// Add "composite" support building instance: cube-on-cube, cylinder-on-cube
 // Voronoi divisions of the city
 //
 // Better radial blur?
