@@ -1,8 +1,10 @@
 #include "common/terrainUtil.h"
 #include "noise/perlin.h"
 
+using namespace glm;
+
 void
-TerrainUtil::Tessellate(glm::vec3 cent,
+TerrainUtil::Tessellate(vec3 cent,
                         int SIZE,
                         float SCALE,
                         FloatList* ground,
@@ -52,7 +54,7 @@ TerrainUtil::ComputeNormals(const FloatList& ground,
 
     // calculate vertex normals
     // since we just generated the triangle indices, use them here
-    glm::vec3 cur, prev1, prev2;
+    vec3 cur, prev1, prev2;
     int curIdx=0, prev1Idx=0, prev2Idx=0;
     for(unsigned i = 0; i < indices.size(); i++) {
         prev2 = prev1;
@@ -60,12 +62,12 @@ TerrainUtil::ComputeNormals(const FloatList& ground,
         prev1 = cur;
         prev1Idx = curIdx;
         curIdx = indices[i];
-        cur = glm::vec3(ground[curIdx*4], ground[curIdx*4+1], ground[curIdx*4+2]);
+        cur = vec3(ground[curIdx*4], ground[curIdx*4+1], ground[curIdx*4+2]);
         if (i < 2)
             continue;
-        glm::vec3 leg1 = (cur - prev1);
-        glm::vec3 leg2 = (prev2 - prev1);
-        glm::vec3 norm = (glm::cross(leg1, leg2));
+        vec3 leg1 = (cur - prev1);
+        vec3 leg2 = (prev2 - prev1);
+        vec3 norm = (cross(leg1, leg2));
         if (i % 2 == 1)
             norm = -norm;
 
@@ -87,10 +89,71 @@ TerrainUtil::ComputeNormals(const FloatList& ground,
 
     // normalize the, um, normals
     for (unsigned i = 0; i < normals.size(); i+=4) { 
-        glm::vec3 v( normals[i], normals[i+1], normals[i+2] );
-        v = glm::normalize(v);
+        vec3 v( normals[i], normals[i+1], normals[i+2] );
+        v = normalize(v);
         normals[i+0] = v.x;
         normals[i+1] = v.y;
         normals[i+2] = v.z;
+    }
+}
+
+static vec3
+_SampleTerrain(Perlin& noise, int SIZE, float SCALE, float x, float z)
+{
+    float tx = x * SCALE;
+    float tz = z * SCALE;
+    float y = noise.Get(tx, tz);
+    vec3 p = vec3(x, y, z);
+    return p;
+}
+
+void
+TerrainUtil::Smooth(int SIZE,
+                    float SCALE,
+                    FloatList* positions,
+                    FloatList* normals,
+                    IndexList* indices)
+{
+    Perlin noise(2, .1, 2, 0);
+
+    for (float x = 0; x < SIZE; x++) {
+        for (float z = 0; z < SIZE; z++) {
+
+            const float e = 0.01;
+
+            vec3 p = _SampleTerrain(noise, SIZE, SCALE, x, z);
+            vec3 p1 = _SampleTerrain(noise, SIZE, SCALE, x+e, z);
+            vec3 p2 = _SampleTerrain(noise, SIZE, SCALE, x, z+e);
+
+            vec3 du = p1 - p;
+            vec3 dv = p2 - p;
+            vec3 n = normalize(cross(du, dv));
+
+            p += vec3(-SIZE/2, 0, -SIZE/2);
+
+            positions->push_back(p.x);
+            positions->push_back(p.y);
+            positions->push_back(p.z);
+            normals->push_back(n.x);
+            normals->push_back(n.y);
+            normals->push_back(n.z);
+        }
+    } 
+
+    // build up a triangle strip over the surface
+    int index = SIZE - 1;
+    bool isFirstIndex = true;
+    int di = -1;
+    while (index < (SIZE*SIZE) - SIZE) {
+        for (int i = 0; i < SIZE; i++) {
+            if (i > 0 or isFirstIndex) {
+                indices->push_back(index);
+                isFirstIndex = false;
+            }
+            indices->push_back(index+SIZE);
+            index += di;
+        }
+        di *= -1;
+        index += SIZE + di;
     }
 }

@@ -195,3 +195,42 @@ void main()
 
     FragColor = vec4(d * vec3(0.8), 1);
 }
+
+-- Terrain.VS
+
+layout(location = 0) in vec4 Position;
+layout(location = 1) in vec3 Normal;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat3 NormalMatrix;
+
+out vec3 vPosition;
+out vec3 vNormal;
+
+void main()
+{
+    vPosition = Position.xyz;
+    vNormal = NormalMatrix * Normal;
+    gl_Position = Projection * Modelview * Position;
+}
+
+-- Terrain.FS
+
+in vec3 vPosition;
+in vec3 vNormal;
+
+uniform vec3 LightPosition = vec3(0, 0, 1);
+uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
+uniform vec3 Color = vec3(1);
+
+out vec4 FragColor;
+
+void main()
+{
+    vec3 N = normalize(vNormal);
+    vec3 L = LightPosition;
+    float df = abs(dot(N, L));
+    vec3 C = AmbientMaterial + df * Color;
+    FragColor = vec4(C, 1);
+}
