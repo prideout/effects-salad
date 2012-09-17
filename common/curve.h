@@ -126,7 +126,6 @@ namespace Bezier {
     {
         unsigned i = 0;
         while (i + 4 <= cvs.size()) {
-            std::cout << cvs.size() << " -- " << i << std::endl;
             Eval(numSamples, cvs, i, 4, points); 
             i += 3;
         }

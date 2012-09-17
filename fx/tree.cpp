@@ -10,7 +10,7 @@ void Tree::Init() {
     name = "Tree";
     Effect::Init();
 
-    Programs& progs = Programs::GetInstance();
+    //Programs& progs = Programs::GetInstance();
     //glUseProgram(progs.Load("Tree.Sky", true));
 }
 
@@ -19,7 +19,7 @@ void Tree::Update() {
 }
 
 void Tree::Draw() {
-    Programs& progs = Programs::GetInstance();
+    //Programs& progs = Programs::GetInstance();
     Effect::Draw();
 
     //glUseProgram(progs["Tree.Sky"]);
