@@ -70,16 +70,12 @@ Tube::Init()
     FloatList vpoints(centerline.size()*3,0);
     FloatList vnormals(centerline.size()*3,0);
     for(unsigned i = 0; i < centerline.size(); i++) {
-        *(glm::vec3*)(&vpoints[(i*3)*3]) = centerline[i];
-        *(glm::vec3*)(&vnormals[(i*3)*3]) = normals[i];
-        /* the code above is doing this: 
         vpoints[i*3+0] = centerline[i].x;
         vpoints[i*3+1] = centerline[i].y;
         vpoints[i*3+2] = centerline[i].z;
         vnormals[i*3+0] = normals[i].x;
         vnormals[i*3+1] = normals[i].y;
         vnormals[i*3+2] = normals[i].z;
-        */
     }
 
     /* Disabled for performance
