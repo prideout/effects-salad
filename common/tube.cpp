@@ -31,6 +31,7 @@ Tube::Init()
     Vec3List spine = cvs;
     float radius = 0.2f;
     int LOD = 5;
+    //sidesPerSlice = 3;
 
     Vec3List centerline;
     Blob meshData;
@@ -177,7 +178,7 @@ Tube::EvaluateBezier(const Vec3List& spine,
     // TODO: make Eval take a pointer rather than returning a copy :/
     int segs = spine.size() - 1;
     float samples = levelOfDetail * segs;
-    Bezier::Eval(samples, spine, centerline);
+    Bezier::EvalPiecewise(samples, spine, centerline);
 }
 
 // Sweeps an n-sided polygon along a given centerline.

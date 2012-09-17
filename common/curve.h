@@ -101,21 +101,15 @@ namespace Bezier {
         int pcount = cvCount - 1;
 
         for(float i = 0; i <= numSamples; i++) {
-                float u = 1.0 * (i / numSamples);
-                k = 0;
-                VEC pt;
-                for(p = (cvs.begin() + cvStart); p != (cvs.begin() + cvCount); ++p) {
-                        pt += _EvalHelper(*p, u, pcount, k);
-                        k++;
-                }
-                points->push_back(pt);
-
-                /*
-                std::cout << "Curve Point: " 
-                     << pt.x << ", "
-                     << pt.y << ", "
-                     << pt.z <<  std::endl;
-                 */
+            float u = 1.0 * (i / numSamples);
+            k = 0;
+            VEC pt;
+            p = cvs.begin() + cvStart;
+            for (int i = 0; i < cvCount; i++, p++) {
+                pt += _EvalHelper(*p, u, pcount, k);
+                k++;
+            }
+            points->push_back(pt);
         }
     }
 
@@ -127,11 +121,12 @@ namespace Bezier {
     }
 
     template <typename VEC>
-    std::vector<VEC>
+    void
     EvalPiecewise(float numSamples, const std::vector<VEC>& cvs, std::vector<VEC>* points)
     {
         unsigned i = 0;
-        while (i + 4 < cvs.size()) {
+        while (i + 4 <= cvs.size()) {
+            std::cout << cvs.size() << " -- " << i << std::endl;
             Eval(numSamples, cvs, i, 4, points); 
             i += 3;
         }

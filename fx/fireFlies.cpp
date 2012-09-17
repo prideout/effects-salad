@@ -78,6 +78,20 @@ void FireFlies::Init()
          7.35, 0,  4.06,
          0.01, 0,  4.04
          */
+        
+        // Acurve with discontinuous derrivitives for testing piecewise evaluator
+        /*
+        -6.7293233082706774, 0, -3.7468671679198229,
+        -3.0200501253132837, 0, 0.56390977443606882,
+        -3.796992481203008, 0, -4.9749373433584205,
+        -2.1679197994987476, 0, -3.6716791979950112,
+        -2.1177944862155398, 0, -1.6165413533834809,
+        -2.1428571428571437, 0, -1.7919799498747087,
+        -2.1679197994987476, 0, 0.81453634085210813,
+        -5.8270676691729326, 0, 1.5413533834586246,
+        -7.030075187969925, 0, 2.9448621553884502,
+        -6.9799498746867172, 0, 0.93984962406012895,
+        */
 
          // bigger path, not super great
         -9.483426722726314,  0, 3.6461550396041615,
@@ -99,6 +113,7 @@ void FireFlies::Init()
         -13.454825639102676, 0, 11.349299489472108,
         -11.948432946684054, 0, 7.3094281779858079,
         -9.483426722726314,  0, 3.6461550396041615,
+
         //-9.5176629202812819, 0, 3.6461550396041615
         /*
         0, -1.9873866943023757, 3.9720817637136108,
@@ -152,22 +167,19 @@ void FireFlies::Draw() {
         PerspCamera& cam = GetContext()->mainCam;
         //cam.eye.y = .0;
         cam.center= vec3(0,1,-15); //cameraPoints[counter];
-        float t = GetContext()->elapsedTime;
-        //t = 5;
-        cam.center.x = -9;
+        cam.center.x = -2;
         cam.center.y = 0;
-        cam.center.z = 3;
+        cam.center.z = -3;
         cam.eye.x = -9;
-        cam.eye.y = .5;
+        cam.eye.y = 12.5;
         cam.eye.z = 5;
-        //cam.center= vec3(3*sin(t),0,3*cos(t)); //cameraPoints[counter];
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        //  cam.center= vec3(3*sin(t),0,3*cos(t)); //cameraPoints[counter];
+        //  cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
         cam.eye = vec3(-15*sin(t/2), .5*(5+-5*cos(t/2)), -10-5*sin(t/2)); //cameraPoints[counter];
 
         // look where we are walking
-        //cam.center = cameraPoints.After(0); //[counter+1 % cameraPoints.size()];
+        //  cam.center = cameraPoints.After(0); //[counter+1 % cameraPoints.size()];
         cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
-        //cam.center.y += .5;
 
         glUseProgram(progs["FireFlies.Tube"]);
         cam.Bind(glm::mat4());
