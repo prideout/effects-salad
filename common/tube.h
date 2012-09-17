@@ -35,9 +35,11 @@ public:
     BufferTexture frames;
     BufferTexture scales;
 
+    /* Commented for performance 
     NormalField normVis;
     NormalField binormVis;
     NormalField tanVis;
+    */
 
     virtual void Init();
     virtual void Draw();
