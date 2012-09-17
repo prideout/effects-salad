@@ -31,6 +31,7 @@ Tube::Init()
     Vec3List spine = cvs;
     float radius = 0.2f;
     int LOD = 5;
+
     Vec3List centerline;
     Blob meshData;
     EvaluateBezier(spine, &centerline, LOD);
@@ -46,12 +47,13 @@ Tube::Init()
         pezCheck(i*3+2 < framesTmp.size(), "Out of bounds FRAMES access!");
         pezCheck(i < scalesTmp.size(), "Out of bounds SCALES access!");
 
-        scalesTmp[i] = _Lerp(1.2, .0, i / float(centerline.size()-1) ); 
+        scalesTmp[i] = _Lerp(1., 0., i / float(centerline.size() - 1) ); 
 
         framesTmp[i*3+0] = normals[i];
         framesTmp[i*3+1] = binormals[i];
         framesTmp[i*3+2] = tangents[i];
     }
+
     centers.Init(centerline);
     frames.Init(framesTmp);
 
@@ -149,7 +151,6 @@ Tube::Draw()
     tube.Bind();
     glUniform1i(u("Slices"), _segCount);
     glUniform1i(u("VertsPerSlice"), sidesPerSlice);
-    //glUniform1f(u("Time"), timeToGrow - 1);
     glUniform1f(u("Time"), GetContext()->elapsedTime - startTime);
     glUniform1f(u("TimeToGrow"), timeToGrow);
     glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, NULL);
@@ -378,7 +379,14 @@ Tube::ComputeFrames(const Vec3List& centerline,
             ii = j;
             j = i;
         }
-        Ts[i] = glm::normalize(centerline[ii] - centerline[j]);
+        if (centerline[ii] == centerline[j]) {
+            if (i > 0) 
+                Ts[i] = Ts[i-1];
+            else
+                pezCheck(false, "Unhandled duplicate knots at 0"); 
+        } else {
+            Ts[i] = glm::normalize(centerline[ii] - centerline[j]);
+        }
     }
 
     // Allocate some temporaries for vector math

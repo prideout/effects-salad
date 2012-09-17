@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 #include "glm/glm.hpp" 
 
 class Effect;
@@ -21,3 +22,12 @@ typedef unsigned int VertexAttribMask;
       var != (container).end();                                 \
       ++var)
 
+
+// helper function for printing vec3s
+inline void
+_pvec3(glm::vec3 v) {
+    std::cout << "vec3(" << 
+        v.x << ", " <<
+        v.y << ", " <<
+        v.z << ") " << std::endl;
+}
