@@ -141,6 +141,7 @@ uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
+uniform float Time;
 /*
 uniform mat3 NormalMatrix;
 */
@@ -152,6 +153,7 @@ void main()
     vNormal = NormalMatrix * Normal;
     */
     vPosition = Position;
+    vPosition.xz += .5* mod(gl_VertexID, 2) * vec2(cos(Time), 0);
     gl_Position = Projection * Modelview * vPosition;
     vNormal = normalize(Normal.xyz);
 }
