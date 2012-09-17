@@ -29,13 +29,10 @@ void
 Tube::Init()
 {
     Vec3List spine = cvs;
-    float radius = 0.2f;
-    int LOD = 5;
-    //sidesPerSlice = 3;
 
     Vec3List centerline;
     Blob meshData;
-    EvaluateBezier(spine, &centerline, LOD);
+    EvaluateBezier(spine, &centerline, lod);
     _segCount = centerline.size();
 
     VertexAttribMask attribs = AttrPositionFlag | AttrNormalFlag;
@@ -68,19 +65,24 @@ Tube::Init()
     tube.AddInterleaved(attribs, meshData);
     GetIndices(centerline, sidesPerSlice, &tube);
 
-    drawCount = tube.indexCount;
+    _drawCount = tube.indexCount;
  
     FloatList vpoints(centerline.size()*3,0);
     FloatList vnormals(centerline.size()*3,0);
     for(unsigned i = 0; i < centerline.size(); i++) {
-        //*(glm::vec3*)(&vpoints[(i*3+0)*3]) = centerline[i];
+        *(glm::vec3*)(&vpoints[(i*3)*3]) = centerline[i];
+        *(glm::vec3*)(&vnormals[(i*3)*3]) = normals[i];
+        /* the code above is doing this: 
         vpoints[i*3+0] = centerline[i].x;
         vpoints[i*3+1] = centerline[i].y;
         vpoints[i*3+2] = centerline[i].z;
         vnormals[i*3+0] = normals[i].x;
         vnormals[i*3+1] = normals[i].y;
         vnormals[i*3+2] = normals[i].z;
+        */
     }
+
+    /* Disabled for performance
 
     normVis = NormalField(3, vpoints, 3, vnormals);
     normVis.Init();
@@ -100,6 +102,7 @@ Tube::Init()
     }
     tanVis = NormalField(3, vpoints, 3, vnormals);
     tanVis.Init();
+    */
 }
 
 void
@@ -111,7 +114,7 @@ Tube::Update()
     #if 0
     float time = GetContext()->elapsedTime;
     FloatList scalesTmp(_segCount, 0);
-    drawCount = 0;
+    _drawCount = 0;
     float timeToGrow = 10;
     float segTime = timeToGrow / _segCount;
     float prev = 0;
@@ -131,7 +134,7 @@ Tube::Update()
         //float s = _Lerp(0, 1, p);
         scalesTmp[i] = s; 
         if (s > 0 or prev > 0) {
-            drawCount += sidesPerSlice*3*2;
+            _drawCount += sidesPerSlice*3*2;
         }
         prev = s;
     }
@@ -154,28 +157,26 @@ Tube::Draw()
     glUniform1i(u("VertsPerSlice"), sidesPerSlice);
     glUniform1f(u("Time"), GetContext()->elapsedTime - startTime);
     glUniform1f(u("TimeToGrow"), timeToGrow);
-    glDrawElements(GL_TRIANGLES, drawCount, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLES, _drawCount, GL_UNSIGNED_INT, NULL);
 }
 
 void
 Tube::DrawFrames()
 {
+    pezCheck(false, "Uncomment the lines in Init and the lines below");
+    /* 
     normVis.Draw();
     binormVis.Draw();
     tanVis.Draw();
+    */
 }
 
 
-// Quick and dirty CPU-based 2D Bézier evaluator,
-// solely for purpose of converting coarse knot data
-// loaded from disk (the "spine") into a smooth curve
-// in 3-space (the "centerline")
 /*static*/ void
 Tube::EvaluateBezier(const Vec3List& spine,
                      Vec3List* centerline,
                      int levelOfDetail)
 {
-    // TODO: make Eval take a pointer rather than returning a copy :/
     int segs = spine.size() - 1;
     float samples = levelOfDetail * segs;
     Bezier::EvalPiecewise(samples, spine, centerline);
@@ -196,7 +197,6 @@ Tube::SweepPolygon(const Vec3List& centerline,
     int n = numPolygonSides;
     const float TWOPI = 2*3.1415;
 
-    // XXX(jcowles): ordering of params is slightly different from matrix order... see mat3 init below
     unsigned count = centerline.size();
     outputData->resize(count * (n) * 6 * sizeof(float));
     //std::cout << "Max Index: " << count * (n) << std::endl;
@@ -214,33 +214,15 @@ Tube::SweepPolygon(const Vec3List& centerline,
 
         glm::mat3 basis(normals[i], binormals[i], tangents[i]);
         
-        /*
-        basis = (frames[C].subarray(i*3,i*3+3) for C in [0..2])
-        basis = ((B[C] for C in [0..2]) for B in basis)
-        basis = (basis.reduce (A,B) -> A.concat(B))
-        basis = mat3.create(basis)
-        */
         float theta = 0;
         float dtheta = TWOPI / n;
         
-        /*
-        std::cout << "[ \n";
-        for (int r = 0; r < 3; r++) {
-            std::cout << "  [ ";
-            for (int c = 0; c < 3; c++) {
-                std::cout << basis[c][r] << ", ";
-            }
-            std::cout << "  ]\n";
-        }
-        std::cout << "]\n";
-        */
-
         while (v < n) {
             float x = r*cos(theta);
             float y = r*sin(theta);
             float z = 0;
 
-            // XXX if GPU mode, don't transform
+            // if GPU mode, don't transform
             //p = basis * glm::vec3(x,y,z);
             p = glm::vec3(x,y,z);
 
@@ -252,20 +234,13 @@ Tube::SweepPolygon(const Vec3List& centerline,
             */
 
             // Stamp p into 'm', skipping over the normal:
-            /* mesh.set p, m */
             mesh[m+0] = p.x;
             mesh[m+1] = p.y;
             mesh[m+2] = p.z;
-            /*
-            std::cout << "( "
-                << p.x << ", "
-                << p.y << ", "
-                << p.z << ")\n";
-            */
+
             m = m + 6;
             v++;
             theta += dtheta;
-            //pezCheck(m*sizeof(float) < outputData->size(), "Invalid size: %d !< %d", m*sizeof(float), outputData->size());
         }
 
         i++;
@@ -284,16 +259,10 @@ Tube::SweepPolygon(const Vec3List& centerline,
         p.y = mesh[m+1];
         p.z = mesh[m+2];
         center = centerline[i];
-        /*
-        center[0] = centerline[i*3+0] # there has GOT to be a better way
-        center[1] = centerline[i*3+1]
-        center[2] = centerline[i*3+2]
-        */
-        //vec3.direction(p, center, normal)
+
         glm::vec3 normal = glm::normalize(p - center);
 
         // Stamp n into 'm', skipping over the position:
-        //mesh.set normal, m+3
         mesh[m+3+0] = normal.x;
         mesh[m+3+1] = normal.y;
         mesh[m+3+2] = normal.z;
@@ -304,7 +273,6 @@ Tube::SweepPolygon(const Vec3List& centerline,
 
       i++;
     }
-    //mesh
 }
 
 /*static*/ void
@@ -315,7 +283,6 @@ Tube::GetIndices(const Vec3List& centerline,
     // Create the index buffer for the solid tube
     int faceCount = centerline.size() * numPolygonSides * 2;
     Blob rawBuffer(faceCount*3*sizeof(unsigned), 0u);
-    //rawBuffer = new Uint16Array(faceCount * 3)
 
     // XXX(jcowles): this is a little too much of a transliteration of the
     //               original coffee script for my taste, I would like to 
@@ -327,21 +294,20 @@ Tube::GetIndices(const Vec3List& centerline,
         int j = -1;
         while (++j < numPolygonSides) {
             int next = (j + 1) % numPolygonSides; 
-            unsigned* tri = (unsigned*)(&rawBuffer[0]) + ptr;//rawBuffer.subarray(ptr+0, ptr+3)
-            tri[0] = v+next+numPolygonSides;//+1;
+            unsigned* tri = (unsigned*)(&rawBuffer[0]) + ptr;
+            tri[0] = v+next+numPolygonSides;
             tri[1] = v+next;
             tri[2] = v+j;
-            tri = (unsigned*)(&rawBuffer[0]) + ptr + 3; //rawBuffer.subarray(ptr+3, ptr+6)
+            tri = (unsigned*)(&rawBuffer[0]) + ptr + 3;
             tri[0] = v+j;
-            tri[1] = v+j+numPolygonSides;//+1;
-            tri[2] = v+next+numPolygonSides;//+1;
+            tri[1] = v+j+numPolygonSides;
+            tri[2] = v+next+numPolygonSides;
             ptr += 6;
         }
-      v += numPolygonSides;//+1;
+      v += numPolygonSides;
     }
     
     target->AddIndices(rawBuffer);
-    //triangles = rawBuffer;
 }
 
 
@@ -355,7 +321,6 @@ Tube::ComputeFrames(const Vec3List& centerline,
                   Vec3List* binormals)
 {
 
-    // XXX(jcowles): WARNING: this *compiles* but has not been tested!
     // Note: R -> Normals
     //       S -> Binormals
     //       T -> Tangents
@@ -395,7 +360,6 @@ Tube::ComputeFrames(const Vec3List& centerline,
               nj, bj, tj;
 
     // Create a somewhat-arbitrary initial frame (n0, b0, t0)
-    //Ts[0] = -1.f*Ts[0];
     t0 = Ts[0];
     n0 = _Perp(t0);
     b0 = glm::cross(t0, n0);
@@ -403,11 +367,6 @@ Tube::ComputeFrames(const Vec3List& centerline,
     b0 = glm::normalize(b0);
     Ns[0] = n0;
     Bs[0] = b0;
-
-    /*
-    Ts[0].y = 5;
-    Ts[0].z = 6;
-    */
 
     // Use parallel transport to sweep the frame
     i = 0;
@@ -417,10 +376,8 @@ Tube::ComputeFrames(const Vec3List& centerline,
               ti = t0;
     while(i < count-1) {
         j = i + 1;
-        //glm::vec3 xi = centerline[i];     //centerline.subarray(i*3, i*3+3)
-        //glm::vec3 xj = centerline[j];     //.subarray(j*3, j*3+3)
-        glm::vec3 ti = Ts[i];             //frameT.subarray(i*3, i*3+3)
-        glm::vec3 tj = Ts[j];             //frameT.subarray(j*3, j*3+3)
+        glm::vec3 ti = Ts[i];
+        glm::vec3 tj = Ts[j];
         bj = glm::cross(tj, ni);
         bj = glm::normalize(bj);
         nj = glm::cross(bj, tj);
@@ -429,7 +386,4 @@ Tube::ComputeFrames(const Vec3List& centerline,
         ni = nj; 
         ++i;
     }
-    //Ts[0].x = 10;
-
-    // originally returned: [ Noramls, Binormals, Tangents ]
 }

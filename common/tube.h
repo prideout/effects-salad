@@ -8,13 +8,25 @@
 
 class Tube : public Drawable {
     int _segCount;
+    int _drawCount;
+
 public:
     float startTime;
     float timeToGrow;
     int sidesPerSlice;
-    int drawCount;
+    int lod;
+    float radius;
 
-    Tube() : Drawable(), _segCount(0), startTime(0), timeToGrow(9), sidesPerSlice(8), drawCount(0) {}
+    Tube() : Drawable(), 
+        _segCount(0), 
+        _drawCount(0),
+        startTime(0), 
+        timeToGrow(9), 
+        sidesPerSlice(8), 
+        lod(3),
+        radius(0.2f)
+    {
+    }
 
     Vec3List cvs;
     Vao tube;
@@ -32,10 +44,7 @@ public:
     virtual void Update();
     virtual void DrawFrames();
     
-    // Quick and dirty CPU-based 2D Bézier evaluator,
-    // solely for purpose of converting coarse knot data
-    // loaded from disk (the "spine") into a smooth curve
-    // in 3-space (the "centerline")
+    // Evaluate the spine as a piecewise curve set
     static void
     EvaluateBezier(const Vec3List& spine,
                    Vec3List* centerline,
