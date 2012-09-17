@@ -177,7 +177,7 @@ Tube::EvaluateBezier(const Vec3List& spine,
     // TODO: make Eval take a pointer rather than returning a copy :/
     int segs = spine.size() - 1;
     float samples = levelOfDetail * segs;
-    *centerline = Bezier::Eval(samples, spine);
+    Bezier::Eval(samples, spine, centerline);
 }
 
 // Sweeps an n-sided polygon along a given centerline.

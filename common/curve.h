@@ -84,32 +84,31 @@ namespace Bezier {
         return b * p;
     }
 
-    template <typename VEC>
-    std::vector<VEC>
-    Eval(float numSamples, std::vector<VEC> cvs)
+    template <typename VEC> 
+    void
+    Eval(float numSamples, const std::vector<VEC>& cvs, int cvStart, int cvCount, std::vector<VEC>* points)
     {
         pezCheck(numSamples > 1, "Error: numSamples must be 2 or greater");
         pezCheck(cvs.size() > 1, "Error: 2 or more CVs required");
+        pezCheck(cvCount <= cvs.size(), "Error: cvCount > cvs.size()");
 
         // the number of samples is internally 1-numSamples
         numSamples -= 1;
 
-        typename std::vector<VEC> points;
-
         int k;
-        typename std::vector<VEC>::iterator p;
+        typename std::vector<VEC>::const_iterator p;
         
-        int pcount = cvs.size() - 1;
+        int pcount = cvCount - 1;
 
         for(float i = 0; i <= numSamples; i++) {
                 float u = 1.0 * (i / numSamples);
                 k = 0;
                 VEC pt;
-                for(p = cvs.begin(); p != cvs.end(); ++p) {
+                for(p = (cvs.begin() + cvStart); p != (cvs.begin() + cvCount); ++p) {
                         pt += _EvalHelper(*p, u, pcount, k);
                         k++;
                 }
-                points.push_back(pt);
+                points->push_back(pt);
 
                 /*
                 std::cout << "Curve Point: " 
@@ -118,10 +117,25 @@ namespace Bezier {
                      << pt.z <<  std::endl;
                  */
         }
-
-        return points;
     }
 
+    template <typename VEC> 
+    void
+    Eval(float numSamples, const std::vector<VEC>& cvs, std::vector<VEC>* points)
+    {
+        Eval(numSamples, cvs, 0, cvs.size(), points);
+    }
+
+    template <typename VEC>
+    std::vector<VEC>
+    EvalPiecewise(float numSamples, const std::vector<VEC>& cvs, std::vector<VEC>* points)
+    {
+        unsigned i = 0;
+        while (i + 4 < cvs.size()) {
+            Eval(numSamples, cvs, i, 4, points); 
+            i += 3;
+        }
+    }
 }
 
 template<typename T>
@@ -159,7 +173,7 @@ public:
         _duration(duration)
     {
         pezCheck(cvs.size() > 0, "Invalid number of curve CVs");
-        _points = Bezier::Eval(60*duration, cvs);    
+        Bezier::Eval(60*duration, cvs, &_points);    
     }
 
     bool IsEmpty() { return _points.size() == 0; }
