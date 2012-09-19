@@ -43,6 +43,9 @@ Cherry Tree Structure:
   * [Painted/Artistic](http://lucien0maverick.files.wordpress.com/2012/08/cherry-tree-by-alex-khrapko.jpg)
   * [Multiple trunks](http://westofpersia.files.wordpress.com/2010/04/bbg-garden-cherry-tree-path.jpg)
 
+Misc. Tree Art:
+  * [Moon Haze](http://fc08.deviantart.net/fs50/i/2009/258/e/f/moon_haze_by_CharlotteDeSmith.jpg)
+
 Neo-Tokyo:
   * http://www.madmind.de/wp-content/uploads/2010/03/akira-neo-tokyo.jpg
   * http://2.bp.blogspot.com/-KW_k5R8wWis/TePH6x3de9I/AAAAAAAAAms/3POananT2ds/s1600/Akira_city.jpg
