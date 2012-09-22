@@ -2,6 +2,9 @@
 #include "common/tetUtil.h"
 #include "glm/gtx/constants.inl"
 
+#include <glib.h>
+#include "gts.h"
+
 #include <algorithm>
 #include <list>
 #include <set>
@@ -45,6 +48,24 @@ TetUtil::HullFrustum(float r1,
                      int numQuads,
                      tetgenio* dest)
 {
+    // Test if we can use gts.
+    GtsSurface* surface = gts_surface_new(gts_surface_class(),
+                                          gts_face_class(),
+                                          gts_edge_class(),
+                                          gts_vertex_class());
+    glm::dvec3 a(0,5,0);
+    GtsVertex* va = gts_vertex_new(gts_vertex_class(), a.x, a.y, a.z);
+    glm::dvec3 b(5,0,0);
+    GtsVertex* vb = gts_vertex_new(gts_vertex_class(), b.x, b.y, b.z);
+    glm::dvec3 c(-5,0,0);
+    GtsVertex* vc = gts_vertex_new(gts_vertex_class(), c.x, c.y, c.z);
+    GtsEdge* e1 = gts_edge_new(gts_edge_class(), va, vb);
+    GtsEdge* e2 = gts_edge_new(gts_edge_class(), vb, vc);
+    GtsEdge* e3 = gts_edge_new(gts_edge_class(), vc, va);
+    gts_surface_add_face(surface, gts_face_new(gts_face_class(),
+      e1, e2, e3));
+    gts_object_destroy (GTS_OBJECT (surface));
+
     // If the destination already has facets, append to it:
     if (dest->numberofpoints) {
         tetgenio freshHull;

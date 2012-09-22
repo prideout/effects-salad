@@ -1,3 +1,4 @@
+#include "tthread/tinythread.h"
 #include "fx/buildingThreads.h"
 #include "common/tetUtil.h"
 #include "common/init.h"
@@ -8,6 +9,8 @@ using glm::mat3;
 using glm::vec4;
 using glm::vec3;
 using glm::vec2;
+
+tthread::mutex gts_locker;
 
 void
 _GenerateBuilding(void* vParams)
@@ -24,7 +27,12 @@ _GenerateBuilding(void* vParams)
     tetgenio in;
     float r1 = 10.0f;  float r2 = r1 * topRadius;
     float y1 = 0;      float y2 = 20.0f;
+
+    // Either the gts library isn't thread safe, or we're not building it to be thread-safe.
+    // Anyway, it's not slow like tetgen so just put it around a lock for now.
+    //gts_locker.lock();
     TetUtil::HullFrustum(r1, r2, y1, y2, nSides, &in);
+    //gts_locker.unlock();
 
     // Create a cheap Vao for buildings that aren't self-destructing
     TetUtil::TrianglesFromHull(in, &gpuData->HullIndices);

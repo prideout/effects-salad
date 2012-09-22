@@ -46,8 +46,8 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
-	CXXFLAGS := $(CXXFLAGS)
-	LIBS = -pthread -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
+	CXXFLAGS := $(CXXFLAGS) -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include
+	LIBS = -pthread -lX11 -lGL -lglib-2.0 /usr/local/lib/libgts.a lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
