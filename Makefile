@@ -29,6 +29,7 @@ SHARED := \
 	$(OBJDIR)/fx/ground.o \
 	$(OBJDIR)/fx/background.o \
 	$(OBJDIR)/fx/buildings.o \
+	$(OBJDIR)/fx/buildingThreads.o \
 	$(OBJDIR)/fx/fireFlies.o \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/milkyway.o \
