@@ -54,14 +54,16 @@
 //
 
 [
+
 ["GrassIntro", 10.0, "GrassIntroCurve", [
     ["Moon Pond Grass", 0,   {"RippleHeight": 3.2, "LunarBrightness": 1.1}],
     ["Fireflies",       0.1, {"SpriteSize": 1.1}]]],
 
-["CityIntro", 10.0, "FranticCurve", [
-    ["Buildings",  0, {"RandomVariation": 1.2}],
-    ["NeonLights", 0.1, 0.2, {}],
-    ["NeonLights", 0.3, 0.1, {}]]]
+["CityIntro", 10.0, "FranticCurve", []],
+
+["CityExplosion", 10.0, "FranticCurve", []]
+
+
 //
 // ,
 //

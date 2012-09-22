@@ -40,18 +40,43 @@ static void _constructScene()
     //
 
     {   // Grass Intro 
-        DemoContext* ctx = DemoContext::New();
+        DemoContext* ctx = DemoContext::New("GrassIntro");
         DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
         ctx->mainCam.eye.z = 5;
         ctx->drawables.push_back(new FireFlies());
         ctx->drawables.push_back(new FpsOverlay());
-        shotMap["GrassIntro"] = ctx;
     }
 
 
     {   // City Intro
-        DemoContext* ctx = DemoContext::New();
+        DemoContext* ctx = DemoContext::New("CityIntro");
         DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
+        ctx->mainCam.eye.z = 5;
+        ctx->mainCam.eye.x = 50;
+        ctx->mainCam.eye.y = 50;
+
+        // Instance the effects, but do not place them into the scene graph:
+        Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag);
+        fullscreen1->clearColor = vec4(0.1,0.9,1,1);
+        Buildings* buildings = new Buildings(false);
+        FpsOverlay* fps = new FpsOverlay();
+
+        // Now, insert the effects into our poor man's "scene graph":
+        ctx->drawables.push_back(fullscreen1);
+        fullscreen1->AddChild(buildings);
+        ctx->drawables.push_back(fps);
+    }
+
+
+    {   // City Explosion
+        DemoContext* ctx = DemoContext::New("CityExplosion");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
         ctx->mainCam.eye.z = 5;
         ctx->mainCam.eye.x = 50;
         ctx->mainCam.eye.y = 50;
@@ -64,7 +89,7 @@ static void _constructScene()
                                                  Fullscreen::BlendFlag |
                                                  Fullscreen::MipmapsFlag);
         fullscreen2->ShareDepth(fullscreen1);
-        Buildings* buildings = new Buildings();
+        Buildings* buildings = new Buildings(true);
         FpsOverlay* fps = new FpsOverlay();
 
         // Now, insert the effects into our poor man's "scene graph":
@@ -73,13 +98,13 @@ static void _constructScene()
         ctx->drawables.push_back(fullscreen2);
           fullscreen2->AddChild(buildings->Cracks());
         ctx->drawables.push_back(fps);
-
-        shotMap["CityIntro"] = ctx;
     }
 
     {   // Test 
-        DemoContext* ctx = DemoContext::New();
+        DemoContext* ctx = DemoContext::New("Test");
         DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
         ctx->mainCam.eye.z = 5;
         ctx->drawables.push_back(new Quads());
 
@@ -98,7 +123,6 @@ static void _constructScene()
         // ordering is important here... need to fix this
         DemoContext::SetCurrent(ctx);
         ctx->drawables.push_back(new FpsOverlay());
-        shotMap["Test"] = ctx;
     }
 
     Json::Value script;
@@ -112,8 +136,10 @@ static void _constructScene()
             shotMap[curShot]->duration = cur[1u].asDouble();
             sequence.push_back(shotMap[curShot]);
 
-            if (shot.empty()) 
+            if (shot.empty())  {
                 shotMap[curShot]->Init();
+                std::cout << "Click the viewport to jump to next shot.\n";
+            }
             
             //std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
         } else {
@@ -173,10 +199,21 @@ PezConfig PezGetConfig()
     return config;
 }
 
+static void _nextShot()
+{
+    shotIndex = (shotIndex+1) % sequence.size();
+    DemoContext::SetCurrent(sequence[shotIndex]);
+    DemoContext* ctx = DemoContext::GetCurrent();
+    // XXX: by setting this to 0, we may be messing up the audio sync
+    ctx->elapsedTime = 0;
+    printf("Switching to shot %s\n", ctx->name.c_str());
+}
+
 void PezHandleMouse(int x, int y, int action)
 {
     if (action == PEZ_DOWN) {
     } else if (action == PEZ_UP) {
+        _nextShot();
     }
 }
 
@@ -200,10 +237,6 @@ void PezUpdate(float seconds)
     ctx->Update(seconds);
     //std::cout << "seconds: " << seconds << " elapsed: " << ctx->elapsedTime << " dur: " << ctx->duration << std::endl;
     if (ctx->elapsedTime > ctx->duration) {
-        shotIndex = (shotIndex+1) % sequence.size();
-        DemoContext::SetCurrent(sequence[shotIndex]);
-        ctx = DemoContext::GetCurrent();
-        // XXX: by setting this to 0, we may be messing up the audio sync
-        ctx->elapsedTime = 0;
+        _nextShot();
     }
 }

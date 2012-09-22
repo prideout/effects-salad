@@ -7,7 +7,11 @@
 
 DemoContext* DemoContext::_current(NULL);
 
-DemoContext::DemoContext() : duration(0), elapsedTime(0), clearColor(0,0,0,1) {
+DemoContext::DemoContext(const std::string& shot) :
+    duration(0),
+    elapsedTime(0),
+    name(shot),
+    clearColor(0,0,0,1) {
 }
 
 void 

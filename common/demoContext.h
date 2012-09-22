@@ -14,12 +14,13 @@
 
 class DemoContext {
     static DemoContext* _current;
-    DemoContext();
+    DemoContext(const std::string& shot);
 
 public:
 
     float duration;
     float elapsedTime;
+    std::string name;
 
     DrawableList drawables;
     LightList lights;
@@ -37,8 +38,8 @@ public:
     // Tight control of context instances
     //
     static DemoContext*
-    New() {
-        return new DemoContext();
+    New(const std::string& shot) {
+        return new DemoContext(shot);
     }
 
     static DemoContext*

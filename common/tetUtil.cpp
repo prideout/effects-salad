@@ -530,7 +530,6 @@ TetUtil::FindCracks(const tetgenio& tets,
         startingTets.pop_back();
     }
 
-    printf("Forming %d cracks...\n", (int) startingTets.size());
     if (startingTets.empty()) {
         return;
     }
@@ -659,7 +658,6 @@ TetUtil::FindCracks(const tetgenio& tets,
         previousPoint = currentPoint;
     }
 
-    printf("%d line segments generated; expected %d\n", edgesWritten, expectedEdgeCount);
     pezCheck(expectedEdgeCount == edgesWritten, "Internal error");
 }
 

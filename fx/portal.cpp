@@ -16,7 +16,7 @@ Portal::Init()
     }
     name = "Portal";
     Effect::Init();
-    portalContext = DemoContext::SetCurrent(DemoContext::New());
+    portalContext = DemoContext::SetCurrent(DemoContext::New(name));
 }
 
 void

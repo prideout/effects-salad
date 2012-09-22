@@ -27,7 +27,7 @@ class CracksEffect;
 
 class Buildings : public Effect {
 public:
-    Buildings();
+    Buildings(bool explode);
     virtual ~Buildings();
     virtual void Init();
     virtual void Update();
@@ -56,6 +56,7 @@ private:
     Vao _emptyVao;
     Vao _terrainVao;
     CracksEffect* _cracks;
+    bool _explode;
 
     friend class CracksEffect;
 };

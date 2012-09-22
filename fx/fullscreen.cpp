@@ -32,11 +32,6 @@ Fullscreen::Init()
 
     if (_customProgram.empty()) {
         glUseProgram(progs.Load("Fullscreen"));
-        glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
-        glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
-        glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
-        glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
-        glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
         if (_mask & ScanLinesFlag) {
             size.y /= 2;
         }
@@ -131,6 +126,11 @@ Fullscreen::Draw()
         glUseProgram(progs[_customProgram]);
     } else {
         glUseProgram(progs["Fullscreen"]);
+        glUniform1i(u("ApplySolidColor"), _mask & SolidColorFlag);
+        glUniform1i(u("ApplyVignette"),   _mask & VignetteFlag);
+        glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
+        glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
+        glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
     }
 
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
