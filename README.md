@@ -7,7 +7,8 @@ effects-salad
 
 3) Install gts as follows:
 
-   git clone http://gts.sourceforge.net/tarballs/gts-snapshot-120706.tar.gz gts
+   wget http://gts.sourceforge.net/tarballs/gts-snapshot-120706.tar.gz
+   cd gts-snapshot-120706
    ./configure
    sudo make install
 

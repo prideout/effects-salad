@@ -51,11 +51,12 @@ ifeq ($(UNAME), Linux)
 endif
 
 ifeq ($(UNAME), Darwin)
-	CXXFLAGS := $(CXXFLAGS)
+	CXXFLAGS := $(CXXFLAGS) -I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include -I/opt/local/include 
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a
+	GLIB := /opt/local/lib/libglib-2.0.a /opt/local/lib/libintl.a /opt/local/lib/libiconv.a
+	LIBS = $(GLIB) -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a /usr/local/lib/libgts.a 
 endif
 
 
