@@ -32,8 +32,8 @@ void Ground::Init() {
         int index = rand() % (ground.size()/4); 
         index *= 4;
         pezCheck(index >= 0, "Grass index must be >= 0 (%d)", index);
-        pezCheck(index+2 < ground.size(), "Grass index must be < ground.size()");
-        pezCheck(i*4+3 < grass.size());
+        pezCheck(index+2 < (int) ground.size(), "Grass index must be < ground.size()");
+        pezCheck(i*4+3 < (int) grass.size());
 
         float x = ground[index+0] + 1*(rand() / float(RAND_MAX));
 

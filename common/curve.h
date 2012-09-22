@@ -90,7 +90,7 @@ namespace Bezier {
     {
         pezCheck(numSamples > 1, "Error: numSamples must be 2 or greater");
         pezCheck(cvs.size() > 1, "Error: 2 or more CVs required");
-        pezCheck(cvCount <= cvs.size(), "Error: cvCount > cvs.size()");
+        pezCheck(cvCount <= (int) cvs.size(), "Error: cvCount > cvs.size()");
 
         // the number of samples is internally 1-numSamples
         numSamples -= 1;
@@ -117,7 +117,7 @@ namespace Bezier {
     void
     Eval(float numSamples, const std::vector<VEC>& cvs, std::vector<VEC>* points)
     {
-        Eval(numSamples, cvs, 0, cvs.size(), points);
+        Eval(numSamples, cvs, 0, (int) cvs.size(), points);
     }
 
     template <typename VEC>

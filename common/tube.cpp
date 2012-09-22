@@ -283,7 +283,7 @@ Tube::GetIndices(const Vec3List& centerline,
     // XXX(jcowles): this is a little too much of a transliteration of the
     //               original coffee script for my taste, I would like to 
     //               reduce the number of variables, etc.
-    int i = 0;
+    size_t i = 0;
     int ptr = 0;
     int v = 0;
     while (++i < centerline.size()) {

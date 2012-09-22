@@ -5,6 +5,12 @@ effects-salad
 
 2) Go to lib/tetgen and run "make tetlib"
 
+3) Install gts as follows:
+
+   git clone http://gts.sourceforge.net/tarballs/gts-snapshot-120706.tar.gz gts
+   ./configure
+   sudo make install
+
 Inspiration
 -----------
 Videos:
