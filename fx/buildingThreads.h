@@ -20,6 +20,7 @@ struct ThreadParams {
     float Thickness;
     float TopRadius;
     float TetSize;
+    float InsetDepth;
     WindowParams Windows;
     BuildingTemplate* Dest;
     GpuParams* GpuData;

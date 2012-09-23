@@ -7,17 +7,6 @@ using namespace std;
 using namespace glm;
 
 static void
-_AddQuad(
-    vector<ivec3>& triangles
-    size_t nw,
-    size_t ne,
-    size_t se,
-    size_t sw) {
-    triangle.push_back(ivec3(nw, ne, se));
-    triangle.push_back(ivec3(se, sw, nw));
-}
-
-static void
 _CreateExteriorWall(
     float r1,
     float r2,
@@ -36,10 +25,8 @@ _CreateExteriorWall(
         return;
     }
 
-    // NEW STUFF
-
     // Tessellate a 1x1 square
-
+    #if 0
     vec2 cellSize;
     cellSize.x = vec2(1.0 / windows.Columns);
     cellSize.y = vec2(1.0 / windows.Row);
@@ -75,8 +62,7 @@ _CreateExteriorWall(
     #undef n
     #undef quad
     #undef point
-
-    // OLD STUFF
+    #endif
 
     dest->numberofpoints = numQuads * 2;
     dest->pointlist = new float[dest->numberofpoints * 3];
