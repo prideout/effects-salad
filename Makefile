@@ -25,7 +25,8 @@ SHARED := \
 	$(OBJDIR)/common/timer.o \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
-	$(OBJDIR)/fx/extrusion.o \
+	$(OBJDIR)/common/sketchup.o \
+	$(OBJDIR)/fx/buildingGrowth.o \
 	$(OBJDIR)/fx/fullscreen.o \
 	$(OBJDIR)/fx/ground.o \
 	$(OBJDIR)/fx/background.o \
