@@ -31,8 +31,8 @@ toString(void** ptrArray, size_t count)
     ostringstream sstr;
     sstr << '[';
     while (count--) {
-        sstr << toString(ptrArray[count]);
-        if (count > 1) {
+        sstr << '"' << toString(ptrArray[count]) << '"';
+        if (count > 0) {
             sstr << ',';
         }
     }

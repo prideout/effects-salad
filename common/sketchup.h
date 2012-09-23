@@ -2,7 +2,7 @@
 #include "glm/glm.hpp"
 #include "jsoncpp/json.h"
 
-namespace Sketchup
+namespace sketch
 {
     // For convenience, data structures of Scene such as Plane, Path,
     // and Edge are exposed in the public API.  However, clients should
@@ -31,6 +31,7 @@ namespace Sketchup
         EdgeList Edges;
         PathList Holes;
         bool IsHole;
+        virtual ~Path() {}
     };
 
     // Path where all points lie in a plane.  This is the common case; the only way
@@ -38,6 +39,7 @@ namespace Sketchup
     struct CoplanarPath : Path
     {
         Plane* Plane;
+        glm::vec3 GetNormal() const { return Plane->GetNormal(); }
     };
 
     struct Edge
@@ -73,13 +75,13 @@ namespace Sketchup
         // (eg, sharing the edges or the same plane), their adjacency information is updated
         // accordingly and pointer-sharing occurs automatically.
         void
-        PushPath(Path* poly, float delta, ConstPathList* walls = 0);
+        PushPath(CoplanarPath* path, float delta, ConstPathList* walls = 0);
 
     public:
 
         // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.
         void
-        PushPath(Path* poly, glm::vec3 delta, ConstPathList* walls = 0);
+        PushPath(CoplanarPath* path, glm::vec3 delta, ConstPathList* walls = 0);
 
         // Attempts to find a path with two edges that contain the given points and split it.
         // If successful, returns the new edge that is common to the two paths.
@@ -126,12 +128,8 @@ namespace Sketchup
 
         // Snaps the edges, vertices, and plane equation of the given path with existing objects
         // in the scene.  Updates everybody's adjacency information and shares pointers.
-        void
-        _FinalizeCoplanarPath(CoplanarPath* path, float epsilon);
-
-        // Snaps the edges and vertices of the given path with existing objects
-        // in the scene.  Updates everybody's adjacency information and shares pointers.
-        void
+        // Returns true if the scene was mutated in any way.
+        bool
         _FinalizePath(Path* path, float epsilon);
 
         // Create a new edge a push it into the given path.
@@ -146,10 +144,11 @@ namespace Sketchup
         unsigned int
         _AppendPoint(float x, float y, float z)  { return _AppendPoint(glm::vec3(x, y, z)); }
 
-        // Transform the given vector from the coordinate system defined
-        // by the given plane to world space.
-        static glm::vec3
-        _AddOffset(glm::vec2 p, const Plane* plane);
+        bool
+        _IsOrthogonal(const CoplanarPath* p1, const Path* p2, const Edge* e);
+
+        EdgeList
+        _FindAdjacentEdges(unsigned int p, const Path*);
 
         PathList _paths;
         EdgeList _edges;

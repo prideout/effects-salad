@@ -1,6 +1,6 @@
 #include "fx/buildingGrowth.h"
 
-using namespace Sketchup;
+using namespace sketch;
 
 BuildingGrowth::BuildingGrowth()
 {

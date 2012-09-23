@@ -11,5 +11,5 @@ public:
     virtual void Update();
     virtual void Draw();
 private:
-    Sketchup::Scene _sketch;
+    sketch::Scene _sketch;
 };

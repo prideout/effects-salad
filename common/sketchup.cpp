@@ -1,17 +1,19 @@
 // TODO
 // ----
-// Ensure that _AddOffset and GetCoordSys make sense
-// PushPath
+// PushPath TODO's
+// _IsOrthogonal TODO's
+//
 // Rename sketchup to sketchScene, and
 //    create sketchTess to prep for OpenGL rendering
 // OpenGL drawing
 // Create sketchPlayback and tween.h for animation
 
 #include "common/sketchup.h"
+#include "common/sketchUtil.h"
 #include "common/jsonUtil.h"
 #include "glm/gtx/norm.hpp"
 
-using namespace Sketchup;
+using namespace sketch;
 using namespace glm;
 
 Scene::Scene() : _threshold(0.001)
@@ -43,10 +45,10 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     float hw = width / 2;
     float hh = height / 2;
 
-    unsigned int a = _AppendPoint(_AddOffset(offset + vec2(-hw, -hh), plane));
-    unsigned int b = _AppendPoint(_AddOffset(offset + vec2(+hw, -hh), plane));
-    unsigned int c = _AppendPoint(_AddOffset(offset + vec2(+hw, +hh), plane));
-    unsigned int d = _AppendPoint(_AddOffset(offset + vec2(-hw, +hh), plane));
+    unsigned int a = _AppendPoint(AddOffset(offset + vec2(-hw, -hh), plane));
+    unsigned int b = _AppendPoint(AddOffset(offset + vec2(+hw, -hh), plane));
+    unsigned int c = _AppendPoint(AddOffset(offset + vec2(+hw, +hh), plane));
+    unsigned int d = _AppendPoint(AddOffset(offset + vec2(-hw, +hh), plane));
 
     retval = new CoplanarPath();
     _AppendEdge(retval, a, b);
@@ -57,7 +59,7 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     retval->IsHole = false;
     retval->Plane = const_cast<Plane*>(plane);
 
-    _FinalizeCoplanarPath(retval, _threshold);
+    _FinalizePath(retval, _threshold);
 
     _paths.push_back(retval);
 
@@ -71,17 +73,40 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
 }
 
 void
-Scene::PushPath(Path* poly, float delta, ConstPathList* pWalls)
+Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
 {
     ConstPathList walls;
-    // TODO
+
+    FOR_EACH(e, path->Edges) {
+        bool alreadyExtruded = false;
+        FOR_EACH(f, (*e)->Faces) {
+            if (_IsOrthogonal(path, *f, *e)) {
+                // TODO Lengthen, Shorten, or remove.
+                walls.push_back(*f);
+                alreadyExtruded = true;
+            }
+        }
+        if (!alreadyExtruded) {
+            //f = CreateNewFace; TODO
+            //walls.push_back(f);
+        }
+    }
+
+    bool finished = false;
+    while (not finished) {
+        bool mutated = false;
+        FOR_EACH(w, *pWalls) {
+            mutated = mutated or _FinalizePath(const_cast<Path*>(*w), _threshold);
+        }
+        finished = not mutated;
+    }
 
     if (_recording) {
         const char* handleList = toString((void**) &(walls[0]), walls.size());
         appendJson(
             _history,
             "[ \"PushPath\", \"%8.8x\", %f, %s]",
-            poly, delta, handleList );
+            path, delta, handleList );
     }
 
     if (pWalls) {
@@ -101,23 +126,20 @@ Scene::_AppendEdge(Path* path, unsigned int a, unsigned int b)
 
 // Snaps the edges, vertices, and plane equation of the given path with existing objects
 // in the scene.  Updates everybody's adjacency information and shares pointers.
-void
+// Returns true if the scene was mutated in any way.
+bool
 Scene::_FinalizePath(Path* path, float epsilon)
 {
-    // TODO check if the points can be snapped to "older" points.
+    CoplanarPath* coplanar = dynamic_cast<CoplanarPath*>(path);
+    if (coplanar) {
+        // TODO check if the plane can be snapped.  If so, adjust points accordingly.
+    }
 
+    // TODO check if the points can be snapped to "older" points.
     // TODO check if the edges can be combined with existing edges.
     // Note that a -> b is equivalent to b -> a.
-}
 
-// Snaps the edges, vertices, and plane equation of the given path with existing objects
-// in the scene.  Updates everybody's adjacency information and shares pointers.
-void
-Scene::_FinalizeCoplanarPath(CoplanarPath* path, float epsilon)
-{
-    // TODO check if the plane can be snapped.  If so, adjust points accordingly.
-    
-    _FinalizePath(path, epsilon);
+    return false;
 }
 
 unsigned int
@@ -127,21 +149,13 @@ Scene::_AppendPoint(vec3 p)
     return _points.size() - 1;
 }
 
-vec3
-Scene::_AddOffset(vec2 p2, const Plane* plane)
-{
-    vec3 p3 = plane->GetCenterPoint();
-    p3 += plane->GetCoordSys() * vec3(p2.x, 0, p2.y);
-    return p3;
-}
-
 static vec3
 _perp(vec3 a)
 {
-    vec3 c = vec3(1, 0, 0);
+    vec3 c = vec3(0, 0, -1);
     vec3 b = cross(a, c);
     if (length2(b) < 0.01f) {
-        c = vec3(0, 1, 0);
+        c = vec3(1, 0, 0);
         b = cross(a, c);
     }
     return b;
@@ -152,7 +166,7 @@ Plane::GetCoordSys() const
 {
     vec3 s = _perp(GetNormal());
     vec3 t = GetNormal();
-    vec3 r = cross(s, t);
+    vec3 r = cross(t, s);
     return mat3(s, t, r);
 }
 
@@ -177,4 +191,40 @@ Scene::GetPlane(vec4 eqn)
     p.Eqn = eqn;
     _planes.push_back(p);
     return &(_planes.back());
+}
+
+// Since the second path is potentially non-coplanar, we examine
+// incident edges rather than plane normals.
+bool
+Scene::_IsOrthogonal(const CoplanarPath* p1, const Path* p2, const Edge* e)
+{
+    EdgeList e0 = _FindAdjacentEdges(e->Endpoints.x, p2);
+    FOR_EACH(pe, e0) {
+        if (*pe == e) {
+            continue;
+        }
+        // TODO if e is not 90 degrees with p1->GetNormal(), return false
+    }
+
+    EdgeList e1 = _FindAdjacentEdges(e->Endpoints.y, p2);
+    FOR_EACH(pe, e1) {
+        if (*pe == e) {
+            continue;
+        }
+        // TODO if e is not 90 degrees with p1->GetNormal(), return false
+    }
+    return true;
+}
+
+EdgeList
+Scene::_FindAdjacentEdges(unsigned int p, const Path* path)
+{
+    EdgeList edges;
+    FOR_EACH(e, path->Edges) {
+        if ((*e)->Endpoints.x == p ||
+            (*e)->Endpoints.y == p) {
+            edges.push_back(*e);
+        }
+    }
+    return edges;
 }
