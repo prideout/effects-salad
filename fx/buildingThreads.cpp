@@ -7,6 +7,17 @@ using namespace std;
 using namespace glm;
 
 static void
+_AddQuad(
+    vector<ivec3>& triangles
+    size_t nw,
+    size_t ne,
+    size_t se,
+    size_t sw) {
+    triangle.push_back(ivec3(nw, ne, se));
+    triangle.push_back(ivec3(se, sw, nw));
+}
+
+static void
 _CreateExteriorWall(
     float r1,
     float r2,
@@ -24,6 +35,48 @@ _CreateExteriorWall(
         TetUtil::HullCombine(freshHull, dest);
         return;
     }
+
+    // NEW STUFF
+
+    // Tessellate a 1x1 square
+
+    vec2 cellSize;
+    cellSize.x = vec2(1.0 / windows.Columns);
+    cellSize.y = vec2(1.0 / windows.Row);
+    vec2 size = windows.Size * cellSize;
+    vec2 spacing = cellSize - size;
+    vector<vec3> points;
+    vector<ivec3> triangles;
+    #define n (points.size())
+    #define quad(nw,ne,se,sw) \
+        triangles.push_back(ivec3(nw, ne, se)); \
+        triangles.push_back(ivec3(se, sw, nw));
+    #define point(x,y,z) \
+        points.push_back(ivec3(x,y,z));
+    size_t ppr = windows.Columns * 4 + 2; // points per row
+    float y = spacing.y / 2;
+    float z = windows.InsetDepth;
+    for (int row = 0; row < windows.Rows; ++row) {
+        quad(n - ppr, n - 1, n + ppr - 1, n);
+        point(0, y, 0);
+        float x = spacing.x / 2;
+        for (int col = 0; col < windows.Columns; ++col) {
+            quad(n, n+1, n+1+ppr, n+ppr);
+            point(x, y, 0);
+            point(x + size.x, y, 0);
+            point(x, y, z);
+            point(x + size.x, y, z);
+            x += spacing.x;
+        }
+        quad(...);
+        point(1, y, 0);
+        y += spacing.y;
+    }
+    #undef n
+    #undef quad
+    #undef point
+
+    // OLD STUFF
 
     dest->numberofpoints = numQuads * 2;
     dest->pointlist = new float[dest->numberofpoints * 3];
