@@ -1,10 +1,11 @@
 // TODO
 // ----
-// PushPath TODO's
-// _IsOrthogonal TODO's
+// Fix the "re-pushing" bug that pops up.
+// Sanity check by serializing Scene to JSON and pretty-printing
 //
 // Rename sketchup to sketchScene, and
 //    create sketchTess to prep for OpenGL rendering
+//    expose the path list!
 // OpenGL drawing
 // Create sketchPlayback and tween.h for animation
 
@@ -12,6 +13,7 @@
 #include "common/sketchUtil.h"
 #include "common/jsonUtil.h"
 #include "glm/gtx/norm.hpp"
+#include "pez/pez.h"
 
 using namespace sketch;
 using namespace glm;
@@ -55,12 +57,9 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     _AppendEdge(retval, b, c);
     _AppendEdge(retval, c, d);
     _AppendEdge(retval, d, a);
-
     retval->IsHole = false;
     retval->Plane = const_cast<Plane*>(plane);
-
     _FinalizePath(retval, _threshold);
-
     _paths.push_back(retval);
 
     if (_recording) {
@@ -76,25 +75,45 @@ void
 Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
 {
     ConstPathList walls;
+    vec3 pushVector = delta * path->GetNormal();
 
     FOR_EACH(e, path->Edges) {
         bool alreadyExtruded = false;
         FOR_EACH(f, (*e)->Faces) {
             if (_IsOrthogonal(path, *f, *e)) {
-                // TODO Lengthen, Shorten, or remove.
+                pezFatal("Re-pushing a face isn't supported yet.");
                 walls.push_back(*f);
                 alreadyExtruded = true;
             }
         }
         if (!alreadyExtruded) {
-            //f = CreateNewFace; TODO
-            //walls.push_back(f);
+            Arc* arc = dynamic_cast<Arc*>(*e);
+            if (arc) {
+                pezFatal("Arc extrusion isn't supported yet.");
+            }
+
+            Edge* ab = *e;
+            unsigned int a = ab->Endpoints.x;
+            unsigned int b = ab->Endpoints.y;
+            unsigned int c = _AppendPoint(_points[b] + pushVector);
+            unsigned int d = _AppendPoint(_points[a] + pushVector);
+            CoplanarPath* f = new CoplanarPath();
+            _AppendEdge(f, ab);
+            _AppendEdge(f, b, c);
+            _AppendEdge(f, c, d);
+            Edge* da = _AppendEdge(f, d, a);
+            f->IsHole = false;
+            vec3 vab = _GetEdgeVector(ab);
+            vec3 vda = _GetEdgeVector(da);
+            f->Plane = _GetPlane(_points[a], vab, -vda);
+            _paths.push_back(f);
         }
     }
 
     bool finished = false;
     while (not finished) {
         bool mutated = false;
+        mutated = mutated or _FinalizePath(path, _threshold);
         FOR_EACH(w, *pWalls) {
             mutated = mutated or _FinalizePath(const_cast<Path*>(*w), _threshold);
         }
@@ -122,6 +141,13 @@ Scene::_AppendEdge(Path* path, unsigned int a, unsigned int b)
     e->Faces.push_back(path);
     path->Edges.push_back(e);
     return e;
+}
+
+void
+Scene::_AppendEdge(Path* path, Edge* e)
+{
+    e->Faces.push_back(path);
+    path->Edges.push_back(e);
 }
 
 // Snaps the edges, vertices, and plane equation of the given path with existing objects
@@ -203,7 +229,9 @@ Scene::_IsOrthogonal(const CoplanarPath* p1, const Path* p2, const Edge* e)
         if (*pe == e) {
             continue;
         }
-        // TODO if e is not 90 degrees with p1->GetNormal(), return false
+        if (dot(_GetEdgeVector(*pe), p1->GetNormal()) > _threshold) {
+            return false;
+        }
     }
 
     EdgeList e1 = _FindAdjacentEdges(e->Endpoints.y, p2);
@@ -211,7 +239,9 @@ Scene::_IsOrthogonal(const CoplanarPath* p1, const Path* p2, const Edge* e)
         if (*pe == e) {
             continue;
         }
-        // TODO if e is not 90 degrees with p1->GetNormal(), return false
+        if (dot(_GetEdgeVector(*pe), p1->GetNormal()) > _threshold) {
+            return false;
+        }
     }
     return true;
 }
@@ -227,4 +257,26 @@ Scene::_FindAdjacentEdges(unsigned int p, const Path* path)
         }
     }
     return edges;
+}
+
+vec3
+Scene::_GetEdgeVector(Edge* e)
+{
+    return _points[e->Endpoints.y] - _points[e->Endpoints.x];
+}
+
+
+Plane*
+Scene::_GetPlane(vec3 p, vec3 u, vec3 v)
+{
+    u = normalize(u);
+    v = normalize(v);
+    vec3 n = cross(u, v);
+    float w = -dot(p, n);
+    vec4 eqn = vec4(n.x, n.y, n.z, w);
+
+    Plane plane;
+    plane.Eqn = eqn;
+    _planes.push_back(plane);
+    return &(_planes.back());
 }

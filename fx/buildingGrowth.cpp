@@ -24,6 +24,9 @@ BuildingGrowth::Init()
     float height = 1;
     ConstPathList walls;
     _sketch.PushPath(rect, height, &walls);
+
+    //JSON::Value root = _sketch.Serialize();
+    //JSON::PrettyWriter writer(root);
 }
 
 void

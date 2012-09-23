@@ -46,6 +46,7 @@ namespace sketch
     {
         glm::uvec2 Endpoints;
         PathList Faces;
+        virtual ~Edge() {}
     };
 
     // Cross the plane normal with the edge direction to determine which side
@@ -77,11 +78,24 @@ namespace sketch
         void
         PushPath(CoplanarPath* path, float delta, ConstPathList* walls = 0);
 
+        // Useful if you have an array of window sills that you want extrude simultaneously.
+        void
+        PushPaths(PathList paths, float delta);
+
     public:
 
         // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.
         void
         PushPath(CoplanarPath* path, glm::vec3 delta, ConstPathList* walls = 0);
+
+        // Pushing a non-coplanar path is tricky because you have to push it past 
+        // a certain point to be valid, and we need a reasonable heuristic for
+        // figuring out which incident faces are existing extrusions.
+        // Maybe we'll require existing extrusions to be 1:1 with edges.
+        // That won't let you push a non-coplanar path after manually deleting
+        // an extrusion face, but hopefully that's a corner case.
+        bool
+        PushTricky(Path* path, glm::vec3 delta, ConstPathList* walls = 0);
 
         // Attempts to find a path with two edges that contain the given points and split it.
         // If successful, returns the new edge that is common to the two paths.
@@ -136,6 +150,10 @@ namespace sketch
         Edge*
         _AppendEdge(Path* path, unsigned int a, unsigned int b);
 
+        // Push an existing edge into the given path.
+        void
+        _AppendEdge(Path* path, Edge* e);
+
         // Create a new point and return its index.
         unsigned int
         _AppendPoint(glm::vec3 p);
@@ -144,11 +162,18 @@ namespace sketch
         unsigned int
         _AppendPoint(float x, float y, float z)  { return _AppendPoint(glm::vec3(x, y, z)); }
 
+        // Returns true if the two paths meet at the given edge at ninety degrees.
         bool
         _IsOrthogonal(const CoplanarPath* p1, const Path* p2, const Edge* e);
 
         EdgeList
         _FindAdjacentEdges(unsigned int p, const Path*);
+
+        glm::vec3
+        _GetEdgeVector(Edge* e);
+
+        Plane*
+        _GetPlane(glm::vec3 p, glm::vec3 u, glm::vec3 v);
 
         PathList _paths;
         EdgeList _edges;
