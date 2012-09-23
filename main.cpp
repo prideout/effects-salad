@@ -144,7 +144,9 @@ static void _constructScene()
         }
     }
 
-    std::cout << "Click the viewport to jump to next shot.\n";
+    if (sequence.size() > 1) {
+        std::cout << "Click the viewport to jump to next shot.\n";
+    }
 
     if (not shot.empty()) {
         if (shotMap.find(shot) == shotMap.end()) {
@@ -212,7 +214,9 @@ void PezHandleMouse(int x, int y, int action)
 {
     if (action == PEZ_DOWN) {
     } else if (action == PEZ_UP) {
-        _nextShot();
+        if (sequence.size() > 1) {
+            _nextShot();
+        }
     }
 }
 
