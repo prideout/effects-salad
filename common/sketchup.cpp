@@ -1,7 +1,7 @@
 // TODO
 // ----
-// Fix the "re-pushing" bug that pops up.
-// Sanity check by serializing Scene to JSON and pretty-printing
+// Sanity check by serializing Scene to JSON
+//     Pretty-print from buildingGrowth.cppp
 //
 // Rename sketchup to sketchScene, and
 //    create sketchTess to prep for OpenGL rendering
@@ -80,6 +80,9 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
     FOR_EACH(e, path->Edges) {
         bool alreadyExtruded = false;
         FOR_EACH(f, (*e)->Faces) {
+            if (*f == path) {
+                continue;
+            }
             if (_IsOrthogonal(path, *f, *e)) {
                 pezFatal("Re-pushing a face isn't supported yet.");
                 walls.push_back(*f);
