@@ -135,17 +135,16 @@ static void _constructScene()
             DemoContext::SetCurrent(shotMap[curShot]);
             shotMap[curShot]->duration = cur[1u].asDouble();
             sequence.push_back(shotMap[curShot]);
-
             if (shot.empty())  {
                 shotMap[curShot]->Init();
-                std::cout << "Click the viewport to jump to next shot.\n";
             }
-            
             //std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
         } else {
             std::cerr << "WARNING: shot not found '" << cur[0u] << "'" << std::endl;
         }
     }
+
+    std::cout << "Click the viewport to jump to next shot.\n";
 
     if (not shot.empty()) {
         if (shotMap.find(shot) == shotMap.end()) {

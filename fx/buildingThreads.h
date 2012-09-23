@@ -8,18 +8,25 @@ struct GpuParams {
     Blob Cracks;
 };
 
+struct WindowParams {
+    int Rows;
+    int Columns;
+    glm::vec2 Size;
+};
+
 struct ThreadParams {
     bool CanExplode;
+    int NumSides;
     float Thickness;
     float TopRadius;
     float TetSize;
-    int NumSides;
+    WindowParams Windows;
     BuildingTemplate* Dest;
     GpuParams* GpuData;
 };
 
 /// Executes on a worker thread, performs no OpenGL calls.
-void _GenerateBuilding(void* params);
+void GenerateBuilding(void* params);
 
 /// Executes on the main thread when a worker thread completes.
-void _UploadBuilding(ThreadParams& params);
+void UploadBuilding(ThreadParams& params);

@@ -209,8 +209,10 @@ Texture2D::Init(const std::string& pngFilename)
 
     int w = _width = decoder.infoPng.width;
     int h = _height = decoder.infoPng.height;
-    pezPrintString("Loaded %s (%d x %d) bufferSize = %d, imageSize = %d, colorChannels = %d\n",
-                   filename, w, h, buffersize, imagesize, colorChannels);
+    if (false) {
+        pezPrintString("Loaded %s (%d x %d) bufferSize = %d, imageSize = %d, colorChannels = %d\n",
+                       filename, w, h, buffersize, imagesize, colorChannels);
+    }
 
     GLenum format = 0;
     switch (colorChannels) {

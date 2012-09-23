@@ -1,25 +1,11 @@
-// Use long parabolas for the falling tets
+// TODO LIST
+// --------
+// Windows
+// Restore Parabolas (see chipped branch)
+// SSAO
 // Camera shake
-// Secondary explosion effect: some tets pop off the top, right before explosion, with motion blur
-
-// Cracks on window, with viewport shattering?
-// Viewport with "map view"?  Could help with path-finding...
-
-// Add "composite" support building instance: cube-on-cube, cylinder-on-cube
-// Voronoi divisions of the city
-//
-// Better radial blur?
-// Street lamps, ground-level detail, low-flying camera
-// Dual viewports for street-level view?
-//
-// We're only rendering boundary tets right now, but we're not exploiting
-//   the massive memory savings.  Maybe buildings should have floors?
-//
-// Camera
-// Radial blur
-// DOF effect
-// Look at Akira references
-// Smoke
+// White-out at end
+// Viewport cracks
 
 #include "glm/gtc/type_ptr.hpp"
 #include "fx/buildingThreads.h"
@@ -75,7 +61,7 @@ Buildings::Init()
     // Kick off the threads that tetify the building templates
     vector<tthread::thread*> threads;
     for (size_t i = 0; i < params.size(); ++i) {
-        threads.push_back(new tthread::thread(_GenerateBuilding, &params[i]));
+        threads.push_back(new tthread::thread(GenerateBuilding, &params[i]));
     }
 
     // Tessellate the ground
@@ -171,7 +157,7 @@ Buildings::Init()
         if (_explode) {
             printf("Thread %lu of %lu has completed.\n", i+1, threads.size());
         }
-        _UploadBuilding(params[i]);
+        UploadBuilding(params[i]);
         delete threads[i];
     }
 }
