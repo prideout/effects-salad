@@ -18,7 +18,9 @@ namespace Sketchup
     struct Plane
     {
         glm::vec4 Eqn;
-        glm::vec3 GetNormal() { return glm::vec3(Eqn); }
+        glm::vec3 GetNormal() const { return glm::vec3(Eqn); }
+        glm::mat3 GetCoordSys() const;
+        glm::vec3 GetCenterPoint() const;
     };
 
     typedef std::vector<Plane> PlaneList;
@@ -124,9 +126,32 @@ namespace Sketchup
 
         // Snaps the edges, vertices, and plane equation of the given path with existing objects
         // in the scene.  Updates everybody's adjacency information and shares pointers.
-        void _FinalizePath(Path* path, float epsilon);
+        void
+        _FinalizeCoplanarPath(CoplanarPath* path, float epsilon);
 
-        PathList _polys;
+        // Snaps the edges and vertices of the given path with existing objects
+        // in the scene.  Updates everybody's adjacency information and shares pointers.
+        void
+        _FinalizePath(Path* path, float epsilon);
+
+        // Create a new edge a push it into the given path.
+        Edge*
+        _AppendEdge(Path* path, unsigned int a, unsigned int b);
+
+        // Create a new point and return its index.
+        unsigned int
+        _AppendPoint(glm::vec3 p);
+
+        // Ditto.
+        unsigned int
+        _AppendPoint(float x, float y, float z)  { return _AppendPoint(glm::vec3(x, y, z)); }
+
+        // Transform the given vector from the coordinate system defined
+        // by the given plane to world space.
+        static glm::vec3
+        _AddOffset(glm::vec2 p, const Plane* plane);
+
+        PathList _paths;
         EdgeList _edges;
         Vec3List _points;
         PlaneList _planes;
