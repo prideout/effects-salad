@@ -26,6 +26,7 @@ SHARED := \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
 	$(OBJDIR)/common/sketchup.o \
+	$(OBJDIR)/common/jsonUtil.o \
 	$(OBJDIR)/fx/buildingGrowth.o \
 	$(OBJDIR)/fx/fullscreen.o \
 	$(OBJDIR)/fx/ground.o \

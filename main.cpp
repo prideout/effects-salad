@@ -100,6 +100,15 @@ static void _constructScene()
         ctx->drawables.push_back(fps);
     }
 
+    {   // CityGrow
+        DemoContext* ctx = DemoContext::New("CityGrow");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
+        BuildingGrowth* growth = new BuildingGrowth();
+        ctx->drawables.push_back(growth);
+    }
+
     {   // Test 
         DemoContext* ctx = DemoContext::New("Test");
         DemoContext::SetCurrent(ctx);

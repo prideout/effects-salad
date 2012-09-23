@@ -5,3 +5,4 @@
 #include "portal.h"
 #include "background.h"
 #include "fullscreen.h"
+#include "buildingGrowth.h"

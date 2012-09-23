@@ -1,5 +1,6 @@
 #include "common/typedefs.h"
 #include "glm/glm.hpp"
+#include "jsoncpp/json.h"
 
 namespace Sketchup
 {
@@ -60,7 +61,7 @@ namespace Sketchup
         // Create an axis-aligned rectangle.
         // Edge-sharing and point-sharing with existing paths occurs automatically.
         // This is the most common starting point for a building.
-        const CoplanarPath*
+        CoplanarPath*
         AddRectangle(float width, float height, const Plane* plane, glm::vec2 offset);
 
         // Create an extrusion or change an existing extrusion, optionally returning the walls of the extrusion.
@@ -80,7 +81,7 @@ namespace Sketchup
 
         // Attempts to find a path with two edges that contain the given points and split it.
         // If successful, returns the new edge that is common to the two paths.
-        const Edge*
+        Edge*
         SplitPath(glm::vec3 a, glm::vec3 b);
 
         // This is useful for creating a slanted rooftop.  All incident coplanar paths are
@@ -91,10 +92,10 @@ namespace Sketchup
 
     public:
 
-        const CoplanarPath*
+        CoplanarPath*
         AddCircle(float radius, const Plane* plane, glm::vec2 offset);
 
-        const CoplanarPath*
+        CoplanarPath*
         AddRegularPolygon(int numSides, float radius, const Plane* plane, glm::vec2 offset);
 
         // Finds or creates a new frame-of-reference.
@@ -103,10 +104,21 @@ namespace Sketchup
 
         // Ditto.
         const Plane*
-        GetPlane(float x, float y, float z, float w) { return GetPlane(glm::vec4(x, y, z, w); }
+        GetPlane(float x, float y, float z, float w) { return GetPlane(glm::vec4(x, y, z, w)); }
 
         Scene();
         ~Scene();
+
+    public:
+
+        void
+        ClearHistory();
+
+        const Json::Value &
+        GetHistory() const { return _history; }
+
+        void
+        RunCommands(const Json::Value& commandList);
 
     private:
 
@@ -119,5 +131,7 @@ namespace Sketchup
         Vec3List _points;
         PlaneList _planes;
         const float _threshold;
+        Json::Value _history;
+        bool _recording;
     };
 }
