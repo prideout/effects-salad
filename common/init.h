@@ -42,8 +42,6 @@ GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indi
 
 void ReadBinaryFile(string filename, Blob* destination);
 
-void ReadJsonFile(string filename, Json::Value* root);
-
 inline
 GLuint CurrentProgram()
 {

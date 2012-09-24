@@ -1,6 +1,7 @@
 #include "lib/pez/pez.h"
 #include "jsoncpp/json.h"
 #include "common/init.h"
+#include "common/jsonUtil.h"
 #include "common/camera.h"
 #include "common/programs.h"
 #include "common/tube.h"

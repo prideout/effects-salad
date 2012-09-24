@@ -6,6 +6,7 @@
 #include "common/camera.h"
 #include "common/demoContext.h"
 #include "common/init.h"
+#include "common/jsonUtil.h"
 #include "common/programs.h"
 #include "common/surface.h"
 #include "fx/all.h"

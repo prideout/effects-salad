@@ -1,5 +1,6 @@
 // TODO
 // ----
+// Does GLM already have stringify functions?
 // Sanity check by serializing Scene to JSON
 //     Pretty-print from buildingGrowth.cppp
 //
@@ -288,5 +289,20 @@ Json::Value
 Scene::Serialize() const
 {
     Json::Value root;
+    FOR_EACH(p, _paths) {
+        Vec3List points = _WalkPath(*p);
+        appendJson(root, "%s", toString(points));
+    }
     return root;
+}
+
+Vec3List
+Scene::_WalkPath(const Path* path, float arcTessLength) const
+{
+    Vec3List vecs;
+    FOR_EACH(e, path->Edges) {
+        vec3 v = _points[(*e)->Endpoints.x];
+        vecs.push_back(v);
+    }
+    return vecs;
 }

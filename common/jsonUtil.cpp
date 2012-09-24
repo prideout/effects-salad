@@ -1,3 +1,4 @@
+#include <fstream>
 #include <sstream>
 #include "common/jsonUtil.h"
 #include "pez/pez.h"
@@ -16,6 +17,32 @@ toString(vec2 v)
 }
 
 const char*
+toString(vec3 v)
+{
+    static bstring msg;
+    bdestroy(msg);
+    msg = bformat("[%f, %f, %f]", v.x, v.y, v.z);
+    return bdata(msg);
+}
+
+const char*
+toString(Vec3List v)
+{
+    static string msg;
+    ostringstream sstr;
+    sstr << '[';
+    for (size_t i = 0; i < v.size(); ++i) {
+        sstr << '"' << toString(v[i]) << '"';
+        if (i < v.size() - 1) {
+            sstr << ',';
+        }
+    }
+    sstr << ']';
+    msg = sstr.str();
+    return msg.c_str();
+}
+
+const char*
 toString(void* ptr)
 {
     static bstring msg;
@@ -30,9 +57,9 @@ toString(void** ptrArray, size_t count)
     static string msg;
     ostringstream sstr;
     sstr << '[';
-    while (count--) {
-        sstr << '"' << toString(ptrArray[count]) << '"';
-        if (count > 0) {
+    for (size_t i = 0; i < count; ++i) {
+        sstr << '"' << toString(ptrArray[i]) << '"';
+        if (i < count - 1) {
             sstr << ',';
         }
     }
@@ -71,4 +98,19 @@ appendJson(Json::Value& root, const char* pStr, ...)
     bool success = reader.parse(msg, node);
     pezCheck(success, "Bad JSON: %s", msg); 
     root.append(node);
+}
+
+void ReadJsonFile(string filename, Json::Value* root)
+{
+    ifstream jsonFile(filename.c_str());
+    string jsonString((istreambuf_iterator<char>(jsonFile)),
+                      istreambuf_iterator<char>());
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse(jsonString.c_str(), *root);
+    if (!parsingSuccessful) {
+        cerr  << "Failed to parse JSON file: "
+              << filename << endl
+              << reader.getFormatedErrorMessages();
+        exit(1);
+    }
 }

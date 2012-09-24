@@ -103,20 +103,5 @@ void ReadBinaryFile(string filename, Blob* destination)
     memcpy(&destination[0], &blob[0], blob.size());
 }
 
-void ReadJsonFile(string filename, Json::Value* root)
-{
-    ifstream jsonFile(filename.c_str());
-    string jsonString((istreambuf_iterator<char>(jsonFile)),
-                      istreambuf_iterator<char>());
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(jsonString.c_str(), *root);
-    if (!parsingSuccessful) {
-        cerr  << "Failed to parse JSON file: "
-              << filename << endl
-              << reader.getFormatedErrorMessages();
-        exit(1);
-    }
-}
-
 
 

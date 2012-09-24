@@ -178,6 +178,9 @@ namespace sketch
         Plane*
         _GetPlane(glm::vec3 p, glm::vec3 u, glm::vec3 v);
 
+        Vec3List
+        _WalkPath(const Path* p, float arcTessLength = 0) const;
+
         PathList _paths;
         EdgeList _edges;
         Vec3List _points;
