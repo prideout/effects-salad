@@ -1,16 +1,9 @@
 // TODO
 // ----
-// Does GLM already have stringify functions?
-// Sanity check by serializing Scene to JSON
-//     Pretty-print from buildingGrowth.cppp
-//
-// Rename sketchup to sketchScene, and
-//    create sketchTess to prep for OpenGL rendering
-//    expose the path list!
 // OpenGL drawing
 // Create sketchPlayback and tween.h for animation
 
-#include "common/sketchup.h"
+#include "common/sketchScene.h"
 #include "common/sketchUtil.h"
 #include "common/jsonUtil.h"
 #include "glm/gtx/norm.hpp"

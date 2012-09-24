@@ -8,6 +8,8 @@ namespace sketch
     // and Edge are exposed in the public API.  However, clients should
     // take care to never create them from scratch or modify them directly.
 
+    class Tessellator;
+
     struct Path;
     struct Edge;
 
@@ -38,7 +40,7 @@ namespace sketch
     // to create non-coplanar paths is via arc extrusion.
     struct CoplanarPath : Path
     {
-        Plane* Plane;
+        sketch::Plane* Plane;
         glm::vec3 GetNormal() const { return Plane->GetNormal(); }
     };
 
@@ -54,20 +56,20 @@ namespace sketch
     struct Arc : Edge
     {
         float Radius;
-        Plane* Plane;
+        sketch::Plane* Plane;
     };
 
     class Scene
     {
     public:
 
-        const Plane* GroundPlane() const;
+        const sketch::Plane* GroundPlane() const;
 
         // Create an axis-aligned rectangle.
         // Edge-sharing and point-sharing with existing paths occurs automatically.
         // This is the most common starting point for a building.
         CoplanarPath*
-        AddRectangle(float width, float height, const Plane* plane, glm::vec2 offset);
+        AddRectangle(float width, float height, const sketch::Plane* plane, glm::vec2 offset);
 
         // Create an extrusion or change an existing extrusion, optionally returning the walls of the extrusion.
         // When creating a new extrusion, a hole is automatically created in the enclosing polygon.
@@ -111,17 +113,17 @@ namespace sketch
     public:
 
         CoplanarPath*
-        AddCircle(float radius, const Plane* plane, glm::vec2 offset);
+        AddCircle(float radius, const sketch::Plane* plane, glm::vec2 offset);
 
         CoplanarPath*
-        AddRegularPolygon(int numSides, float radius, const Plane* plane, glm::vec2 offset);
+        AddRegularPolygon(int numSides, float radius, const sketch::Plane* plane, glm::vec2 offset);
 
         // Finds or creates a new frame-of-reference.
-        const Plane*
+        const sketch::Plane*
         GetPlane(glm::vec4 eqn);
 
         // Ditto.
-        const Plane*
+        const sketch::Plane*
         GetPlane(float x, float y, float z, float w) { return GetPlane(glm::vec4(x, y, z, w)); }
 
         Scene();
@@ -175,7 +177,7 @@ namespace sketch
         glm::vec3
         _GetEdgeVector(Edge* e);
 
-        Plane*
+        sketch::Plane*
         _GetPlane(glm::vec3 p, glm::vec3 u, glm::vec3 v);
 
         Vec3List
@@ -188,5 +190,7 @@ namespace sketch
         const float _threshold;
         Json::Value _history;
         bool _recording;
+
+        friend class Tessellator;
     };
 }

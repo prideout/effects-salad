@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/effect.h"
-#include "common/sketchup.h"
+#include "common/sketchScene.h"
 
 class BuildingGrowth : public Effect {
 public:

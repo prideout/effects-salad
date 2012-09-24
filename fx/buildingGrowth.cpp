@@ -26,9 +26,11 @@ BuildingGrowth::Init()
     ConstPathList walls;
     _sketch.PushPath(rect, height, &walls);
 
-    Json::Value root = _sketch.Serialize();
-    Json::StyledWriter writer;
-    cout << writer.write(root) << endl;
+    if (false) {
+        Json::Value root = _sketch.Serialize();
+        Json::StyledWriter writer;
+        cout << writer.write(root) << endl;
+    }
 }
 
 void

@@ -7,6 +7,8 @@
 using namespace std;
 using namespace glm;
 
+// glm/gtx/string_cast.inl can already stringify vectors, but we'd prefer something more JSON-amenable
+
 const char*
 toString(vec2 v)
 {
