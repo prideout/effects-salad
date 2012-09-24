@@ -138,6 +138,9 @@ namespace sketch
         void
         RunCommands(const Json::Value& commandList);
 
+        Json::Value
+        Serialize() const;
+
     private:
 
         // Snaps the edges, vertices, and plane equation of the given path with existing objects

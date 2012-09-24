@@ -1,6 +1,7 @@
 #include "fx/buildingGrowth.h"
 
 using namespace sketch;
+using namespace std;
 
 BuildingGrowth::BuildingGrowth()
 {
@@ -25,8 +26,9 @@ BuildingGrowth::Init()
     ConstPathList walls;
     _sketch.PushPath(rect, height, &walls);
 
-    //JSON::Value root = _sketch.Serialize();
-    //JSON::PrettyWriter writer(root);
+    Json::Value root = _sketch.Serialize();
+    Json::StyledWriter writer;
+    cout << writer.write(root) << endl;
 }
 
 void

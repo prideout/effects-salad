@@ -283,3 +283,10 @@ Scene::_GetPlane(vec3 p, vec3 u, vec3 v)
     _planes.push_back(plane);
     return &(_planes.back());
 }
+
+Json::Value
+Scene::Serialize() const
+{
+    Json::Value root;
+    return root;
+}
