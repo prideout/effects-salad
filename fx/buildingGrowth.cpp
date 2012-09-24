@@ -57,7 +57,7 @@ BuildingGrowth::Update()
     PerspCamera* camera = &GetContext()->mainCam;
 
     camera->eye.x = 2;
-    camera->eye.y = 7;
+    camera->eye.y = -7 + 14 * abs(sin(time / 2));
     camera->eye.z = 15;
     camera->center.y = 2;
     camera->eye = glm::rotateY(camera->eye, time * 48);

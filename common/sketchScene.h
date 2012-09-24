@@ -8,6 +8,7 @@ namespace sketch
     // For convenience, data structures of Scene such as Plane, Path,
     // and Edge are exposed in the public API.  However, clients should
     // take care to never create them from scratch or modify them directly.
+    // See sketch::Scene for the actual interface.
 
     class Tessellator;
     struct Path;
@@ -19,6 +20,7 @@ namespace sketch
     typedef std::vector<Edge*> EdgeList;
     typedef std::vector<Plane*> PlaneList;
 
+    // Infinite plane in 3-space; simple wrapper around 4 coefficients.
     struct Plane
     {
         glm::vec4 Eqn;
@@ -31,8 +33,8 @@ namespace sketch
     struct Path
     {
         EdgeList Edges;
-        PathList Holes;
-        bool IsHole;
+        PathList Holes; // TODO I think we won't need this.
+        bool IsHole;    // TODO I think we won't need this.
         virtual ~Path() {}
     };
 
@@ -44,6 +46,9 @@ namespace sketch
         glm::vec3 GetNormal() const { return Plane->GetNormal(); }
     };
 
+    // We are not using a half-edge structure; in other words, edges need not
+    // have consistent winding around the sides of a paths, because some edges
+    // are shared with adjoining paths.
     struct Edge
     {
         glm::uvec2 Endpoints;
@@ -59,6 +64,7 @@ namespace sketch
         sketch::Plane* Plane;
     };
 
+    // Presents an interface to the outside world for the 'sketch' subsystem.
     class Scene
     {
     public:
@@ -72,7 +78,6 @@ namespace sketch
         AddRectangle(float width, float height, const sketch::Plane* plane, glm::vec2 offset);
 
         // Create an extrusion or change an existing extrusion, optionally returning the walls of the extrusion.
-        // When creating a new extrusion, a hole is automatically created in the enclosing polygon.
         // Walls are automatically deleted when pushing an extrusion back to its original location.
         // When extruding causes the path to "meet" with an existing path in some way
         // (eg, sharing the edges or the same plane), their adjacency information is updated
@@ -180,11 +185,9 @@ namespace sketch
         sketch::Plane*
         _GetPlane(glm::vec3 p, glm::vec3 u, glm::vec3 v);
 
+        // Break up the path into a line strip and return the resulting point list.
         Vec3List
         _WalkPath(const Path* p, float arcTessLength = 0) const;
-
-        void
-        _AdjustPathPlane(CoplanarPath* path, glm::vec4 newPlane);
 
         PathList _paths;
         EdgeList _edges;

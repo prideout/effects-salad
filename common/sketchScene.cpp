@@ -4,6 +4,7 @@
 #include "glm/gtx/norm.hpp"
 #include "pez/pez.h"
 #include "glm/gtx/string_cast.hpp"
+#include <algorithm>
 
 using namespace sketch;
 using namespace glm;
@@ -69,7 +70,8 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
     ConstPathList walls;
     vec3 pushVector = delta * path->GetNormal();
 
-    // Extrude edges
+    // Extrude edges into new coplanar paths
+    EdgeList newEdges;
     FOR_EACH(e, path->Edges) {
         bool alreadyExtruded = false;
         FOR_EACH(f, (*e)->Faces) {
@@ -87,7 +89,6 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
             if (arc) {
                 pezFatal("Arc extrusion isn't supported yet.");
             }
-
             Edge* ab = *e;
             unsigned int a = ab->Endpoints.x;
             unsigned int b = ab->Endpoints.y;
@@ -96,20 +97,41 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
             CoplanarPath* f = new CoplanarPath();
             _AppendEdge(f, ab);
             _AppendEdge(f, b, c);
-            _AppendEdge(f, c, d);
+            Edge* cd = _AppendEdge(f, c, d);
             Edge* da = _AppendEdge(f, d, a);
             f->IsHole = false;
             vec3 vab = _GetEdgeVector(ab);
             vec3 vda = _GetEdgeVector(da);
             f->Plane = _GetPlane(_points[a], vab, -vda);
             _paths.push_back(f);
+            newEdges.push_back(cd);
         }
     }
 
-    // Push the path itself
+    // Update the path's edges
+    FOR_EACH(e, path->Edges) {
+        PathList::iterator pe = std::find(
+            (*e)->Faces.begin(), (*e)->Faces.end(), path);
+        (*e)->Faces.erase(pe);
+    }
+    path->Edges.clear();
+    path->Edges.swap(newEdges);
+    FOR_EACH(e, path->Edges) {
+        (*e)->Faces.push_back(path);
+    }
+    if (false) { // TODO remove debug code
+        Vec3List dbg = _WalkPath(path, 0);
+        FOR_EACH(v, dbg) {
+            cout << to_string(*v) << ' ';
+        }
+        cout << endl;
+    }
+
+    // Update the path plane
     vec4 eqn = path->Plane->Eqn;
     eqn.w += delta;
-    _AdjustPathPlane(path, eqn);
+    Plane* newPlane = const_cast<Plane*>(GetPlane(eqn));
+    path->Plane = newPlane;
 
     // Clean and consolidate
     bool finished = false;
@@ -308,6 +330,13 @@ Vec3List
 Scene::_WalkPath(const Path* path, float arcTessLength) const
 {
     Vec3List vecs;
+
+    if (path->Edges.empty()) {
+        return vecs;
+    }
+
+    uvec2 previous = uvec2(0, path->Edges.front()->Endpoints.y);
+
     FOR_EACH(e, path->Edges) {
 
         Arc* arc = dynamic_cast<Arc*>(*e);
@@ -315,26 +344,15 @@ Scene::_WalkPath(const Path* path, float arcTessLength) const
             pezFatal("Arc walking isn't supported yet.");
         }
 
-        vec3 v = _points[(*e)->Endpoints.x];
+        // Edges can have inconsistent winding in our representation,
+        // so swap the two points if needed.
+        uvec2 xy = (*e)->Endpoints;
+        if (xy.x != previous.y) {
+            xy = uvec2(xy.y, xy.x);
+        }
+        previous = xy;
+        vec3 v = _points[xy.x];
         vecs.push_back(v);
     }
     return vecs;
-}
-
-void
-Scene::_AdjustPathPlane(CoplanarPath* path, vec4 eqn)
-{
-    Plane* newPlane = const_cast<Plane*>(GetPlane(eqn));
-
-    if (IsEquivDirections(newPlane->GetNormal(), path->Plane->GetNormal(), _threshold)) {
-        /*  
-        unsigned int a = _AppendPoint(p0 + pushVector);
-        */
-        // TODO push points
-
-    } else {
-        pezFatal("Plane slanting is not supported yet.\n");
-    }
-
-    path->Plane = newPlane;
 }
