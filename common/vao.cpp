@@ -49,6 +49,29 @@ Vao::Vao(int componentCount,
                     IndexList(indices, indices+indexCount));
 }
 
+Vao::Vao(const Vec3List& verts, const TriList& indices)
+{
+    GLuint vbo, ibo;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    // vertices
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts[0]) * verts.size(), &verts[0], GL_STATIC_DRAW);
+    pezCheck(glGetError() == GL_NO_ERROR, "vao-vbo setup failed");
+
+    // indices
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);
+    pezCheck(glGetError() == GL_NO_ERROR, "vao-ibo setup failed");
+
+    // setup the "Position" attribute
+    glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(AttrPosition);
+}
+
 void 
 Vao::AddVertexAttribute(GLuint attrib, 
                             int componentCount, 

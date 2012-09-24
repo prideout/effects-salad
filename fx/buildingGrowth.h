@@ -2,6 +2,7 @@
 
 #include "common/effect.h"
 #include "common/sketchScene.h"
+#include "common/sketchTess.h"
 
 class BuildingGrowth : public Effect {
 public:
@@ -12,4 +13,6 @@ public:
     virtual void Draw();
 private:
     sketch::Scene _sketch;
+    sketch::Tessellator* _tess;
+    Vao _vao;
 };

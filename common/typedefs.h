@@ -8,6 +8,7 @@ class Effect;
 
 typedef std::vector<unsigned char> Blob;
 
+typedef std::vector<glm::ivec3> TriList;
 typedef std::vector<glm::vec3> Vec3List;
 typedef std::vector<glm::vec4> Vec4List;
 typedef std::vector<unsigned int> IndexList;

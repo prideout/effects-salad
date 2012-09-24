@@ -1,8 +1,3 @@
-// TODO
-// ----
-// OpenGL drawing
-// Create sketchPlayback and tween.h for animation
-
 #include "common/sketchScene.h"
 #include "common/sketchUtil.h"
 #include "common/jsonUtil.h"

@@ -106,8 +106,19 @@ static void _constructScene()
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 
-        BuildingGrowth* growth = new BuildingGrowth();
-        ctx->drawables.push_back(growth);
+        ctx->mainCam.eye.z = 5;
+        ctx->mainCam.eye.x = 50;
+        ctx->mainCam.eye.y = 50;
+
+        // Instance the effects, but do not place them into the scene graph:
+        Fullscreen* fullscreen = new Fullscreen(Fullscreen::VignetteFlag);
+        fullscreen->clearColor = vec4(0.1,0.9,0.7,1);
+
+        // Now, insert the effects into our poor man's "scene graph":
+        ctx->drawables.push_back(fullscreen);
+        fullscreen->AddChild(new BuildingGrowth());
+
+        ctx->drawables.push_back(fullscreen);
     }
 
     {   // Test 

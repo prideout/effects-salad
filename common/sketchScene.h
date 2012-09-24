@@ -1,3 +1,4 @@
+#pragma once
 #include "common/typedefs.h"
 #include "glm/glm.hpp"
 #include "jsoncpp/json.h"

@@ -32,6 +32,9 @@ public:
         const unsigned* indices,
         unsigned indexCount);
 
+    Vao(const Vec3List& verts, 
+        const TriList& indices);
+
     void Init();
     void InitEmpty();
 
