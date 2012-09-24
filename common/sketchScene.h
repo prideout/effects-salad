@@ -10,13 +10,14 @@ namespace sketch
     // take care to never create them from scratch or modify them directly.
 
     class Tessellator;
-
     struct Path;
     struct Edge;
+    struct Plane;
 
     typedef std::vector<Path*> PathList;
     typedef std::vector<const Path*> ConstPathList;
     typedef std::vector<Edge*> EdgeList;
+    typedef std::vector<Plane*> PlaneList;
 
     struct Plane
     {
@@ -25,8 +26,6 @@ namespace sketch
         glm::mat3 GetCoordSys() const;
         glm::vec3 GetCenterPoint() const;
     };
-
-    typedef std::vector<Plane> PlaneList;
 
     // Closed path in 3-space consisting of arcs and line segments.  Cannot self-intersect.
     struct Path
@@ -183,6 +182,9 @@ namespace sketch
 
         Vec3List
         _WalkPath(const Path* p, float arcTessLength = 0) const;
+
+        void
+        _AdjustPathPlane(CoplanarPath* path, glm::vec4 newPlane);
 
         PathList _paths;
         EdgeList _edges;

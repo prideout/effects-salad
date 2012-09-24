@@ -3,15 +3,17 @@
 #include "common/jsonUtil.h"
 #include "glm/gtx/norm.hpp"
 #include "pez/pez.h"
+#include "glm/gtx/string_cast.hpp"
 
 using namespace sketch;
 using namespace glm;
+using namespace std;
 
 Scene::Scene() : _threshold(0.001)
 {
     _recording = true;
-    Plane ground;
-    ground.Eqn = vec4(0, 1, 0, 0);
+    Plane* ground = new Plane;
+    ground->Eqn = vec4(0, 1, 0, 0);
     _planes.push_back(ground);
     _history.append(Json::Value(Json::arrayValue));
 }
@@ -19,13 +21,14 @@ Scene::Scene() : _threshold(0.001)
 Scene::~Scene()
 {
     FOR_EACH(p, _paths) { delete *p; }
+    FOR_EACH(p, _planes) { delete *p; }
     FOR_EACH(e, _edges) { delete *e; }
 }
 
 const Plane*
 Scene::GroundPlane() const
 {
-    return &(_planes.front());
+    return _planes.front();
 }
 
 CoplanarPath*
@@ -66,6 +69,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
     ConstPathList walls;
     vec3 pushVector = delta * path->GetNormal();
 
+    // Extrude edges
     FOR_EACH(e, path->Edges) {
         bool alreadyExtruded = false;
         FOR_EACH(f, (*e)->Faces) {
@@ -102,6 +106,12 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
         }
     }
 
+    // Push the path itself
+    vec4 eqn = path->Plane->Eqn;
+    eqn.w += delta;
+    _AdjustPathPlane(path, eqn);
+
+    // Clean and consolidate
     bool finished = false;
     while (not finished) {
         bool mutated = false;
@@ -112,6 +122,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
         finished = not mutated;
     }
 
+    // Record for posterity
     if (_recording) {
         const char* handleList = toString((void**) &(walls[0]), walls.size());
         appendJson(
@@ -120,6 +131,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
             path, delta, handleList );
     }
 
+    // Return the extrusion walls if the client is interested
     if (pWalls) {
         pWalls->swap(walls);
     }
@@ -194,23 +206,6 @@ Plane::GetCenterPoint() const
     return Eqn.w * GetNormal();
 }
 
-// Canonicalize by scaling length of eqn.xyz with eqn.w.
-const Plane*
-Scene::GetPlane(vec4 eqn)
-{
-    vec3 n = vec3(eqn);
-    float l = length(n);
-    eqn = vec4(n / l, eqn.w * l);
-
-    // TODO check if there's an existing plane within _threshold
-    // If so, return that instead.
-
-    Plane p;
-    p.Eqn = eqn;
-    _planes.push_back(p);
-    return &(_planes.back());
-}
-
 // Since the second path is potentially non-coplanar, we examine
 // incident edges rather than plane normals.
 bool
@@ -267,10 +262,35 @@ Scene::_GetPlane(vec3 p, vec3 u, vec3 v)
     float w = -dot(p, n);
     vec4 eqn = vec4(n.x, n.y, n.z, w);
 
-    Plane plane;
-    plane.Eqn = eqn;
+    if (eqn.w < 0) {
+        eqn = -eqn;
+    }
+
+    Plane* plane = new Plane;
+    plane->Eqn = eqn;
     _planes.push_back(plane);
-    return &(_planes.back());
+    return plane;
+}
+
+// Canonicalize by scaling length of eqn.xyz with eqn.w.
+const Plane*
+Scene::GetPlane(vec4 eqn)
+{
+    vec3 n = vec3(eqn);
+    float l = length(n);
+    eqn = vec4(n / l, eqn.w * l);
+
+    if (eqn.w < 0) {
+        eqn = -eqn;
+    }
+
+    // TODO check if there's an existing plane within _threshold
+    // If so, return that instead.
+
+    Plane* p = new Plane;
+    p->Eqn = eqn;
+    _planes.push_back(p);
+    return p;
 }
 
 Json::Value
@@ -289,8 +309,32 @@ Scene::_WalkPath(const Path* path, float arcTessLength) const
 {
     Vec3List vecs;
     FOR_EACH(e, path->Edges) {
+
+        Arc* arc = dynamic_cast<Arc*>(*e);
+        if (arc) {
+            pezFatal("Arc walking isn't supported yet.");
+        }
+
         vec3 v = _points[(*e)->Endpoints.x];
         vecs.push_back(v);
     }
     return vecs;
+}
+
+void
+Scene::_AdjustPathPlane(CoplanarPath* path, vec4 eqn)
+{
+    Plane* newPlane = const_cast<Plane*>(GetPlane(eqn));
+
+    if (IsEquivDirections(newPlane->GetNormal(), path->Plane->GetNormal(), _threshold)) {
+        /*  
+        unsigned int a = _AppendPoint(p0 + pushVector);
+        */
+        // TODO push points
+
+    } else {
+        pezFatal("Plane slanting is not supported yet.\n");
+    }
+
+    path->Plane = newPlane;
 }

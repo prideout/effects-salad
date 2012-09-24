@@ -6,7 +6,7 @@ uniform mat4 Projection;
 uniform mat4 Modelview;
 
 uniform vec3 Translate;
-uniform vec3 Scale;
+uniform vec3 Scale = vec3(1);
 
 out vec3 vPosition;
 
@@ -24,8 +24,6 @@ layout(triangle_strip, max_vertices = 3) out;
 uniform mat3 NormalMatrix;
 uniform mat4 Projection;
 uniform mat4 Modelview;
-
-vec3 HSVtoRGB(vec3 color);
 
 in vec3 vPosition[3];
 
