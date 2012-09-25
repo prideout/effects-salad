@@ -50,6 +50,10 @@ Buildings::~Buildings()
 void
 Buildings::Init()
 {
+    if (!_batches.empty()) {
+        return;
+    }
+
     // Ensure that each instance of the city is the same by resetting the
     // random seed to a constant value.
     srand(42);

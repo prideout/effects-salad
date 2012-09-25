@@ -1,6 +1,7 @@
 // TODO
 // ----
 // Inscribing a path should create a "hole" path; incorp poly2tri
+// Rename to AddInscribedRectangle and add history entry
 // Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.
 
@@ -10,11 +11,13 @@
 #include "common/camera.h"
 #include "common/demoContext.h"
 #include "fx/buildingGrowth.h"
+#include "glm/gtx/string_cast.hpp"
 
 using namespace sketch;
 using namespace std;
+using namespace glm;
 
-BuildingGrowth::BuildingGrowth()
+BuildingGrowth::BuildingGrowth() : _tess(0)
 {
 }
 
@@ -26,6 +29,10 @@ BuildingGrowth::~BuildingGrowth()
 void
 BuildingGrowth::Init()
 {
+    if (_tess) {
+        return;
+    }
+
     const Plane* ground = _sketch.GroundPlane();
     glm::vec2 offset(0, 0);
     const float width = 8;
@@ -39,7 +46,6 @@ BuildingGrowth::Init()
     _sketch.PushPath(rect, height, &walls);
 
     CoplanarPath* wall;
-
     wall = dynamic_cast<CoplanarPath*>(walls[0]);
     rect = _sketch.AddRectangle(1, 1, wall, vec2(0, 0));
     PathList walls2;
@@ -49,7 +55,6 @@ BuildingGrowth::Init()
         rect = _sketch.AddRectangle(0.5, 0.5, wall, vec2(0, 0));
         _sketch.PushPath(rect, 0.5);
     }
-
     wall = dynamic_cast<CoplanarPath*>(walls[1]);
     rect = _sketch.AddRectangle(1, 1.5, wall, vec2(0, 0));
     _sketch.PushPath(rect, -0.5);
