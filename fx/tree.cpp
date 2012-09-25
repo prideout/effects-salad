@@ -18,7 +18,7 @@ void Tree::Init() {
 
     FOR_EACH(branchIt, _treeSys.branches) {
         BranchDef* branch = *branchIt;
-        std::cout << "Branch: " << branch->name << std::endl;;
+        //std::cout << "Branch: " << branch->name << std::endl;;
         Tube* tube = new Tube;
         
         // TODO: need to transfer color also

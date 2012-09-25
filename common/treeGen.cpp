@@ -59,7 +59,7 @@ TreeSystem::GrowBranch() {
     for (int i = 0; i < numCvs; i++) {
         float z = float(i) / (numCvs - 1.0);
         branch->cvs.push_back(Lerp(pos, end, z));
-        _pvec3(branch->cvs[branch->cvs.size()-1]);
+        //_pvec3(branch->cvs[branch->cvs.size()-1]);
     }
 
     const float PI = 3.1415;
@@ -77,7 +77,7 @@ TreeSystem::GrowBranch() {
             std::stringstream name;
             name << branch->name << "." << branch->level << "_" << i;
             child->name = name.str();
-            std::cout << child->name << std::endl;
+            //std::cout << child->name << std::endl;
 
             child->pos = Lerp(pos, end, a);
             
