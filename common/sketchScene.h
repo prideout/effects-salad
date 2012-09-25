@@ -200,6 +200,9 @@ namespace sketch
         void
         _WalkPath(const CoplanarPath* src, Vec2List* dest, float arcTessLength = 0) const;
 
+        void
+        _VerifyPlane(const CoplanarPath* path, const char* msg) const;
+
         PathList _paths;
         EdgeList _edges;
         Vec3List _points;

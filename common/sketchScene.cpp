@@ -125,6 +125,7 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
             vec3 vab = _GetEdgeVector(ab);
             vec3 vda = _GetEdgeVector(da);
             f->Plane = _GetPlane(_points[a], vab, -vda);
+            _VerifyPlane(f, "Faulty path plane in PushPath 1.");
             _paths.push_back(f);
             walls.push_back(f);
             newEdges.push_back(cd);
@@ -148,6 +149,7 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
     eqn.w += delta;
     Plane* newPlane = const_cast<Plane*>(GetPlane(eqn));
     path->Plane = newPlane;
+    _VerifyPlane(path, "Faulty path plane in PushPath 2.");
 
     // Clean and consolidate
     bool finished = false;
@@ -308,7 +310,7 @@ Scene::_GetPlane(vec3 p, vec3 u, vec3 v)
     u = normalize(u);
     v = normalize(v);
     vec3 n = cross(u, v);
-    float w = -dot(p, n);
+    float w = dot(p, n);
     vec4 eqn = vec4(n.x, n.y, n.z, w);
 
     if (eqn.w < 0) {
@@ -357,20 +359,58 @@ Scene::Serialize() const
 void
 Scene::_WalkPath(const CoplanarPath* path, Vec2List* dest, float arcTessLength) const
 {
-    // TODO
+    Vec2List vecs;
+    if (path->Edges.empty()) {
+        return;
+    }
+
+    mat3 planeInverse = inverse(path->Plane->GetCoordSys());
+    vec3 planeCenter = path->Plane->GetCenterPoint();
+
+    uvec2 previous = path->Edges.front()->Endpoints;
+    FOR_EACH(e, path->Edges) {
+
+        Arc* arc = dynamic_cast<Arc*>(*e);
+        if (arc) {
+            pezFatal("Arc walking isn't supported yet.");
+        }
+
+        // Edges can have inconsistent winding in our representation,
+        // so swap the two points if needed.
+        uvec2 xy = (*e)->Endpoints;
+        if (xy.x != previous.y) {
+            xy = uvec2(xy.y, xy.x);
+        }
+
+        // Poor man's way of returning only the outer path
+        // for paths that have holes.
+        if (xy.x != previous.x && xy.x != previous.y &&
+            xy.y != previous.x && xy.y != previous.y) {
+            break;
+        }
+        previous = xy;
+        vec3 v = _points[xy.x];
+        VerifyPlane(v, path->Plane, "Faulty path plane in WalkPath.");
+
+        // Convert to the coordinate system of the plane.
+        vec3 planeOffset = planeInverse * (v - planeCenter);
+        vec2 v2 = vec2(planeOffset.x, planeOffset.z);
+
+        vecs.push_back(v2);
+    }
+
+    dest->swap(vecs);
 }
 
 void
 Scene::_WalkPath(const Path* path, Vec3List* dest, float arcTessLength) const
 {
     Vec3List vecs;
-
     if (path->Edges.empty()) {
         return;
     }
 
     uvec2 previous = path->Edges.front()->Endpoints;
-
     FOR_EACH(e, path->Edges) {
 
         Arc* arc = dynamic_cast<Arc*>(*e);
@@ -397,6 +437,18 @@ Scene::_WalkPath(const Path* path, Vec3List* dest, float arcTessLength) const
     }
 
     dest->swap(vecs);
+}
+
+void
+Scene::_VerifyPlane(const CoplanarPath* path, const char* msg) const
+{
+    FOR_EACH(e, path->Edges) {
+        uvec2 xy = (*e)->Endpoints;
+        vec3 x = _points[xy.x];
+        vec3 y = _points[xy.y];
+        VerifyPlane(x, path->Plane, msg);
+        VerifyPlane(y, path->Plane, msg);
+    }
 }
 
 vec3

@@ -5,6 +5,9 @@
 namespace sketch
 {
 
+class Plane;
+class CoplanarPath;
+
 // Transform the given vector from the coordinate system defined
 // by the given plane to world space.
 glm::vec3
@@ -15,5 +18,8 @@ IsOrthogonal(const CoplanarPath* p1, const CoplanarPath* p2, float epsilon);
 
 bool
 IsEquivDirections(glm::vec3 v1, glm::vec3 v2, float epsilon);
+
+void
+VerifyPlane(glm::vec3 v, const Plane* plane, const char* msg);
 
 }
