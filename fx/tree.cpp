@@ -24,7 +24,7 @@ void Tree::Init() {
         // TODO: need to transfer color also
         // destructively transfer the CVs to avoid copies
         int maxLevel = 6;
-        float growTime = 5.0;
+        float growTime = 15.0;
         tube->cvs.swap(branch->cvs);
         tube->radius = branch->width;
         if (branch->levels > 3) {
