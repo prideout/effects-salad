@@ -118,7 +118,7 @@ namespace sketch
 
         // Inscribe a path and create a hole in the outer path.
         CoplanarPath*
-        AddRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
+        AddInscribedRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
 
         CoplanarPath*
         AddCircle(float radius, const sketch::Plane* plane, glm::vec2 offset);
