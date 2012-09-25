@@ -1,8 +1,5 @@
 // TODO
 // ----
-// Scene::_AdjustPathPlane
-// Pop out a small box from one of the walls
-// Pop in a small box from one of the walls
 // Inscribing a path should create a "hole" path; incorp poly2tri
 // Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.
