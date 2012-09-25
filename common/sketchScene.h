@@ -33,8 +33,7 @@ namespace sketch
     struct Path
     {
         EdgeList Edges;
-        PathList Holes; // TODO I think we won't need this.
-        bool IsHole;    // TODO I think we won't need this.
+        PathList Holes;
         virtual ~Path() {}
     };
 
@@ -204,6 +203,7 @@ namespace sketch
         _VerifyPlane(const CoplanarPath* path, const char* msg) const;
 
         PathList _paths;
+        PathList _holes;
         EdgeList _edges;
         Vec3List _points;
         PlaneList _planes;

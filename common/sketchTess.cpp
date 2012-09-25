@@ -37,6 +37,7 @@ sketch::Tessellator::PullFromScene()
             Vec2List rim2d;
             _scene->_WalkPath(coplanar, &rim2d, arcTessLength);
 
+            list<vector<p2t::Point*> > holes;
             vector<p2t::Point*> polyline;
             FOR_EACH(p, rim2d) {
                 polyline.push_back(new p2t::Point(p->x, p->y));
@@ -44,8 +45,23 @@ sketch::Tessellator::PullFromScene()
             if (polyline.size() > 3) {
                 p2t::CDT* cdt = new p2t::CDT(polyline);
 
-                // TODO Add holes; see http://code.google.com/p/poly2tri/source/browse/testbed/main.cc#167
-                // We may also wish to add Steiner points but I see no reason to do so at the moment:
+                FOR_EACH(hole, coplanar->Holes) {
+
+                    CoplanarPath* copHole = dynamic_cast<CoplanarPath*>(*hole);
+                    pezCheck(copHole != NULL);
+
+                    Vec2List holePath;
+                    _scene->_WalkPath(copHole, &holePath, arcTessLength);
+                    vector<p2t::Point*> polyline;
+                    FOR_EACH(p, holePath) {
+                        polyline.push_back(new p2t::Point(p->x, p->y));
+                    }
+                    cdt->AddHole(polyline);
+                    holes.push_back(polyline);
+                }
+
+                // We may also wish to add Steiner points here, but I see no
+                // reason to do so at the moment:
                 // http://www.cs.cmu.edu/~quake/triangle.defs.html
 
                 cdt->Triangulate();
@@ -71,6 +87,11 @@ sketch::Tessellator::PullFromScene()
             }
             FOR_EACH(p, polyline) {
                 delete *p;
+            }
+            FOR_EACH(h, holes) {
+                FOR_EACH(p, *h) {
+                    delete *p;
+                }
             }
         } else {
             Vec3List rim;

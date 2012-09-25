@@ -1,8 +1,8 @@
 // TODO
 // ----
-// WalkPath 2d version
-// support holes by fleshing out sketchTess.cpp , PullFromScene
+// Support holes in sketchTess.cpp
 // Rename to AddInscribedRectangle and add history entry
+// Support "re-push" for animation and make sure it doesn't leak.
 // Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.
 
@@ -76,10 +76,10 @@ BuildingGrowth::Update()
     PerspCamera* camera = &GetContext()->mainCam;
 
     camera->eye.x = 2;
-    camera->eye.y = -7 + 14 * abs(sin(time / 2));
+    camera->eye.y = 7;
     camera->eye.z = 15;
     camera->center.y = 2;
-    camera->eye = glm::rotateY(camera->eye, time * 48);
+    camera->eye = glm::rotateY(camera->eye, time * -48);
 }
 
 void

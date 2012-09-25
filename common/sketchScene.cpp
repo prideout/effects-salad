@@ -22,6 +22,7 @@ Scene::Scene() : _threshold(0.001)
 Scene::~Scene()
 {
     FOR_EACH(p, _paths) { delete *p; }
+    FOR_EACH(h, _holes) { delete *h; }
     FOR_EACH(p, _planes) { delete *p; }
     FOR_EACH(e, _edges) { delete *e; }
 }
@@ -50,7 +51,6 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     _AppendEdge(retval, b, c);
     _AppendEdge(retval, c, d);
     _AppendEdge(retval, d, a);
-    retval->IsHole = false;
     retval->Plane = const_cast<Plane*>(plane);
     _FinalizePath(retval, _threshold);
     _paths.push_back(retval);
@@ -75,9 +75,13 @@ Scene::AddRectangle(float width, float height, sketch::CoplanarPath* outer, glm:
     vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
     vec2 offset = vec2(planeOffset.x, planeOffset.z);
     CoplanarPath* inner = AddRectangle(width, height, plane, offset);
+    CoplanarPath* hole = new CoplanarPath();
     FOR_EACH(edge, inner->Edges) {
-        _AppendEdge(outer, *edge);
+        _AppendEdge(hole, *edge);
     }
+    hole->Plane = inner->Plane;
+    outer->Holes.push_back(hole);
+    _holes.push_back(hole);
     return inner;
 }
 
@@ -121,7 +125,6 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
             _AppendEdge(f, b, c);
             Edge* cd = _AppendEdge(f, c, d);
             Edge* da = _AppendEdge(f, d, a);
-            f->IsHole = false;
             vec3 vab = _GetEdgeVector(ab);
             vec3 vda = _GetEdgeVector(da);
             f->Plane = _GetPlane(_points[a], vab, -vda);
