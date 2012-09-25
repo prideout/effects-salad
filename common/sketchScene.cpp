@@ -347,19 +347,26 @@ Scene::Serialize() const
 {
     Json::Value root;
     FOR_EACH(p, _paths) {
-        Vec3List points = _WalkPath(*p);
+        Vec3List points;
+        _WalkPath(*p, &points);
         appendJson(root, "%s", toString(points));
     }
     return root;
 }
 
-Vec3List
-Scene::_WalkPath(const Path* path, float arcTessLength) const
+void
+Scene::_WalkPath(const CoplanarPath* path, Vec2List* dest, float arcTessLength) const
+{
+    // TODO
+}
+
+void
+Scene::_WalkPath(const Path* path, Vec3List* dest, float arcTessLength) const
 {
     Vec3List vecs;
 
     if (path->Edges.empty()) {
-        return vecs;
+        return;
     }
 
     uvec2 previous = path->Edges.front()->Endpoints;
@@ -388,14 +395,16 @@ Scene::_WalkPath(const Path* path, float arcTessLength) const
         vec3 v = _points[xy.x];
         vecs.push_back(v);
     }
-    return vecs;
+
+    dest->swap(vecs);
 }
 
 vec3
 Scene::_GetCentroid(const Path* path) const
 {
     vec3 center;
-    Vec3List vlist = _WalkPath(path);
+    Vec3List vlist;
+    _WalkPath(path, &vlist);
     FOR_EACH(p, vlist) {
         center += *p;
     }

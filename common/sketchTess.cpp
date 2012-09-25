@@ -1,3 +1,4 @@
+#include "poly2tri/poly2tri.h"
 #include "common/sketchTess.h"
 #include "common/init.h"
 #include "common/vao.h"
@@ -24,7 +25,33 @@ sketch::Tessellator::PullFromScene()
     
     FOR_EACH(p, _scene->_paths) {
         int n = (int) _verts.size();
-        Vec3List rim = _scene->_WalkPath(*p, arcTessLength);
+
+        Vec3List rim;
+        _scene->_WalkPath(*p, &rim, arcTessLength);
+
+        const bool usePoly2Tri = true;
+        if (usePoly2Tri) {
+
+            CoplanarPath* coplanar = dynamic_cast<CoplanarPath*>(*p);
+            pezCheck(coplanar != NULL, "Holes are not supported in non-coplanar paths.");
+
+            Vec2List rim2d;
+            _scene->_WalkPath(coplanar, &rim2d, arcTessLength);
+
+            vector<p2t::Point*> polyline;
+            FOR_EACH(p, rim2d) {
+                polyline.push_back(new p2t::Point(p->x, p->y));
+            }
+            if (polyline.size() > 3) {
+                p2t::CDT* cdt = new p2t::CDT(polyline);
+                // TODO see http://code.google.com/p/poly2tri/source/browse/testbed/main.cc#167
+                delete cdt;
+            }
+            FOR_EACH(p, polyline) {
+                delete *p;
+            }
+        }
+
         int count = (int) rim.size();
         _verts.insert(_verts.end(), rim.begin(), rim.end());
         for (int i = 1; i < count - 1; ++i) {

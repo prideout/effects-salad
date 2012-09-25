@@ -1,6 +1,7 @@
 // TODO
 // ----
-// Inscribing a path should create a "hole" path; incorp poly2tri
+// WalkPath 2d version
+// support holes by fleshing out sketchTess.cpp , PullFromScene
 // Rename to AddInscribedRectangle and add history entry
 // Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.

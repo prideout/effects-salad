@@ -193,8 +193,12 @@ namespace sketch
         _GetPlane(glm::vec3 p, glm::vec3 u, glm::vec3 v);
 
         // Break up the path into a line strip and return the resulting point list.
-        Vec3List
-        _WalkPath(const Path* p, float arcTessLength = 0) const;
+        void
+        _WalkPath(const Path* src, Vec3List* dest, float arcTessLength = 0) const;
+
+        // Ditto, but in the coordinate space of the path.
+        void
+        _WalkPath(const CoplanarPath* src, Vec2List* dest, float arcTessLength = 0) const;
 
         PathList _paths;
         EdgeList _edges;

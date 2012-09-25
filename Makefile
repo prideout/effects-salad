@@ -42,6 +42,11 @@ SHARED := \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/fx/quads.o \
 	$(OBJDIR)/fx/tree.o \
+	$(OBJDIR)/lib/poly2tri/sweep/sweep_context.o \
+	$(OBJDIR)/lib/poly2tri/sweep/sweep.o \
+	$(OBJDIR)/lib/poly2tri/sweep/advancing_front.o \
+	$(OBJDIR)/lib/poly2tri/sweep/cdt.o \
+	$(OBJDIR)/lib/poly2tri/common/shapes.o \
 	$(OBJDIR)/lib/lodepng/lodepng.o \
 	$(OBJDIR)/lib/noise/perlin.o \
 	$(OBJDIR)/lib/pez/bstrlib.o \
@@ -77,6 +82,9 @@ $(OBJDIR):
 	@mkdir -p $@
 	@mkdir -p $@/common
 	@mkdir -p $@/fx
+	@mkdir -p $@/lib/poly2tri
+	@mkdir -p $@/lib/poly2tri/common
+	@mkdir -p $@/lib/poly2tri/sweep
 	@mkdir -p $@/lib/tthread
 	@mkdir -p $@/lib/pez
 	@mkdir -p $@/lib/lodepng
@@ -84,6 +92,10 @@ $(OBJDIR):
 	@mkdir -p $@/lib/tetgen
 
 $(OBJDIR)/%.o: %.cpp
+	@echo $<
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+$(OBJDIR)/%.o: %.cc
 	@echo $<
 	$(CXX) $(CXXFLAGS) $< -o $@
 
