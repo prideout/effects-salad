@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -O3 -Ilib -I. -g
-CXXFLAGS=-Wall -c -O3 -Ilib -I. -g
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. -g # -O3 
+CXXFLAGS=-Wall -c -Ilib -I. -g # -O3 
 OBJDIR=build
 
 SHARED := \

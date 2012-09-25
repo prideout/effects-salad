@@ -38,8 +38,24 @@ BuildingGrowth::Init()
         _sketch.AddRectangle(width, depth, ground, offset);
 
     float height = 4;
-    ConstPathList walls;
+    PathList walls;
     _sketch.PushPath(rect, height, &walls);
+
+    CoplanarPath* wall;
+
+    wall = dynamic_cast<CoplanarPath*>(walls[0]);
+    rect = _sketch.AddRectangle(1, 1, wall, vec2(0, 0));
+    PathList walls2;
+    _sketch.PushPath(rect, 1, &walls2);
+    {
+        wall = dynamic_cast<CoplanarPath*>(walls2[0]);
+        rect = _sketch.AddRectangle(0.5, 0.5, wall, vec2(0, 0));
+        _sketch.PushPath(rect, 0.5);
+    }
+
+    wall = dynamic_cast<CoplanarPath*>(walls[1]);
+    rect = _sketch.AddRectangle(1, 1.5, wall, vec2(0, 0));
+    _sketch.PushPath(rect, -0.5);
 
     _tess = new Tessellator(_sketch);
     _tess->PullFromScene();

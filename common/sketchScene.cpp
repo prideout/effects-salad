@@ -64,10 +64,30 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     return retval;
 }
 
-void
-Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
+// Inscribe a path and create a hole in the outer path.
+CoplanarPath*
+Scene::AddRectangle(float width, float height, sketch::CoplanarPath* outer, glm::vec2 pathOffset)
 {
-    ConstPathList walls;
+    vec3 outerCenter = _GetCentroid(outer);
+    Plane* plane = outer->Plane;
+    vec3 wsRectCenter = outerCenter + plane->GetCoordSys() * vec3(pathOffset.x, 0, pathOffset.y);
+    mat3 inverseCoordSys = inverse(plane->GetCoordSys());
+    vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
+    vec2 offset = vec2(planeOffset.x, planeOffset.z);
+    CoplanarPath* inner = AddRectangle(width, height, plane, offset);
+    /*
+    FOR_EACH(edge, inner->Edges) {
+        _AppendEdge(outer, *edge);
+    }
+    */
+    return inner;
+}
+
+
+void
+Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
+{
+    PathList walls;
     vec3 pushVector = delta * path->GetNormal();
 
     // Extrude edges into new coplanar paths
@@ -104,6 +124,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
             vec3 vda = _GetEdgeVector(da);
             f->Plane = _GetPlane(_points[a], vab, -vda);
             _paths.push_back(f);
+            walls.push_back(f);
             newEdges.push_back(cd);
         }
     }
@@ -138,7 +159,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
     while (not finished) {
         bool mutated = false;
         mutated = mutated or _FinalizePath(path, _threshold);
-        FOR_EACH(w, *pWalls) {
+        FOR_EACH(w, walls) {
             mutated = mutated or _FinalizePath(const_cast<Path*>(*w), _threshold);
         }
         finished = not mutated;
@@ -355,4 +376,15 @@ Scene::_WalkPath(const Path* path, float arcTessLength) const
         vecs.push_back(v);
     }
     return vecs;
+}
+
+vec3
+Scene::_GetCentroid(const Path* path) const
+{
+    vec3 center;
+    Vec3List vlist = _WalkPath(path);
+    FOR_EACH(p, vlist) {
+        center += *p;
+    }
+    return center / float(vlist.size());
 }
