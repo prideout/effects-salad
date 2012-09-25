@@ -119,6 +119,7 @@ static void _constructScene()
         fullscreen->AddChild(new BuildingGrowth());
 
         ctx->drawables.push_back(fullscreen);
+        //ctx->drawables.push_back(new FpsOverlay());
     }
 
     {   // Test 

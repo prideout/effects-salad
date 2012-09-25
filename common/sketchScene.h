@@ -83,7 +83,7 @@ namespace sketch
         // (eg, sharing the edges or the same plane), their adjacency information is updated
         // accordingly and pointer-sharing occurs automatically.
         void
-        PushPath(CoplanarPath* path, float delta, ConstPathList* walls = 0);
+        PushPath(CoplanarPath* path, float delta, PathList* walls = 0);
 
         // Useful if you have an array of window sills that you want extrude simultaneously.
         void
@@ -93,7 +93,7 @@ namespace sketch
 
         // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.
         void
-        PushPath(CoplanarPath* path, glm::vec3 delta, ConstPathList* walls = 0);
+        PushPath(CoplanarPath* path, glm::vec3 delta, PathList* walls = 0);
 
         // Pushing a non-coplanar path is tricky because you have to push it past 
         // a certain point to be valid, and we need a reasonable heuristic for
@@ -102,7 +102,7 @@ namespace sketch
         // That won't let you push a non-coplanar path after manually deleting
         // an extrusion face, but hopefully that's a corner case.
         bool
-        PushTricky(Path* path, glm::vec3 delta, ConstPathList* walls = 0);
+        PushTricky(Path* path, glm::vec3 delta, PathList* walls = 0);
 
         // Attempts to find a path with two edges that contain the given points and split it.
         // If successful, returns the new edge that is common to the two paths.
@@ -116,6 +116,10 @@ namespace sketch
         TranslateEdge(Edge* e, glm::vec3 delta);
 
     public:
+
+        // Inscribe a path and create a hole in the outer path.
+        CoplanarPath*
+        AddRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
 
         CoplanarPath*
         AddCircle(float radius, const sketch::Plane* plane, glm::vec2 offset);
@@ -149,6 +153,9 @@ namespace sketch
         Serialize() const;
 
     private:
+
+        glm::vec3
+        _GetCentroid(const Path* path) const;
 
         // Snaps the edges, vertices, and plane equation of the given path with existing objects
         // in the scene.  Updates everybody's adjacency information and shares pointers.

@@ -64,10 +64,28 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     return retval;
 }
 
-void
-Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
+// Inscribe a path and create a hole in the outer path.
+CoplanarPath*
+Scene::AddRectangle(float width, float height, sketch::CoplanarPath* outer, glm::vec2 pathOffset)
 {
-    ConstPathList walls;
+    vec3 outerCenter = _GetCentroid(outer);
+    Plane* plane = outer->Plane;
+    vec3 wsRectCenter = outerCenter + plane->GetCoordSys() * vec3(pathOffset.x, 0, pathOffset.y);
+    mat3 inverseCoordSys = inverse(plane->GetCoordSys());
+    vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
+    vec2 offset = vec2(planeOffset.x, planeOffset.z);
+    CoplanarPath* inner = AddRectangle(width, height, plane, offset);
+    FOR_EACH(edge, inner->Edges) {
+        _AppendEdge(outer, *edge);
+    }
+    return inner;
+}
+
+
+void
+Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
+{
+    PathList walls;
     vec3 pushVector = delta * path->GetNormal();
 
     // Extrude edges into new coplanar paths
@@ -78,7 +96,11 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
             if (*f == path) {
                 continue;
             }
-            if (_IsOrthogonal(path, *f, *e)) {
+            CoplanarPath* cp = dynamic_cast<CoplanarPath*>(*f);
+            if (!cp) {
+                pezFatal("Non-coplanar paths aren't really supported yet.");
+            }
+            if (IsOrthogonal(path, cp, _threshold)) {
                 pezFatal("Re-pushing a face isn't supported yet.");
                 walls.push_back(*f);
                 alreadyExtruded = true;
@@ -104,6 +126,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
             vec3 vda = _GetEdgeVector(da);
             f->Plane = _GetPlane(_points[a], vab, -vda);
             _paths.push_back(f);
+            walls.push_back(f);
             newEdges.push_back(cd);
         }
     }
@@ -119,13 +142,6 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
     FOR_EACH(e, path->Edges) {
         (*e)->Faces.push_back(path);
     }
-    if (false) { // TODO remove debug code
-        Vec3List dbg = _WalkPath(path, 0);
-        FOR_EACH(v, dbg) {
-            cout << to_string(*v) << ' ';
-        }
-        cout << endl;
-    }
 
     // Update the path plane
     vec4 eqn = path->Plane->Eqn;
@@ -138,7 +154,7 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
     while (not finished) {
         bool mutated = false;
         mutated = mutated or _FinalizePath(path, _threshold);
-        FOR_EACH(w, *pWalls) {
+        FOR_EACH(w, walls) {
             mutated = mutated or _FinalizePath(const_cast<Path*>(*w), _threshold);
         }
         finished = not mutated;
@@ -162,10 +178,16 @@ Scene::PushPath(CoplanarPath* path, float delta, ConstPathList* pWalls)
 Edge*
 Scene::_AppendEdge(Path* path, unsigned int a, unsigned int b)
 {
+    FOR_EACH(i, _edges) {
+        if ((*i)->Endpoints == uvec2(a, b) ||
+            (*i)->Endpoints == uvec2(b, a)) {
+            _AppendEdge(path, *i);
+            return *i;
+        }
+    }
     Edge* e = new Edge();
     e->Endpoints = uvec2(a, b);
-    e->Faces.push_back(path);
-    path->Edges.push_back(e);
+    _AppendEdge(path, e);
     return e;
 }
 
@@ -197,6 +219,11 @@ Scene::_FinalizePath(Path* path, float epsilon)
 unsigned int
 Scene::_AppendPoint(vec3 p)
 {
+    FOR_EACH(i, _points) {
+        if (distance2(*i, p) < _threshold) {
+            return i - _points.begin();
+        }
+    }
     _points.push_back(p);
     return _points.size() - 1;
 }
@@ -335,7 +362,7 @@ Scene::_WalkPath(const Path* path, float arcTessLength) const
         return vecs;
     }
 
-    uvec2 previous = uvec2(0, path->Edges.front()->Endpoints.y);
+    uvec2 previous = path->Edges.front()->Endpoints;
 
     FOR_EACH(e, path->Edges) {
 
@@ -350,9 +377,27 @@ Scene::_WalkPath(const Path* path, float arcTessLength) const
         if (xy.x != previous.y) {
             xy = uvec2(xy.y, xy.x);
         }
+
+        // Poor man's way of returning only the outer path
+        // for paths that have holes.
+        if (xy.x != previous.x && xy.x != previous.y &&
+            xy.y != previous.x && xy.y != previous.y) {
+            break;
+        }
         previous = xy;
         vec3 v = _points[xy.x];
         vecs.push_back(v);
     }
     return vecs;
+}
+
+vec3
+Scene::_GetCentroid(const Path* path) const
+{
+    vec3 center;
+    Vec3List vlist = _WalkPath(path);
+    FOR_EACH(p, vlist) {
+        center += *p;
+    }
+    return center / float(vlist.size());
 }
