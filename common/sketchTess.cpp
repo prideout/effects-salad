@@ -22,7 +22,6 @@ sketch::Tessellator::PullFromScene()
 
     float arcTessLength = 0;
 
-    // TODO handle convex paths and honor IsHole using Poly2Tri
     // TODO we should simply use the _scene->_points as a VBO;
     //      this would allow point-sharing on corners
     

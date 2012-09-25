@@ -1,10 +1,12 @@
 // TODO
 // ----
-// Support holes in sketchTess.cpp
-// Rename to AddInscribedRectangle and add history entry
 // Support "re-push" for animation and make sure it doesn't leak.
 // Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.
+// Per-path dirty flags in PullFromScene would result in huge speedup
+//    Might as well use DrawArrays instead of DrawElements
+//    Keep a set of CPU-side vectors for the paths, but only a single VBO
+//    Probably fine to re-upload the entire VBO if ANY path is dirty
 
 #include "glm/gtx/rotate_vector.hpp"
 #include "common/vao.h"
@@ -48,16 +50,16 @@ BuildingGrowth::Init()
 
     CoplanarPath* wall;
     wall = dynamic_cast<CoplanarPath*>(walls[0]);
-    rect = _sketch.AddRectangle(1, 1, wall, vec2(0, 0));
+    rect = _sketch.AddInscribedRectangle(1, 1, wall, vec2(0, 0));
     PathList walls2;
     _sketch.PushPath(rect, 1, &walls2);
     {
         wall = dynamic_cast<CoplanarPath*>(walls2[0]);
-        rect = _sketch.AddRectangle(0.5, 0.5, wall, vec2(0, 0));
+        rect = _sketch.AddInscribedRectangle(0.5, 0.5, wall, vec2(0, 0));
         _sketch.PushPath(rect, 0.5);
     }
     wall = dynamic_cast<CoplanarPath*>(walls[1]);
-    rect = _sketch.AddRectangle(1, 1.5, wall, vec2(0, 0));
+    rect = _sketch.AddInscribedRectangle(1, 1.5, wall, vec2(0, 0));
     _sketch.PushPath(rect, -0.5);
 
     _tess = new Tessellator(_sketch);

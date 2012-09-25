@@ -66,7 +66,8 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
 
 // Inscribe a path and create a hole in the outer path.
 CoplanarPath*
-Scene::AddRectangle(float width, float height, sketch::CoplanarPath* outer, glm::vec2 pathOffset)
+Scene::AddInscribedRectangle(float width, float height,
+                             sketch::CoplanarPath* outer, glm::vec2 pathOffset)
 {
     vec3 outerCenter = _GetCentroid(outer);
     Plane* plane = outer->Plane;
@@ -82,6 +83,14 @@ Scene::AddRectangle(float width, float height, sketch::CoplanarPath* outer, glm:
     hole->Plane = inner->Plane;
     outer->Holes.push_back(hole);
     _holes.push_back(hole);
+
+    if (_recording) {
+        appendJson(
+            _history,
+            "[ \"AddInscribedRectangle\", \"%8.8x\", %f, %f, \"%8.8x\", %s]",
+            inner, width, height, outer, toString(pathOffset) );
+    }
+
     return inner;
 }
 
