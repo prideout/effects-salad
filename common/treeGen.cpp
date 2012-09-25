@@ -7,8 +7,8 @@ glm::vec3
 GetAxis(float theta, float phi) {
     // return unit vector using spherical coords
     return glm::vec3(sin(theta) * cos(phi),
-                     sin(theta) * sin(phi),
-                     cos(theta));
+                     cos(theta),
+                     sin(theta) * sin(phi));
 }
 
 void
@@ -81,10 +81,12 @@ TreeSystem::GrowBranch() {
 
             child->pos = Lerp(pos, end, a);
             
-            child->norm = branch->norm*.5f + glm::vec3(float(rand())/RAND_MAX, float(rand())/RAND_MAX, float(rand())/RAND_MAX)*.5f;
-            child->norm = glm::normalize(child->norm);
-            child->norm = GetAxis(glm::smoothstep(chAngle.x, chAngle.y, float(rand())/RAND_MAX), 
-                                 glm::smoothstep(0.0f, 2.0f*PI, float(rand())/RAND_MAX));
+            //child->norm = branch->norm*.5f + glm::vec3(float(rand())/RAND_MAX, float(rand())/RAND_MAX, float(rand())/RAND_MAX)*.5f;
+            //child->norm = glm::normalize(child->norm);
+            //child->norm = GetAxis(glm::smoothstep(chAngle.x, chAngle.y, float(rand())/RAND_MAX), 
+            //                     glm::smoothstep(0.0f, 2.0f*PI, float(rand())/RAND_MAX));
+            child->norm = GetAxis(Lerp(chAngle.x, chAngle.y, float(rand())/RAND_MAX), 
+                                  Lerp(0.0f, 2.0f*PI, float(rand())/RAND_MAX));
 
             child->width = Lerp(curWidth, nextWidth, a);
 

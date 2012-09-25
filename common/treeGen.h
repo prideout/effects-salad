@@ -74,17 +74,17 @@ public:
 
         childDist.insert(childDist.begin(), 10, glm::vec2());
         childDist[0] = glm::vec2(0.0, 1.0);
-        childDist[0] = glm::vec2(0.2, 0.8);
-        childDist[0] = glm::vec2(0.2, 0.8);
-        childDist[0] = glm::vec2(0.3, 0.7);
-        childDist[0] = glm::vec2(0.6, 0.4);
+        childDist[1] = glm::vec2(0.2, 0.8);
+        childDist[2] = glm::vec2(0.2, 0.8);
+        childDist[3] = glm::vec2(0.3, 0.7);
+        childDist[4] = glm::vec2(0.6, 0.4);
 
         childAngles.insert(childAngles.begin(), 10, glm::vec2());
         childAngles[0] = glm::vec2(0.0, 0.0);
-        childAngles[0] = glm::vec2(0.5, 1.3);
-        childAngles[0] = glm::vec2(0.5, 1.0);
-        childAngles[0] = glm::vec2(0.7, 1.3);
-        childAngles[0] = glm::vec2(0.5, 1.0);
+        childAngles[1] = glm::vec2(0.5, 1.3);
+        childAngles[2] = glm::vec2(0.5, 1.0);
+        childAngles[3] = glm::vec2(0.7, 1.3);
+        childAngles[4] = glm::vec2(0.5, 1.0);
     }
 
 
