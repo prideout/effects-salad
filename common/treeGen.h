@@ -60,7 +60,7 @@ public:
     TreeSystem() {
         // initialize default branching level values
         for (int i = 0; i < 1000; i++) {
-            lengths.push_back((999.0-i) / 500.0);
+            lengths.push_back((999.0-i) / 900.0);
         }
         //lengths[2] = 100.0;
 

@@ -23,11 +23,13 @@ void Tree::Init() {
         
         // TODO: need to transfer color also
         // destructively transfer the CVs to avoid copies
+        int maxLevel = 6;
+        float growTime = 5.0;
         tube->cvs.swap(branch->cvs);
         tube->sidesPerSlice = 3;
         tube->lod = 1;
-        tube->startTime = (10.0 / 6) * (6 - branch->levels);
-        tube->timeToGrow = (10.0 / 6) * (branch->levels);
+        tube->startTime = (growTime / maxLevel) * (maxLevel - branch->levels);
+        tube->timeToGrow = (growTime / maxLevel) * (branch->levels);
 
         _branches.push_back(tube);
         tube->Init();
