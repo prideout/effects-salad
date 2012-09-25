@@ -24,6 +24,7 @@ void FireFlies::Init()
     _quad.Init();
     _ground.Init();
     _milkyway.Init();
+    _tree.Init();
 
     // --------------------------------------------------------------------- 
     // Fire Flies
@@ -150,6 +151,7 @@ void FireFlies::Update() {
     _ground.Update();
     _tube.Update();
     _milkyway.Update();
+    _tree.Update();
 };
 
 void FireFlies::Draw() {
@@ -185,6 +187,8 @@ void FireFlies::Draw() {
         glUseProgram(progs["FireFlies.Tube"]);
         cam.Bind(glm::mat4());
         _tube.Draw();
+
+        _tree.Draw();
 
         glUseProgram(progs["FireFlies.Flies"]);
         cam.Bind(glm::mat4());

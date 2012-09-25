@@ -15,6 +15,10 @@ struct BranchDef {
         isLeaf(false)
     {
         level = levels;
+        // brown
+        color = glm::vec3(0.02, 0.01, 0.001);
+        pos = glm::vec3(0,0,0);
+        norm = glm::vec3(0,1,0);
     }
 
     std::string name;
@@ -31,7 +35,7 @@ struct BranchDef {
 
 class TreeSystem {
 public:
-    typedef std::vector<BranchDef> BranchVec;
+    typedef std::vector<BranchDef*> BranchVec;
     
     BranchVec queue;
     BranchVec branches;
@@ -53,20 +57,18 @@ public:
     std::vector<glm::vec2> childAngles;
 
 
-    TreeSystem(BranchDef root) {
-        queue.push_back(root);
-
+    TreeSystem() {
         // initialize default branching level values
         for (int i = 0; i < 1000; i++) {
-            lengths.push_back((999.0-i) / 20.0);
+            lengths.push_back((999.0-i) / 500.0);
         }
-        lengths[2] = 100.0;
+        //lengths[2] = 100.0;
 
-        childCounts.push_back(20);
-        childCounts.push_back(4);
-        childCounts.push_back(4);
-        childCounts.push_back(1);
-        childCounts.push_back(3);
+        childCounts.push_back(0); //20
+        childCounts.push_back(4); //4
+        childCounts.push_back(4); //4
+        childCounts.push_back(1); //1
+        childCounts.push_back(3); //3
         childCounts.push_back(0);
         childCounts.push_back(0);
 

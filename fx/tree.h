@@ -8,12 +8,15 @@
 #include "common/normalField.h"
 #include "common/quad.h"
 #include "common/tube.h"
+#include "common/treeGen.h"
 
 
 // simple effect used to test framework features
 
 class Tree : public Effect {
     std::vector<Tube*> _branches;
+
+    TreeSystem _treeSys;
 
 public:
 
