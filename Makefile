@@ -23,6 +23,7 @@ SHARED := \
 	$(OBJDIR)/common/surface.o \
 	$(OBJDIR)/common/texture.o \
 	$(OBJDIR)/common/timer.o \
+	$(OBJDIR)/common/treeGen.o \
 	$(OBJDIR)/common/vao.o \
 	$(OBJDIR)/common/viewport.o \
 	$(OBJDIR)/common/sketchScene.o \
