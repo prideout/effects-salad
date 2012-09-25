@@ -32,3 +32,9 @@ _pvec3(glm::vec3 v) {
         v.y << ", " <<
         v.z << ") " << std::endl;
 }
+
+template<class T>
+T
+Lerp(T v1, T v2, float amount) {
+    return (1-amount) * v1 + amount * v2;
+}
