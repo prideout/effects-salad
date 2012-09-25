@@ -10,7 +10,7 @@
 struct BranchDef {
     BranchDef() :
         name("0"),
-        width(10.0),
+        width(.15),
         levels(6),
         isLeaf(false)
     {
@@ -62,7 +62,10 @@ public:
         for (int i = 0; i < 1000; i++) {
             lengths.push_back((999.0-i) / 900.0);
         }
-        //lengths[2] = 100.0;
+        /*
+        lengths[3] *= 2;
+        lengths[2] *= 2;
+        */
 
         childCounts.push_back(0); //20
         childCounts.push_back(4); //4
@@ -84,7 +87,7 @@ public:
         childAngles[1] = glm::vec2(0.5, 1.3);
         childAngles[2] = glm::vec2(0.5, 1.0);
         childAngles[3] = glm::vec2(0.7, 1.3);
-        childAngles[4] = glm::vec2(0.5, 1.0);
+        childAngles[4] = glm::vec2(0.5, 1.2);
     }
 
 
