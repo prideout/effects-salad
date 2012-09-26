@@ -22,6 +22,7 @@ public:
         BlendFlag      = 1 << 5,
         MipmapsFlag    = 1 << 6,
         AdditiveFlag   = 1 << 7,
+        SupersampleFlag = 1 << 8,
     };
 
     typedef unsigned int Mask;

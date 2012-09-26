@@ -39,6 +39,10 @@ Fullscreen::Init()
         progs.Load(_customProgram);
     }
 
+    if (_mask & SupersampleFlag) {
+        size *= 2;
+    }
+
     _emptyVao.InitEmpty();
 
     GLenum internalFormat = GL_RGBA8;

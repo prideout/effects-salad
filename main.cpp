@@ -111,7 +111,8 @@ static void _constructScene()
         ctx->mainCam.eye.y = 50;
 
         // Instance the effects, but do not place them into the scene graph:
-        Fullscreen* fullscreen = new Fullscreen(Fullscreen::VignetteFlag);
+        Fullscreen* fullscreen = new Fullscreen(Fullscreen::VignetteFlag |
+                                                Fullscreen::SupersampleFlag);
         fullscreen->clearColor = vec4(0.1,0.9,0.7,1);
 
         // Now, insert the effects into our poor man's "scene graph":

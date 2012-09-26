@@ -1,7 +1,7 @@
 // TODO
 // ----
+// Fix the leak seen with valgrind
 // Create sketchPlayback and tween.h for animation
-// valgrind
 // Add a routine that cleans up dangling planes, edges, and points.
 // Per-path dirty flags in PullFromScene would result in huge speedup
 //    Might as well use DrawArrays instead of DrawElements
@@ -48,6 +48,7 @@ BuildingGrowth::Init()
     PathList walls;
     _sketch.PushPath(rect, height, &walls);
     _sketch.PushPath(rect, -1, &walls);
+    _roof = rect;
 
     CoplanarPath* wall;
     wall = dynamic_cast<CoplanarPath*>(walls[0]);
@@ -73,11 +74,11 @@ BuildingGrowth::Init()
 void
 BuildingGrowth::Update()
 {
+    float time = GetContext()->elapsedTime;
+    _sketch.PushPath(_roof, 0.02 * sin(4 * time));
     _tess->PullFromScene();
 
-    float time = GetContext()->elapsedTime;
     PerspCamera* camera = &GetContext()->mainCam;
-
     camera->eye.x = 2;
     camera->eye.y = 7;
     camera->eye.z = 15;

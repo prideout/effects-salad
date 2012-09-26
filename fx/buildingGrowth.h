@@ -14,5 +14,6 @@ public:
 private:
     sketch::Scene _sketch;
     sketch::Tessellator* _tess;
+    sketch::CoplanarPath* _roof;
     Vao _vao;
 };
