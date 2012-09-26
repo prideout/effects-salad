@@ -33,7 +33,8 @@ TreeSystem::GrowBranch() {
     }
 
     if (branch->isLeaf) {
-        length = 4;
+        //length = 4;
+        length = lengths[0];
     } else {
         length = lengths[branch->level - 1];
     }

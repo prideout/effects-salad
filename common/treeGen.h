@@ -67,7 +67,7 @@ public:
         lengths[2] *= 2;
         */
 
-        childCounts.push_back(0); //20
+        childCounts.push_back(5); //20
         childCounts.push_back(4); //4
         childCounts.push_back(4); //4
         childCounts.push_back(1); //1
@@ -83,7 +83,7 @@ public:
         childDist[4] = glm::vec2(0.6, 0.4);
 
         childAngles.insert(childAngles.begin(), 10, glm::vec2());
-        childAngles[0] = glm::vec2(0.0, 0.0);
+        childAngles[0] = glm::vec2(0.5, 1.3);
         childAngles[1] = glm::vec2(0.5, 1.3);
         childAngles[2] = glm::vec2(0.5, 1.0);
         childAngles[3] = glm::vec2(0.7, 1.3);
