@@ -111,7 +111,6 @@ sketch::Tessellator::PushToGpu(Vao& vao)
 {
     if (!vao.vao) {
         vao = Vao(_verts, _tris);
-        return;
     }
 
     vao.Bind();
