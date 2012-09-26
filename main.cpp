@@ -13,6 +13,7 @@
 #include "jsoncpp/json.h"
 
 
+int byteMark = 0;
 unsigned shotIndex;
 std::vector<DemoContext*> sequence;
 
@@ -150,7 +151,6 @@ static void _constructScene()
 
     Json::Value script;
     ReadJsonFile("data/script.json", &script);
-    int byteMark = 0;
     FOR_EACH(element, script) {
         Json::Value cur = *element;
         if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
@@ -235,6 +235,10 @@ PezConfig PezGetConfig()
 static void _nextShot()
 {
     shotIndex = (shotIndex+1) % sequence.size();
+    std::cout << "    Consumed GPU memory: " 
+              << (Vao::totalBytesBuffered - byteMark) / 1024 
+              << " KiB" << std::endl;
+    byteMark = Vao::totalBytesBuffered;
     DemoContext::SetCurrent(sequence[shotIndex]);
     DemoContext* ctx = DemoContext::GetCurrent();
     // XXX: by setting this to 0, we may be messing up the audio sync
@@ -264,6 +268,7 @@ void PezUpdate(float seconds)
     // XXX: how will this impact audio? 
     // 
     static int prime = 2;
+    
     if (prime) {
         prime--;
         seconds = 0.0f;
