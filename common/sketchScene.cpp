@@ -4,7 +4,9 @@
 #include "glm/gtx/norm.hpp"
 #include "pez/pez.h"
 #include "glm/gtx/string_cast.hpp"
+
 #include <algorithm>
+#include <set>
 
 using namespace sketch;
 using namespace glm;
@@ -103,8 +105,9 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
 
     // Extrude edges into new coplanar paths
     EdgeList newEdges;
+    bool alreadyExtruded = false;
+    set<unsigned> vertsToPush;
     FOR_EACH(e, path->Edges) {
-        bool alreadyExtruded = false;
         FOR_EACH(f, (*e)->Faces) {
             if (*f == path) {
                 continue;
@@ -114,7 +117,9 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
                 pezFatal("Non-coplanar paths aren't really supported yet.");
             }
             if (IsOrthogonal(path, cp, _threshold)) {
-                pezFatal("Re-pushing a face isn't supported yet.");
+                uvec2 ends = (*e)->Endpoints;
+                vertsToPush.insert(ends.x);
+                vertsToPush.insert(ends.y);
                 walls.push_back(*f);
                 alreadyExtruded = true;
             }
@@ -144,23 +149,35 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
         }
     }
 
-    // Update the path's edges
-    FOR_EACH(e, path->Edges) {
-        PathList::iterator pe = std::find(
-            (*e)->Faces.begin(), (*e)->Faces.end(), path);
-        (*e)->Faces.erase(pe);
-    }
-    path->Edges.clear();
-    path->Edges.swap(newEdges);
-    FOR_EACH(e, path->Edges) {
-        (*e)->Faces.push_back(path);
+    FOR_EACH(v, vertsToPush) {
+        _points[*v] += pushVector;
     }
 
-    // Update the path plane
     vec4 eqn = path->Plane->Eqn;
     eqn.w += delta;
-    Plane* newPlane = const_cast<Plane*>(GetPlane(eqn));
-    path->Plane = newPlane;
+
+    if (!alreadyExtruded) {
+
+        // Update the path's edges
+        FOR_EACH(e, path->Edges) {
+            PathList::iterator pe =
+                std::find((*e)->Faces.begin(), (*e)->Faces.end(), path);
+            (*e)->Faces.erase(pe);
+        }
+        path->Edges.clear();
+        path->Edges.swap(newEdges);
+        FOR_EACH(e, path->Edges) {
+            (*e)->Faces.push_back(path);
+        }
+
+        // Update the path plane
+        Plane* newPlane = const_cast<Plane*>(GetPlane(eqn));
+        path->Plane = newPlane;
+
+    } else {
+        path->Plane->Eqn = eqn;
+    }
+
     _VerifyPlane(path, "Faulty path plane in PushPath 2.");
 
     // Clean and consolidate

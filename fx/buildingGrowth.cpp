@@ -1,7 +1,7 @@
 // TODO
 // ----
-// Support "re-push" for animation and make sure it doesn't leak.
 // Create sketchPlayback and tween.h for animation
+// valgrind
 // Add a routine that cleans up dangling planes, edges, and points.
 // Per-path dirty flags in PullFromScene would result in huge speedup
 //    Might as well use DrawArrays instead of DrawElements
@@ -47,6 +47,7 @@ BuildingGrowth::Init()
     float height = 4;
     PathList walls;
     _sketch.PushPath(rect, height, &walls);
+    _sketch.PushPath(rect, -1, &walls);
 
     CoplanarPath* wall;
     wall = dynamic_cast<CoplanarPath*>(walls[0]);

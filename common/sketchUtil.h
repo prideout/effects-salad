@@ -5,8 +5,8 @@
 namespace sketch
 {
 
-class Plane;
-class CoplanarPath;
+struct Plane;
+struct CoplanarPath;
 
 // Transform the given vector from the coordinate system defined
 // by the given plane to world space.
