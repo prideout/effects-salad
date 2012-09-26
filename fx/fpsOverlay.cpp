@@ -5,11 +5,12 @@
 #include "common/demoContext.h"
 #include <sstream>
 #include <sys/time.h>
+#include <malloc.h>
 
 using namespace std;
 using namespace glm;
 
-static const unsigned MaxNumDigits = 3;
+static const unsigned MaxNumDigits = 10;
 static const int VertsPerDigit = 6;
 static const int FloatsPerVert = 4;
 static const int FloatsPerDigit = VertsPerDigit * FloatsPerVert;
@@ -122,7 +123,15 @@ FpsOverlay::Draw()
 
     std::stringstream ssdigits;
     std::string digits;
-    ssdigits << int(round(_fps));
+
+    if (_mode == MemUsage) {
+        struct mallinfo info = mallinfo();
+        int kb = (info.usmblks + info.uordblks) / 1024;
+        ssdigits << kb;
+    } else {
+        ssdigits << int(round(_fps));
+    }
+
     digits = ssdigits.str();
     if (digits.size() > MaxNumDigits) {
         digits = "999";
