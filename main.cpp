@@ -47,7 +47,7 @@ static void _constructScene()
 
         ctx->mainCam.eye.z = 5;
         ctx->drawables.push_back(new FireFlies());
-        ctx->drawables.push_back(new FpsOverlay());
+        ctx->drawables.push_back(new FpsOverlay(FpsOverlay::MemUsage));
     }
 
 
@@ -150,6 +150,7 @@ static void _constructScene()
 
     Json::Value script;
     ReadJsonFile("data/script.json", &script);
+    int byteMark = 0;
     FOR_EACH(element, script) {
         Json::Value cur = *element;
         if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
@@ -160,6 +161,10 @@ static void _constructScene()
             sequence.push_back(shotMap[curShot]);
             if (shot.empty())  {
                 shotMap[curShot]->Init();
+                std::cout << "Init [" << curShot << "] GPU memory: " 
+                          << (Vao::totalBytesBuffered - byteMark) / 1024 
+                          << " KiB" << std::endl;
+                byteMark = Vao::totalBytesBuffered;
             }
             //std::cout << "Added " << curShot << " duration: " << cur[1u].asDouble() << std::endl;
         } else {
@@ -186,6 +191,10 @@ static void _constructScene()
         // so call Init here
         DemoContext::SetCurrent(shotMap[shot]);
         shotMap[shot]->Init();
+        std::cout << "Init [" << shot << "] GPU memory: " 
+                  << (Vao::totalBytesBuffered - byteMark) / 1024 
+                  << " KiB" << std::endl;
+        byteMark = Vao::totalBytesBuffered;
 
         sequence.push_back(shotMap[shot]);
     }

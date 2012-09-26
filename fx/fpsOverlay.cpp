@@ -3,6 +3,7 @@
 #include "common/programs.h"
 #include "common/init.h"
 #include "common/demoContext.h"
+#include "common/vao.h"
 #include <sstream>
 #include <sys/time.h>
 
@@ -63,6 +64,7 @@ FpsOverlay::Init()
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     int totalSize = BytesPerDigit * MaxNumDigits;
     glBufferData(GL_ARRAY_BUFFER, totalSize, 0, GL_DYNAMIC_DRAW);
+    Vao::totalBytesBuffered += totalSize;
 
     glVertexAttribPointer(AttrPosition, 2, GL_FLOAT, GL_FALSE, BytesPerVert, 0);
     glEnableVertexAttribArray(AttrPosition);

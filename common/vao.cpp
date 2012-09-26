@@ -1,6 +1,8 @@
 #include "vao.h"
 #include "init.h"
 
+int Vao::totalBytesBuffered = 0;
+
 Vao::Vao() :
     vertexCount(0),
     indexCount(0),
@@ -14,6 +16,7 @@ Vao::Vao(int componentCount, const FloatList& verts) :
     indexCount(0) 
 {    
     vao = ::InitVao(componentCount, verts);
+    totalBytesBuffered += sizeof(verts[0]) * verts.size();
 }
 
 Vao::Vao(int componentCount, 
@@ -23,6 +26,8 @@ Vao::Vao(int componentCount,
     indexCount(indices.size()) 
 {
     vao = ::InitVao(componentCount, verts, indices);
+    totalBytesBuffered += sizeof(verts[0]) * verts.size();
+    totalBytesBuffered += sizeof(indices[0]) * indices.size();
 }
 
 Vao::Vao(int componentCount, 
@@ -33,6 +38,7 @@ Vao::Vao(int componentCount,
 {
     // TODO: we shouldn't be copying the buffer like this, we should just pass it raw
     vao = ::InitVao(componentCount, FloatList(verts, verts+vertCount*componentCount));
+    totalBytesBuffered += sizeof(verts[0]) * vertCount;
 }
 
 Vao::Vao(int componentCount, 
@@ -47,6 +53,8 @@ Vao::Vao(int componentCount,
     vao = ::InitVao(componentCount, 
                     FloatList(verts, verts+vertCount*componentCount),
                     IndexList(indices, indices+indexCount));
+    totalBytesBuffered += sizeof(verts[0]) * vertCount;
+    totalBytesBuffered += sizeof(indices[0]) * indexCount;
 }
 
 Vao::Vao(const Vec3List& verts, const TriList& indices)
@@ -60,12 +68,14 @@ Vao::Vao(const Vec3List& verts, const TriList& indices)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts[0]) * verts.size(), &verts[0], GL_STATIC_DRAW);
     pezCheck(glGetError() == GL_NO_ERROR, "vao-vbo setup failed");
+    totalBytesBuffered += sizeof(verts[0]) * verts.size();
 
     // indices
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);
     pezCheck(glGetError() == GL_NO_ERROR, "vao-ibo setup failed");
+    totalBytesBuffered += sizeof(indices[0]) * indices.size();
 
     // setup the "Position" attribute
     glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -91,6 +101,7 @@ Vao::AddVertexAttribute(GLuint attrib,
                  sizeof(values[0]) * values.size(), 
                  &values[0], 
                  GL_STATIC_DRAW);
+    totalBytesBuffered += sizeof(values[0]) * values.size();
 
     glVertexAttribPointer(attrib, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib);
@@ -118,6 +129,7 @@ Vao::AddVertexAttribute(GLuint attrib,
                  vertexCount * componentCount * sizeof(float), 
                  values, 
                  GL_STATIC_DRAW);
+    totalBytesBuffered += sizeof(float) * vertexCount * componentCount;
 
     glVertexAttribPointer(attrib, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib);
@@ -144,6 +156,7 @@ Vao::AddVertexAttribute(GLuint attrib,
                  values.size(), 
                  &values[0], 
                  GL_STATIC_DRAW);
+    totalBytesBuffered += sizeof(values[0]) * values.size();
 
     glVertexAttribPointer(attrib, componentCount, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib);
@@ -166,6 +179,7 @@ Vao::AddIndices(const Blob& data) {
                  &data[0], 
                  GL_STATIC_DRAW);
     this->indexCount = data.size() / sizeof(int);
+    totalBytesBuffered += data.size();
 }
 
 void 
@@ -199,6 +213,7 @@ Vao::InitEmpty() {
                  &dummy[0], 
                  GL_STATIC_DRAW);
     glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    totalBytesBuffered += sizeof(dummy); 
 }
 
 void
@@ -212,6 +227,7 @@ Vao::AddInterleaved(VertexAttribMask attribs,
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, data.size(), &data[0], GL_STATIC_DRAW);
+    totalBytesBuffered += data.size(); 
 
     int stride = 0;
     if (attribs & AttrPositionFlag) stride += AttrPositionWidth;

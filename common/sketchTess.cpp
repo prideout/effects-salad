@@ -126,11 +126,13 @@ sketch::Tessellator::PushToGpu(Vao& vao)
                  sizeof(_verts[0]) * _verts.size(), 
                  &_verts[0], 
                  GL_STATIC_DRAW);
+    Vao::totalBytesBuffered += sizeof(_verts[0]) * _verts.size();
     
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
                  sizeof(_tris[0]) * _tris.size(), 
                  &_tris[0], 
                  GL_STATIC_DRAW);
+    Vao::totalBytesBuffered += sizeof(_tris[0]) * _tris.size();
 
     vao.indexCount = _tris.size() * 3;
 }

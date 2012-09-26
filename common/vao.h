@@ -10,6 +10,8 @@ using namespace std;
 class Vao {
 public:
     
+    static int totalBytesBuffered;
+
     unsigned vertexCount;
     unsigned indexCount;
     GLuint vao;
