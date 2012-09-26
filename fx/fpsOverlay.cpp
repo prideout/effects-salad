@@ -5,7 +5,13 @@
 #include "common/demoContext.h"
 #include <sstream>
 #include <sys/time.h>
+
+#ifdef __APPLE__
+# include <mach/task.h>
+# include <mach/mach_init.h>
+#else
 #include <malloc.h>
+#endif
 
 using namespace std;
 using namespace glm;
@@ -125,8 +131,18 @@ FpsOverlay::Draw()
     std::string digits;
 
     if (_mode == MemUsage) {
+        #ifdef __APPLE__
+        struct task_basic_info t_info;
+        mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+        int kb = 0;
+        if (KERN_SUCCESS ==
+            task_info(current_task(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count)) {
+            kb = (int) (t_info.resident_size / 1024);
+        }
+        #else
         struct mallinfo info = mallinfo();
         int kb = (info.usmblks + info.uordblks) / 1024;
+        #endif
         ssdigits << kb;
     } else {
         ssdigits << int(round(_fps));
