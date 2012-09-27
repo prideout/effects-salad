@@ -37,7 +37,7 @@ void Milkyway::Draw() {
     glm::mat4 loc;
     vec3 dir = glm::normalize(cam.center - cam.eye);
     float azimuth = -atan2(dir.x, dir.z) / (3.1415); 
-    float altitude = -atan2(dir.y, dir.z) / (3.1415); 
+    float altitude = atan2(dir.y, dir.z) / (3.1415); 
 
     glUniform1f(u("Azimuth"), azimuth);
     glUniform1f(u("Altitude"), altitude);
