@@ -59,11 +59,11 @@
     ["Moon Pond Grass", 0,   {"RippleHeight": 3.2, "LunarBrightness": 1.1}],
     ["Fireflies",       0.1, {"SpriteSize": 1.1}]]],
 
-["CityIntro", 10.0, "FranticCurve", []],
+["CityGrow", 4.0, "NuthinDoin", []],
 
-["CityExplosion", 10.0, "FranticCurve", []],
+["CityIntro", 5.0, "FranticCurve", []],
 
-["CityGrow", 60.0, "NuthinDoin", []]
+["CityExplosion", 10.0, "FranticCurve", []]
 
 //
 // ,

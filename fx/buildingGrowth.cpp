@@ -1,7 +1,8 @@
 // TODO
 // ----
+// Fix bug after second cycle of demo
+// Create sketchPlayback for animation
 // Add a GetExtent method for finding bounds of a path?
-// Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.
 // Per-path dirty flags in PullFromScene would result in huge speedup
 //    Might as well use DrawArrays instead of DrawElements
@@ -95,13 +96,24 @@ BuildingGrowth::Init()
 
     Programs& progs = Programs::GetInstance();
     progs.Load("Sketch.Facets", true);
+
+    tween::TweenerParam param(1000, tween::ELASTIC, tween::EASE_OUT);
+    param.addProperty(&_roofHeight, 5);
+    param.setRepeatWithReverse(999, true);
+    _roofHeight = 4;
+    _tween.addTween(param);
 }
 
 void
 BuildingGrowth::Update()
 {
     float time = GetContext()->elapsedTime;
-    _sketch.PushPath(_roof, 0.02 * sin(4 * time));
+
+    long ms = (long) (time * 1000);
+    _tween.step(ms);
+
+    _sketch.SetPathPlane(_roof, _roofHeight);
+
     _tess->PullFromScene();
 
     PerspCamera* camera = &GetContext()->mainCam;

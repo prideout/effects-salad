@@ -285,6 +285,13 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
     }
 }
 
+void
+Scene::SetPathPlane(CoplanarPath* path, float w)
+{
+    float delta = w - path->Plane->Eqn.w;
+    PushPath(path, delta);
+}
+
 Edge*
 Scene::_AppendEdge(Path* path, unsigned int a, unsigned int b)
 {

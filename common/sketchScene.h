@@ -91,6 +91,9 @@ namespace sketch
         void
         PushPaths(PathList paths, float delta);
 
+        void
+        SetPathPlane(CoplanarPath* path, float w);
+
         #ifdef NOT_YET_SUPPORTED
 
         // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.

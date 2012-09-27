@@ -43,6 +43,7 @@ SHARED := \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/fx/quads.o \
 	$(OBJDIR)/fx/tree.o \
+	$(OBJDIR)/lib/tween/CppTweener.o \
 	$(OBJDIR)/lib/poly2tri/sweep/sweep_context.o \
 	$(OBJDIR)/lib/poly2tri/sweep/sweep.o \
 	$(OBJDIR)/lib/poly2tri/sweep/advancing_front.o \
@@ -91,6 +92,12 @@ $(OBJDIR):
 	@mkdir -p $@/lib/lodepng
 	@mkdir -p $@/lib/noise
 	@mkdir -p $@/lib/tetgen
+	@mkdir -p $@/lib/tween
+
+# Disable all warnings from CppTweener using -w
+build/lib/tween/CppTweener.o: lib/tween/CppTweener.cpp
+	@echo $<
+	$(CXX) $(CXXFLAGS) -w $< -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@echo $<
