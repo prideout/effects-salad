@@ -140,6 +140,9 @@ namespace sketch
     public:
 
         void
+        EnableHistory(bool b) { _recording = b; }
+
+        void
         ClearHistory();
 
         const Json::Value &

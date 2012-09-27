@@ -64,6 +64,8 @@ BuildingGrowth::Init()
     rect = _sketch.AddInscribedRectangle(1, 1.5, wall, vec2(0, 0));
     _sketch.PushPath(rect, -0.5);
 
+    _sketch.EnableHistory(false);
+
     _tess = new Tessellator(_sketch);
     _tess->PullFromScene();
 
