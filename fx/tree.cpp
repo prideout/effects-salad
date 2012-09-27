@@ -54,7 +54,8 @@ void Tree::Init() {
                             + (growTime / maxLevel) 
                             * (maxLevel 
                                 - branch->levels 
-                                - ((branch->levels > 0) ? .8 : 0))
+                                - ((branch->levels > 0) ? .8 : 0)
+                                + branch->parentPercentage)
                             );
             times.push_back((growTime / maxLevel) * (branch->levels));
 
