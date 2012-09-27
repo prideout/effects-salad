@@ -146,9 +146,12 @@ void Tree::Draw() {
     cam.Bind(glm::translate(glm::mat4(), glm::vec3(-3,-2,2)));
     _leaves.Bind();
     _leafData.Bind(0, "LeafData");
+
     glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
     glDrawArrays(GL_TRIANGLES, 0, _leaves.vertexCount);
     glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
 
     //PerspCamera cam = GetContext()->mainCam;
     //cam.Bind(glm::mat4());

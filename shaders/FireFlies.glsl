@@ -221,7 +221,7 @@ void main()
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
 */
-    FragColor = vec4(.8, .3, .3, 1.0);
+    FragColor = vec4(.8, .3, .3, .5);
 }
 
 

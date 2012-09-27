@@ -66,6 +66,7 @@ TreeSystem::GrowBranch() {
         branch->cvs.push_back(branch->cvs[cvCount - 1] + dir);
     }
 
+    float curveAmt = .09;
     for (int i = (cvCount > 0 ? 1 : 0); i < numCvs; i++) {
         float z = float(i) / (numCvs - 1.0);
 
@@ -73,7 +74,7 @@ TreeSystem::GrowBranch() {
         // but mix in some noise with the CVs to add some curviness 
         glm::vec3 cv = Lerp(pos, end, z);
         if (cvCount != 0 or i > 0) {
-            cv = .9f * cv + (1.f * glm::vec3(float(rand()) / RAND_MAX, 
+            cv = (1-curveAmt) * cv + curveAmt * (glm::vec3(.5f, .5f, .5f) - glm::vec3(float(rand()) / RAND_MAX, 
                                            float(rand()) / RAND_MAX, 
                                            float(rand()) / RAND_MAX));
         }
