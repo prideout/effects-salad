@@ -68,7 +68,7 @@ public:
         lengths[2] *= 2;
         */
 
-        childCounts.push_back(40); //20
+        childCounts.push_back(280); //20
         childCounts.push_back(4); //4
         childCounts.push_back(4); //4
         childCounts.push_back(1); //1

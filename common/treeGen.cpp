@@ -118,8 +118,8 @@ TreeSystem::GrowBranch() {
 
             if (branch->level == 1) {
                 child->pos = Bezier::EvalAt(a, branch->cvs, branch->cvs.size() - 4, 4)  //Lerp(pos, end, a) 
-                            + .15f
-                               *(.5f-.5f*glm::vec3(float(rand())/RAND_MAX, float(rand())/RAND_MAX, float(rand())/RAND_MAX));
+                            + .35f
+                               *(.25f-.5f*glm::vec3(float(rand())/RAND_MAX, float(rand())/RAND_MAX, float(rand())/RAND_MAX));
                 child->name += "_LEAF";
                 child->level = 0;
                 child->levels = 1;
