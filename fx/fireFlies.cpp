@@ -189,7 +189,9 @@ void FireFlies::Draw() {
         cam.Bind(glm::mat4());
         _tube.Draw();
 
+glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         _tree.Draw();
+glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
         glUseProgram(progs["FireFlies.Flies"]);
         cam.Bind(glm::mat4());

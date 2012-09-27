@@ -10,8 +10,8 @@ void Tree::Init() {
     name = "Tree";
     Effect::Init();
 
-    //Programs& progs = Programs::GetInstance();
-    //glUseProgram(progs.Load("Tree.Sky", true));
+    Programs& progs = Programs::GetInstance();
+    progs.Load("FireFlies.Tree", "FireFlies.Tree.FS", "FireFlies.Tube.VS");
 
     _treeSys.queue.push_back(new BranchDef());
     _treeSys.GrowAll();
@@ -50,18 +50,20 @@ void Tree::Update() {
 }
 
 void Tree::Draw() {
-    //Programs& progs = Programs::GetInstance();
     Effect::Draw();
 
+    Programs& progs = Programs::GetInstance();
+    glUseProgram(progs["FireFlies.Tree"]);
+    
 
     PerspCamera cam = GetContext()->mainCam;
-    
     cam.Bind(glm::translate(glm::mat4(), glm::vec3(-3,-2,2)));
+
+    // brown tree color
+    glUniform3f(u("MaterialColor"), 0.02, 0.01, 0.001);
     FOR_EACH(tube, _branches) {
         (*tube)->Draw();
     }
-
-    //glUseProgram(progs["Tree.Sky"]);
 
     //PerspCamera cam = GetContext()->mainCam;
     //cam.Bind(glm::mat4());
