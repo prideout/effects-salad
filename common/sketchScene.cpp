@@ -190,7 +190,7 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
         }
         finished = not mutated;
     }
-    /*
+
     // Record for posterity
     if (_recording) {
         const char* handleList = toString((void**) &(walls[0]), walls.size());
@@ -199,7 +199,7 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
             "[ \"PushPath\", \"%8.8x\", %f, %s]",
             path, delta, handleList );
     }
-*/
+
     // Return the extrusion walls if the client is interested
     if (pWalls) {
         pWalls->swap(walls);
