@@ -284,7 +284,7 @@ void main()
     float diffuseLight = 15;
     float ambientLight = 0;
     vec3 n = vNormal;
-    vec3 l = normalize((ViewMatrix*vec4(-4, -2.0, 4, 1.0) - vPosition).xyz);
+    vec3 l = normalize((ViewMatrix*vec4(-4, -2.0, 4, 1.0)).xyz); // - vPosition).xyz);
     float d = max(0.0, dot(n, l));
     d = 1.5;
     FragColor = vec4(ambientLight*MaterialColor + d*diffuseLight*MaterialColor, 1.0);
@@ -350,7 +350,7 @@ void main()
                            texelFetch(Frames, (id-1)*3+2).rgb);
         vPosition.xyz = mix(basis2*vPosition.xyz, basis*vPosition.xyz, pct);
         vPosition.xyz += mix(texelFetch(Centerline, id-1).rgb, texelFetch(Centerline, id).rgb, pct);
-        vNormal = mat3(ViewMatrix) * mix(basis2*Normal, basis*Normal, pct);
+        vNormal = mat3(ViewMatrix) * mix(basis2*Normal, basis*Normal, pct) * Normal;
     } else {
         vPosition.xyz = basis*vPosition.xyz;
         vPosition.xyz += texelFetch(Centerline, id).rgb;

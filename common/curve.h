@@ -85,6 +85,28 @@ namespace Bezier {
     }
 
     template <typename VEC> 
+    VEC 
+    EvalAt(float u, const std::vector<VEC>& cvs, int cvStart, int cvCount)
+    {
+        pezCheck(cvs.size() > 1, "Error: 2 or more CVs required");
+        pezCheck(cvCount <= (int) cvs.size(), "Error: cvCount > cvs.size()");
+
+        int k;
+        typename std::vector<VEC>::const_iterator p;
+        
+        int pcount = cvCount - 1;
+
+        k = 0;
+        VEC pt;
+        p = cvs.begin() + cvStart;
+        for (int i = 0; i < cvCount; i++, p++) {
+            pt += _EvalHelper(*p, u, pcount, k);
+            k++;
+        }
+        return pt;
+    }
+
+    template <typename VEC> 
     void
     Eval(float numSamples, const std::vector<VEC>& cvs, int cvStart, int cvCount, std::vector<VEC>* points)
     {
@@ -95,13 +117,15 @@ namespace Bezier {
         // the number of samples is internally 1-numSamples
         numSamples -= 1;
 
-        int k;
-        typename std::vector<VEC>::const_iterator p;
+        //int k;
+        //typename std::vector<VEC>::const_iterator p;
         
-        int pcount = cvCount - 1;
+        //int pcount = cvCount - 1;
 
         for(float i = 0; i <= numSamples; i++) {
             float u = 1.0 * (i / numSamples);
+            points->push_back(EvalAt(u, cvs, cvStart, cvCount));
+            /*
             k = 0;
             VEC pt;
             p = cvs.begin() + cvStart;
@@ -110,6 +134,7 @@ namespace Bezier {
                 k++;
             }
             points->push_back(pt);
+            */
         }
     }
 

@@ -1,5 +1,6 @@
 
 #include "treeGen.h"
+#include "curve.h"
 
 #include <sstream>
 
@@ -57,12 +58,22 @@ TreeSystem::GrowBranch() {
         nextWidth = Lerp(0.0f, branch->width, (branch->level-1) / float(branch->levels));
     }
 
-    for (int i = 0; i < numCvs; i++) {
+    // force some continuity between segments
+    int cvCount = branch->cvs.size();
+    if (cvCount > 0) {
+        glm::vec3 dir = branch->cvs[cvCount - 1] - 
+                        branch->cvs[cvCount - 2];
+        branch->cvs.push_back(branch->cvs[cvCount - 1] + dir);
+    }
+
+    for (int i = (cvCount > 0 ? 1 : 0); i < numCvs; i++) {
         float z = float(i) / (numCvs - 1.0);
 
+        // Use a linear transition to guide the overall growth
+        // but mix in some noise with the CVs to add some curviness 
         glm::vec3 cv = Lerp(pos, end, z);
-        if (false and i > 0 and i < (numCvs-1)) {
-            cv = .9f * cv + .1f * (.001f/2 + .01f * glm::vec3(float(rand()) / RAND_MAX, 
+        if (cvCount != 0 or i > 0) {
+            cv = .9f * cv + (1.f * glm::vec3(float(rand()) / RAND_MAX, 
                                            float(rand()) / RAND_MAX, 
                                            float(rand()) / RAND_MAX));
         }
@@ -82,12 +93,16 @@ TreeSystem::GrowBranch() {
             float a = chDist.x + chDist.y * (float(rand()) / RAND_MAX);
 
             BranchDef* child = new BranchDef;
+
             std::stringstream name;
             name << branch->name << "." << branch->level << "_" << i;
             child->name = name.str();
+            
+            child->parentPercent = a;
+
             //std::cout << child->name << std::endl;
 
-            child->pos = Lerp(pos, end, a);
+            child->pos = Bezier::EvalAt(a, branch->cvs, branch->cvs.size() - 4, 4);  //Lerp(pos, end, a);
             
             //child->norm = branch->norm*.5f + glm::vec3(float(rand())/RAND_MAX, float(rand())/RAND_MAX, float(rand())/RAND_MAX)*.5f;
             //child->norm = glm::normalize(child->norm);
@@ -101,7 +116,7 @@ TreeSystem::GrowBranch() {
             child->level = child->levels = branch->level - 1;
 
             if (branch->level == 1) {
-                child->pos = Lerp(pos, end, a) 
+                child->pos = Bezier::EvalAt(a, branch->cvs, branch->cvs.size() - 4, 4)  //Lerp(pos, end, a) 
                             + .15f
                                *(.5f-.5f*glm::vec3(float(rand())/RAND_MAX, float(rand())/RAND_MAX, float(rand())/RAND_MAX));
                 child->name += "_LEAF";

@@ -25,6 +25,7 @@ struct BranchDef {
     glm::vec3 color;
     glm::vec3 pos;
     glm::vec3 norm;
+    float parentPercent;
     float width;
     int levels;
     float level;
