@@ -17,6 +17,8 @@ class Tree : public Effect {
     std::vector<Tube*> _branches;
 
     TreeSystem _treeSys;
+    Vao _leaves;
+    BufferTexture _leafData;
 
 public:
 

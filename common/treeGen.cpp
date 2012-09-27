@@ -50,8 +50,8 @@ TreeSystem::GrowBranch() {
     float nextWidth = 0;
 
     if (branch->isLeaf) {
-        curWidth = 3;
-        nextWidth = 4;
+        curWidth = 1;
+        nextWidth = 1;
     } else {
         curWidth = Lerp(0.0f, branch->width, branch->level / float(branch->levels));
         nextWidth = Lerp(0.0f, branch->width, (branch->level-1) / float(branch->levels));
@@ -59,7 +59,14 @@ TreeSystem::GrowBranch() {
 
     for (int i = 0; i < numCvs; i++) {
         float z = float(i) / (numCvs - 1.0);
-        branch->cvs.push_back(Lerp(pos, end, z));
+
+        glm::vec3 cv = Lerp(pos, end, z);
+        if (false and i > 0 and i < (numCvs-1)) {
+            cv = .9f * cv + .1f * (.001f/2 + .01f * glm::vec3(float(rand()) / RAND_MAX, 
+                                           float(rand()) / RAND_MAX, 
+                                           float(rand()) / RAND_MAX));
+        }
+        branch->cvs.push_back(cv);
         //_pvec3(branch->cvs[branch->cvs.size()-1]);
     }
 

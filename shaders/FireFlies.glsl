@@ -200,6 +200,73 @@ void main()
     vNormal = normalize(Normal.xyz);
 }
 
+-- Blossom.FS
+
+//in vec3 vNormal;
+in vec4 vPosition;
+//in vec2 vUvCoord;
+out vec4 FragColor;
+
+void main()
+{
+/*
+    //float s = vUvCoord.x + vUvCoord.y;
+    float diffuseLight = 15;
+    float ambientLight = 0;
+    vec3 n = vNormal;
+    vec3 l = normalize((ViewMatrix*vec4(-4, -2.0, 4, 1.0) - vPosition).xyz);
+    float d = max(0.0, dot(n, l));
+    d = 1.5;
+    FragColor = vec4(ambientLight*MaterialColor + d*diffuseLight*MaterialColor, 1.0);
+    //FragColor = vec4(d,d,d, 1.0);
+    //FragColor = vec4(n, 1.0);
+*/
+    FragColor = vec4(.8, .3, .3, 1.0);
+}
+
+
+
+
+
+-- Quad.VS
+layout(location = 0) in vec3 Position;
+//layout(location = 1) in vec3 Normal;
+
+out vec4 vPosition;
+//out vec3 vNormal;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat4 ViewMatrix;
+uniform mat4 ModelMatrix;
+
+uniform float Time;
+
+
+uniform samplerBuffer LeafData;
+
+void main()
+{
+    int id = int(gl_VertexID / 12)*2;
+
+    vPosition.xyz = Position.xyz;
+    vPosition.w = 1.0;
+
+    float startTime = texelFetch(LeafData, id).r;
+    float growTime = texelFetch(LeafData, id+1).r;
+
+    if (Time < startTime) {
+        gl_Position = vec4(0);
+    } else {
+        gl_Position = Projection * Modelview * vPosition;
+    }
+
+    //vNormal = mat3(Modelview) * vNormal;
+   // vPosition = Modelview * vPosition;
+}
+
+
+
 -- Tree.FS
 
 in vec3 vNormal;
@@ -217,8 +284,9 @@ void main()
     float diffuseLight = 15;
     float ambientLight = 0;
     vec3 n = vNormal;
-    vec3 l = (ViewMatrix*vec4(-4, -2.0, 4, 1.0) - vPosition).xyz;
+    vec3 l = normalize((ViewMatrix*vec4(-4, -2.0, 4, 1.0) - vPosition).xyz);
     float d = max(0.0, dot(n, l));
+    d = 1.5;
     FragColor = vec4(ambientLight*MaterialColor + d*diffuseLight*MaterialColor, 1.0);
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
@@ -282,15 +350,15 @@ void main()
                            texelFetch(Frames, (id-1)*3+2).rgb);
         vPosition.xyz = mix(basis2*vPosition.xyz, basis*vPosition.xyz, pct);
         vPosition.xyz += mix(texelFetch(Centerline, id-1).rgb, texelFetch(Centerline, id).rgb, pct);
-        //vNormal = mix(basis2*Normal, basis*Normal, pct);
+        vNormal = mat3(ViewMatrix) * mix(basis2*Normal, basis*Normal, pct);
     } else {
         vPosition.xyz = basis*vPosition.xyz;
         vPosition.xyz += texelFetch(Centerline, id).rgb;
-        //vNormal = basis*Normal;
+        vNormal = mat3(Modelview) * basis*Normal;
     }
 
     gl_Position = Projection * Modelview * vPosition;
-    vNormal = mat3(Modelview) * Normal;
+    //vNormal = mat3(Modelview) * vNormal;
     vPosition = Modelview * vPosition;
 }
 
