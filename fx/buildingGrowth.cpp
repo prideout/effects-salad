@@ -1,6 +1,6 @@
 // TODO
 // ----
-// Fix the leak seen with valgrind
+// Add a GetExtent method for finding bounds of a path?
 // Create sketchPlayback and tween.h for animation
 // Add a routine that cleans up dangling planes, edges, and points.
 // Per-path dirty flags in PullFromScene would result in huge speedup
@@ -63,6 +63,30 @@ BuildingGrowth::Init()
     wall = dynamic_cast<CoplanarPath*>(walls[1]);
     rect = _sketch.AddInscribedRectangle(1, 1.5, wall, vec2(0, 0));
     _sketch.PushPath(rect, -0.5);
+
+    wall = dynamic_cast<CoplanarPath*>(walls[2]);
+    
+    sketch::PathList cylinders;
+
+    for (float y = -3.25; y < 3.26; y += 1.0) {
+        CoplanarPath* circle = _sketch.AddInscribedPolygon(0.3, wall, vec2(0, y), 48);
+        cylinders.push_back(circle);
+    }
+    _sketch.PushPaths(cylinders, 3);
+    FOR_EACH(circle, cylinders) {
+        CoplanarPath* outer = dynamic_cast<CoplanarPath*>(*circle);
+        CoplanarPath* inner = _sketch.AddInscribedPolygon(0.15, outer, vec2(0, 0), 8);
+        _sketch.PushPath(inner, -0.1);
+    }
+    cylinders.clear();
+
+    for (float y = -3.25; y < 3.26; y += 1.0) {
+        CoplanarPath* c1 = _sketch.AddInscribedPolygon(0.3, wall, vec2(-1, y), 48);
+        CoplanarPath* c2 = _sketch.AddInscribedPolygon(0.3, wall, vec2(+1, y), 48);
+        cylinders.push_back(c1);
+        cylinders.push_back(c2);
+    }
+    _sketch.PushPaths(cylinders, -0.1);
 
     _sketch.EnableHistory(false);
 

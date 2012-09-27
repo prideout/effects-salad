@@ -76,6 +76,9 @@ namespace sketch
         CoplanarPath*
         AddRectangle(float width, float height, const sketch::Plane* plane, glm::vec2 offset);
 
+        CoplanarPath*
+        AddPolygon(float radius, const sketch::Plane* plane, glm::vec2 offset, int numPoints);
+
         // Create an extrusion or change an existing extrusion, optionally returning the walls of the extrusion.
         // Walls are automatically deleted when pushing an extrusion back to its original location.
         // When extruding causes the path to "meet" with an existing path in some way
@@ -88,10 +91,12 @@ namespace sketch
         void
         PushPaths(PathList paths, float delta);
 
-    public:
+        #ifdef NOT_YET_SUPPORTED
 
         // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.
-        void
+        // Note that you have to push it past a certain point to avoid self-intersection.
+        // If a self-intersection would occur, then the function bails and return false.
+        bool
         PushPath(CoplanarPath* path, glm::vec3 delta, PathList* walls = 0);
 
         // Pushing a non-coplanar path is tricky because you have to push it past 
@@ -114,6 +119,8 @@ namespace sketch
         void
         TranslateEdge(Edge* e, glm::vec3 delta);
 
+        #endif
+
     public:
 
         // Inscribe a path and create a hole in the outer path.
@@ -121,10 +128,7 @@ namespace sketch
         AddInscribedRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
 
         CoplanarPath*
-        AddCircle(float radius, const sketch::Plane* plane, glm::vec2 offset);
-
-        CoplanarPath*
-        AddRegularPolygon(int numSides, float radius, const sketch::Plane* plane, glm::vec2 offset);
+        AddInscribedPolygon(float radius, sketch::CoplanarPath* path, glm::vec2 offset, int numPoints);
 
         // Finds or creates a new frame-of-reference.
         const sketch::Plane*
@@ -142,14 +146,8 @@ namespace sketch
         void
         EnableHistory(bool b) { _recording = b; }
 
-        void
-        ClearHistory();
-
         const Json::Value &
         GetHistory() const { return _history; }
-
-        void
-        RunCommands(const Json::Value& commandList);
 
         Json::Value
         Serialize() const;

@@ -4,6 +4,7 @@
 #include "glm/gtx/norm.hpp"
 #include "pez/pez.h"
 #include "glm/gtx/string_cast.hpp"
+#include "glm/gtx/constants.inl"
 
 #include <algorithm>
 #include <set>
@@ -66,6 +67,44 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     return retval;
 }
 
+CoplanarPath*
+Scene::AddPolygon(float radius, const Plane* plane, vec2 offset, int numPoints)
+{
+    CoplanarPath* retval = 0;
+
+    std::vector<unsigned> rimPoints;
+    const float twopi = 2 * pi<float>();
+    const float dtheta = twopi / numPoints;
+    float theta = 0;
+
+    retval = new CoplanarPath();
+    unsigned firstIndex = 0;
+    for (int i = 0; i < numPoints; ++i, theta += dtheta) {
+        vec2 p = radius * vec2(sin(theta), cos(theta));
+        unsigned index = _AppendPoint(AddOffset(offset + p, plane));
+        rimPoints.push_back(index);
+        unsigned nextIndex = index + 1;
+        if (i == 0) {
+            firstIndex = index;
+        } else if (i == numPoints - 1) {
+            nextIndex = firstIndex;
+        }
+        _AppendEdge(retval, index, nextIndex);
+    }
+
+    retval->Plane = const_cast<Plane*>(plane);
+    _FinalizePath(retval, _threshold);
+    _paths.push_back(retval);
+
+    if (_recording) {
+        appendJson(
+            _history,
+            "[ \"AddPolygon\", \"%8.8x\", %f, \"%8.8x\", %s]",
+            retval, radius, plane, toString(offset) );
+    }
+    return retval;
+}
+
 // Inscribe a path and create a hole in the outer path.
 CoplanarPath*
 Scene::AddInscribedRectangle(float width, float height,
@@ -96,6 +135,46 @@ Scene::AddInscribedRectangle(float width, float height,
     return inner;
 }
 
+CoplanarPath*
+Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
+                          glm::vec2 pathOffset, int numPoints)
+{
+    vec3 outerCenter = _GetCentroid(outer);
+    Plane* plane = outer->Plane;
+    vec3 wsRectCenter = outerCenter + plane->GetCoordSys() * vec3(pathOffset.x, 0, pathOffset.y);
+    mat3 inverseCoordSys = inverse(plane->GetCoordSys());
+    vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
+    vec2 offset = vec2(planeOffset.x, planeOffset.z);
+    CoplanarPath* inner = AddPolygon(radius, plane, offset, numPoints);
+    CoplanarPath* hole = new CoplanarPath();
+    FOR_EACH(edge, inner->Edges) {
+        _AppendEdge(hole, *edge);
+    }
+    hole->Plane = inner->Plane;
+    outer->Holes.push_back(hole);
+    _holes.push_back(hole);
+
+    if (_recording) {
+        appendJson(
+            _history,
+            "[ \"AddInscribedPolygon\", \"%8.8x\", %f, \"%8.8x\", %s]",
+            inner, radius, outer, toString(pathOffset) );
+    }
+
+    return inner;
+}
+
+void
+Scene::PushPaths(PathList paths, float delta)
+{
+    FOR_EACH(p, paths) {
+        CoplanarPath* cp = dynamic_cast<CoplanarPath*>(*p);
+        if (!cp) {
+            pezFatal("Non-coplanar paths aren't really supported yet.");
+        }
+        PushPath(cp, delta, NULL);
+    }
+}
 
 void
 Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
