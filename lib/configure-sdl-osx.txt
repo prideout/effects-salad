@@ -1,0 +1,1 @@
+env CFLAGS=-I/opt/local/include CPPFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib ./configure --prefix=/opt/local --disable-music-ogg-shared
