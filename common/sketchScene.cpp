@@ -20,6 +20,7 @@ Scene::Scene() : _threshold(0.001)
     ground->Eqn = vec4(0, 1, 0, 0);
     _planes.push_back(ground);
     _history.append(Json::Value(Json::arrayValue));
+    _topologyHash = 0;
 }
 
 Scene::~Scene()
@@ -50,6 +51,7 @@ Scene::AddRectangle(float width, float height, const Plane* plane, vec2 offset)
     unsigned int d = _AppendPoint(AddOffset(offset + vec2(-hw, +hh), plane));
 
     retval = new CoplanarPath();
+    _topologyHash++;
     _AppendEdge(retval, a, b);
     _AppendEdge(retval, b, c);
     _AppendEdge(retval, c, d);
@@ -78,6 +80,7 @@ Scene::AddPolygon(float radius, const Plane* plane, vec2 offset, int numPoints)
     float theta = 0;
 
     retval = new CoplanarPath();
+    _topologyHash++;
     unsigned firstIndex = 0;
     for (int i = 0; i < numPoints; ++i, theta += dtheta) {
         vec2 p = radius * vec2(sin(theta), cos(theta));
@@ -118,6 +121,7 @@ Scene::AddInscribedRectangle(float width, float height,
     vec2 offset = vec2(planeOffset.x, planeOffset.z);
     CoplanarPath* inner = AddRectangle(width, height, plane, offset);
     CoplanarPath* hole = new CoplanarPath();
+    _topologyHash++;
     FOR_EACH(edge, inner->Edges) {
         _AppendEdge(hole, *edge);
     }
@@ -147,6 +151,7 @@ Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
     vec2 offset = vec2(planeOffset.x, planeOffset.z);
     CoplanarPath* inner = AddPolygon(radius, plane, offset, numPoints);
     CoplanarPath* hole = new CoplanarPath();
+    _topologyHash++;
     FOR_EACH(edge, inner->Edges) {
         _AppendEdge(hole, *edge);
     }
@@ -167,12 +172,23 @@ Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
 void
 Scene::PushPaths(PathList paths, float delta)
 {
+    bool previous = _recording;
+    _recording = false;
     FOR_EACH(p, paths) {
         CoplanarPath* cp = dynamic_cast<CoplanarPath*>(*p);
         if (!cp) {
             pezFatal("Non-coplanar paths aren't really supported yet.");
         }
         PushPath(cp, delta, NULL);
+    }
+    _recording = previous;
+
+    if (_recording) {
+        const char* handleList = toString((void**) &(paths[0]), paths.size());
+        appendJson(
+            _history,
+            "[ \"PushPaths\", %s, %f]",
+            handleList, delta );
     }
 }
 
@@ -214,6 +230,7 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
             unsigned int c = _AppendPoint(_points[b] + pushVector);
             unsigned int d = _AppendPoint(_points[a] + pushVector);
             CoplanarPath* f = new CoplanarPath();
+            _topologyHash++;
             _AppendEdge(f, ab);
             _AppendEdge(f, b, c);
             Edge* cd = _AppendEdge(f, c, d);
@@ -472,9 +489,14 @@ Scene::Serialize() const
 }
 
 void
-Scene::_WalkPath(const CoplanarPath* path, Vec2List* dest, float arcTessLength) const
+Scene::_WalkPath(
+    const CoplanarPath* path,
+    Vec2List* dest,
+    float arcTessLength,
+    IndexList* pInds) const
 {
     Vec2List vecs;
+    IndexList inds;
     if (path->Edges.empty()) {
         return;
     }
@@ -512,9 +534,13 @@ Scene::_WalkPath(const CoplanarPath* path, Vec2List* dest, float arcTessLength) 
         vec2 v2 = vec2(planeOffset.x, planeOffset.z);
 
         vecs.push_back(v2);
+        inds.push_back(xy.x);
     }
 
     dest->swap(vecs);
+    if (pInds) {
+        pInds->swap(inds);
+    }
 }
 
 void

@@ -14,7 +14,7 @@ namespace sketch
         void PushToGpu(Vao& vao);
     private:
         const sketch::Scene* _scene;
-        Vec3List _verts;
         TriList _tris;
+        unsigned int _topologyHash;
     };
 }

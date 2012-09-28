@@ -155,6 +155,9 @@ namespace sketch
         Json::Value
         Serialize() const;
 
+        unsigned int
+        GetTopologyHash() const { return _topologyHash; }
+
     private:
 
         glm::vec3
@@ -201,7 +204,11 @@ namespace sketch
 
         // Ditto, but in the coordinate space of the path.
         void
-        _WalkPath(const CoplanarPath* src, Vec2List* dest, float arcTessLength = 0) const;
+        _WalkPath(
+            const CoplanarPath* src,
+            Vec2List* dest,
+            float arcTessLength = 0,
+            IndexList* pInds = 0) const;
 
         void
         _VerifyPlane(const CoplanarPath* path, const char* msg) const;
@@ -214,6 +221,7 @@ namespace sketch
         const float _threshold;
         Json::Value _history;
         bool _recording;
+        unsigned int _topologyHash;
 
         friend class Tessellator;
     };

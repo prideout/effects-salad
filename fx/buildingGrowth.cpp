@@ -1,6 +1,5 @@
 // TODO
 // ----
-// Fix bug after second cycle of demo
 // Create sketchPlayback for animation
 // Add a GetExtent method for finding bounds of a path?
 // Add a routine that cleans up dangling planes, edges, and points.

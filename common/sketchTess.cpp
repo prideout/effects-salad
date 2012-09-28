@@ -12,95 +12,80 @@ using namespace std;
 Tessellator::Tessellator(const sketch::Scene& scene) :
     _scene(&scene)
 {
+    _topologyHash = 0;
 }
 
 void
 sketch::Tessellator::PullFromScene()
 {
-    _verts.clear();
+    if (_topologyHash == _scene->GetTopologyHash()) {
+        return;
+    }
+
     _tris.clear();
 
     float arcTessLength = 0;
-
-    // TODO we should simply use the _scene->_points as a VBO;
-    //      this would allow point-sharing on corners
     
     FOR_EACH(p, _scene->_paths) {
 
-        const bool usePoly2Tri = true;
-        if (usePoly2Tri) {
+        CoplanarPath* coplanar = dynamic_cast<CoplanarPath*>(*p);
+        pezCheck(coplanar != NULL, "Holes are not supported in non-coplanar paths.");
 
-            CoplanarPath* coplanar = dynamic_cast<CoplanarPath*>(*p);
-            pezCheck(coplanar != NULL, "Holes are not supported in non-coplanar paths.");
+        Vec2List rim2d;
+        IndexList indices;
+        _scene->_WalkPath(coplanar, &rim2d, arcTessLength, &indices);
 
-            Vec2List rim2d;
-            _scene->_WalkPath(coplanar, &rim2d, arcTessLength);
+        list<vector<p2t::Point*> > holes;
+        vector<p2t::Point*> polyline;
+        map<p2t::Point*, unsigned int> pointmap;
+        FOR_EACH(p, rim2d) {
+            p2t::Point* newp = new p2t::Point(p->x, p->y);
+            pointmap[newp] = indices[p - rim2d.begin()];
+            polyline.push_back(newp);
+        }
+        if (polyline.size() > 3) {
+            p2t::CDT* cdt = new p2t::CDT(polyline);
 
-            list<vector<p2t::Point*> > holes;
-            vector<p2t::Point*> polyline;
-            FOR_EACH(p, rim2d) {
-                polyline.push_back(new p2t::Point(p->x, p->y));
-            }
-            if (polyline.size() > 3) {
-                p2t::CDT* cdt = new p2t::CDT(polyline);
+            FOR_EACH(hole, coplanar->Holes) {
 
-                FOR_EACH(hole, coplanar->Holes) {
+                CoplanarPath* copHole = dynamic_cast<CoplanarPath*>(*hole);
+                pezCheck(copHole != NULL);
 
-                    CoplanarPath* copHole = dynamic_cast<CoplanarPath*>(*hole);
-                    pezCheck(copHole != NULL);
-
-                    Vec2List holePath;
-                    _scene->_WalkPath(copHole, &holePath, arcTessLength);
-                    vector<p2t::Point*> polyline;
-                    FOR_EACH(p, holePath) {
-                        polyline.push_back(new p2t::Point(p->x, p->y));
-                    }
-                    cdt->AddHole(polyline);
-                    holes.push_back(polyline);
+                Vec2List holePath;
+                IndexList indices;
+                _scene->_WalkPath(copHole, &holePath, arcTessLength, &indices);
+                vector<p2t::Point*> polyline;
+                FOR_EACH(p, holePath) {
+                    p2t::Point* newp = new p2t::Point(p->x, p->y);
+                    pointmap[newp] = indices[p - holePath.begin()];
+                    polyline.push_back(newp);
                 }
-
-                // We may also wish to add Steiner points here, but I see no
-                // reason to do so at the moment:
-                // http://www.cs.cmu.edu/~quake/triangle.defs.html
-
-                cdt->Triangulate();
-                vector<p2t::Triangle*> triangles = cdt->GetTriangles();
-
-                // TODO optimize this retarded code:
-
-                FOR_EACH(t, triangles) {
-                    int n = (int) _verts.size();
-                    _tris.push_back(ivec3(n,n+1,n+2));
-                    vec2 a2 = vec2((*t)->GetPoint(0)->x, (*t)->GetPoint(0)->y);
-                    vec2 b2 = vec2((*t)->GetPoint(1)->x, (*t)->GetPoint(1)->y);
-                    vec2 c2 = vec2((*t)->GetPoint(2)->x, (*t)->GetPoint(2)->y);
-                    vec3 a3 = AddOffset(a2, coplanar->Plane);
-                    vec3 b3 = AddOffset(b2, coplanar->Plane);
-                    vec3 c3 = AddOffset(c2, coplanar->Plane);
-                    _verts.push_back(a3);
-                    _verts.push_back(b3);
-                    _verts.push_back(c3);
-                }
-
-                delete cdt;
+                cdt->AddHole(polyline);
+                holes.push_back(polyline);
             }
-            FOR_EACH(p, polyline) {
+
+            // We may also wish to add Steiner points here, but I see no
+            // reason to do so at the moment:
+            // http://www.cs.cmu.edu/~quake/triangle.defs.html
+
+            cdt->Triangulate();
+            vector<p2t::Triangle*> triangles = cdt->GetTriangles();
+
+            FOR_EACH(t, triangles) {
+                unsigned au = pointmap[(*t)->GetPoint(0)];
+                unsigned bu = pointmap[(*t)->GetPoint(1)];
+                unsigned cu = pointmap[(*t)->GetPoint(2)];
+                _tris.push_back(ivec3(au, bu, cu));
+            }
+
+            delete cdt;
+        }
+        FOR_EACH(p, polyline) {
+            delete *p;
+        }
+        FOR_EACH(h, holes) {
+            FOR_EACH(p, *h) {
                 delete *p;
-            }
-            FOR_EACH(h, holes) {
-                FOR_EACH(p, *h) {
-                    delete *p;
-                }
-            }
-        } else {
-            Vec3List rim;
-            _scene->_WalkPath(*p, &rim, arcTessLength);
-            int count = (int) rim.size();
-            int n = (int) _verts.size(); // <-- triangle fan center
-            _verts.insert(_verts.end(), rim.begin(), rim.end());
-            for (int i = 1; i < count - 1; ++i) {
-                int j = (i+1) % count;
-                _tris.push_back(ivec3(n, n+i, n+j));
             }
         }
     }
@@ -109,8 +94,10 @@ sketch::Tessellator::PullFromScene()
 void
 sketch::Tessellator::PushToGpu(Vao& vao)
 {
+    Vec3List& verts = *(const_cast<Vec3List*>(&_scene->_points));
+ 
     if (!vao.vao) {
-        vao = Vao(_verts, _tris);
+        vao = Vao(verts, _tris);
     }
 
     vao.Bind();
@@ -123,16 +110,20 @@ sketch::Tessellator::PushToGpu(Vao& vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     glBufferData(GL_ARRAY_BUFFER, 
-                 sizeof(_verts[0]) * _verts.size(), 
-                 &_verts[0], 
+                 sizeof(verts[0]) * verts.size(), 
+                 &verts[0], 
                  GL_STATIC_DRAW);
-    Vao::totalBytesBuffered += sizeof(_verts[0]) * _verts.size();
-    
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
-                 sizeof(_tris[0]) * _tris.size(), 
-                 &_tris[0], 
-                 GL_STATIC_DRAW);
-    Vao::totalBytesBuffered += sizeof(_tris[0]) * _tris.size();
+    Vao::totalBytesBuffered += sizeof(verts[0]) * verts.size();
 
-    vao.indexCount = _tris.size() * 3;
+    if (_topologyHash != _scene->GetTopologyHash()) {
+    
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
+                     sizeof(_tris[0]) * _tris.size(), 
+                     &_tris[0], 
+                     GL_STATIC_DRAW);
+        Vao::totalBytesBuffered += sizeof(_tris[0]) * _tris.size();
+
+        vao.indexCount = _tris.size() * 3;
+        _topologyHash = _scene->GetTopologyHash();
+    }
 }
