@@ -1,10 +1,11 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. -g -O3 
-CXXFLAGS=-Wall -c -Ilib -I. -g -O3 
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. -g -O3  `sdl-config --cflags`
+CXXFLAGS=-Wall -c -Ilib -I. -g -O3 `sdl-config --cflags`
 OBJDIR=build
 
 SHARED := \
+	$(OBJDIR)/common/audio.o \
 	$(OBJDIR)/common/camera.o \
 	$(OBJDIR)/common/cameraPath.o \
 	$(OBJDIR)/common/curve.o \
@@ -69,7 +70,7 @@ ifeq ($(UNAME), Darwin)
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -framework OpenGL -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a
+	LIBS = -framework OpenGL `sdl-config --libs` -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a -framework SDL_mixer
 endif
 
 
