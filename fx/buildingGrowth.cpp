@@ -1,12 +1,8 @@
 // TODO
 // ----
-// Create sketchPlayback for animation
-// Add a GetExtent method for finding bounds of a path?
-// Add a routine that cleans up dangling planes, edges, and points.
-// Per-path dirty flags in PullFromScene would result in huge speedup
-//    Might as well use DrawArrays instead of DrawElements
-//    Keep a set of CPU-side vectors for the paths, but only a single VBO
-//    Probably fine to re-upload the entire VBO if ANY path is dirty
+// sketchPlayback:
+//    1) doesn't handle discrete vs continuous commands well
+//    2) implement it for-reals
 
 #include "glm/gtx/rotate_vector.hpp"
 #include "common/vao.h"
@@ -88,6 +84,9 @@ BuildingGrowth::Init()
     }
     _sketch.PushPaths(cylinders, -0.1);
 
+    const Json::Value& history = _sketch.GetHistory();
+    _player = new sketch::Playback(history, &_sketch);
+
     _sketch.EnableHistory(false);
 
     _tess = new Tessellator(_sketch);
@@ -113,6 +112,7 @@ BuildingGrowth::Update()
 
     _sketch.SetPathPlane(_roof, _roofHeight);
 
+    _player->Update();
     _tess->PullFromScene();
 
     PerspCamera* camera = &GetContext()->mainCam;

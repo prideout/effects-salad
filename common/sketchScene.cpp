@@ -19,7 +19,6 @@ Scene::Scene() : _threshold(0.001)
     Plane* ground = new Plane;
     ground->Eqn = vec4(0, 1, 0, 0);
     _planes.push_back(ground);
-    _history.append(Json::Value(Json::arrayValue));
     _topologyHash = 0;
 }
 

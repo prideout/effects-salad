@@ -3,6 +3,7 @@
 #include "common/effect.h"
 #include "common/sketchScene.h"
 #include "common/sketchTess.h"
+#include "common/sketchPlayback.h"
 #include "tween/CppTweener.h"
 
 class BuildingGrowth : public Effect {
@@ -17,6 +18,7 @@ private:
     sketch::Scene _sketch;
     sketch::Tessellator* _tess;
     sketch::CoplanarPath* _roof;
+    sketch::Playback* _player;
     float _roofHeight;
     Vao _vao;
 };
