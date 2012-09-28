@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. -g -O3  `sdl-config --cflags`
-CXXFLAGS=-Wall -c -Ilib -I. -g -O3 `sdl-config --cflags`
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. `sdl-config --cflags` -g -O3
+CXXFLAGS=-Wall -c -Ilib -I. `sdl-config --cflags` -g -O3
 OBJDIR=build
 
 SHARED := \
@@ -62,7 +62,7 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
 	CXXFLAGS := $(CXXFLAGS)
-	LIBS = -pthread -lX11 -lGL lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
+	LIBS = -pthread -lX11 -lGL `sdl-config --libs` -lSDL_mixer lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
