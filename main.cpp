@@ -272,6 +272,9 @@ void PezUpdate(float seconds)
         prime--;
         seconds = 0.0f;
     }
+
+    DemoContext::totalTime += seconds;
+
     DemoContext* ctx = DemoContext::GetCurrent();
     ctx->Update(seconds);
     //std::cout << "seconds: " << seconds << " elapsed: " << ctx->elapsedTime << " dur: " << ctx->duration << std::endl;

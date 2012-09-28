@@ -6,6 +6,7 @@
 #include "fx/fpsOverlay.h"
 
 DemoContext* DemoContext::_current(NULL);
+float DemoContext::totalTime = 0;
 
 DemoContext::DemoContext(const std::string& shot) :
     duration(0),

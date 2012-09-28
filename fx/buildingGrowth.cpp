@@ -107,7 +107,7 @@ BuildingGrowth::Init()
 void
 BuildingGrowth::Update()
 {
-    float time = GetContext()->elapsedTime;
+    float time = DemoContext::totalTime;
 
     long ms = (long) (time * 1000);
     _tween.step(ms);

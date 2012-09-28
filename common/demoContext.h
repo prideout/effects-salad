@@ -20,6 +20,7 @@ public:
 
     float duration;
     float elapsedTime;
+    static float totalTime;
     std::string name;
 
     DrawableList drawables;
