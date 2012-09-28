@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 
 const char* toString(Vec3List v);
+const char* toString(glm::vec4 v);
 const char* toString(glm::vec3 v);
 const char* toString(glm::vec2 v);
 const char* toString(void** ptrArray, size_t count);

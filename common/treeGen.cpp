@@ -66,7 +66,7 @@ TreeSystem::GrowBranch() {
         branch->cvs.push_back(branch->cvs[cvCount - 1] + dir);
     }
 
-    float curveAmt = .09;
+    float curveAmt = 0.3; // .09;
     for (int i = (cvCount > 0 ? 1 : 0); i < numCvs; i++) {
         float z = float(i) / (numCvs - 1.0);
 

@@ -74,10 +74,10 @@ namespace sketch
         // Edge-sharing and point-sharing with existing paths occurs automatically.
         // This is the most common starting point for a building.
         CoplanarPath*
-        AddRectangle(float width, float height, const sketch::Plane* plane, glm::vec2 offset);
+        AddRectangle(float width, float height, glm::vec4 plane, glm::vec2 offset);
 
         CoplanarPath*
-        AddPolygon(float radius, const sketch::Plane* plane, glm::vec2 offset, int numPoints);
+        AddPolygon(float radius, glm::vec4 plane, glm::vec2 offset, int numPoints);
 
         // Create an extrusion or change an existing extrusion, optionally returning the walls of the extrusion.
         // Walls are automatically deleted when pushing an extrusion back to its original location.

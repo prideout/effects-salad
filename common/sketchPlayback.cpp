@@ -7,12 +7,12 @@ using namespace std;
 Playback::Playback(const Json::Value& history, sketch::Scene* scene) :
     _history(&history),
     _scene(scene),
-    _commandDuration(2.0),
-    _currentCommand(999)
+    _commandDuration(1.0),
+    _currentCommand(0),
+    _currentCommandStartTime(-1),
+    _previousTime(0)
 {
     cout << _history->size() << " commands in sketchPlayback.\n";
-    //Json::StyledWriter writer;
-    //cout << writer.write(*_history) << endl;
 }
 
 void
@@ -21,36 +21,73 @@ Playback::SetCommandDuration(float seconds)
     _commandDuration = seconds;
 }
 
+const Json::Value&
+Playback::_GetCurrentCommand() const
+{
+    return (*_history)[_currentCommand];
+}
+
+bool
+Playback::_IsDiscreteCommand(const Json::Value& cmd) const
+{
+    string cmdName = cmd[0u].asString();
+    string addPrefix("Add");
+    return !cmdName.compare(0, addPrefix.size(), addPrefix);
+}
+
 void
 Playback::Update()
 {
-    float elapsed = DemoContext::totalTime;
+    float time = DemoContext::totalTime;
+    if (time == _previousTime) {
+        return;
+    }
+    _previousTime = time;
 
-    float cmdStartTime = 0;
-    float cmdEndTime = _commandDuration;
-    for (unsigned i = 0; i < _history->size(); ++i) {
+    // Special case the first command so that it always gets executed.
+    if (_currentCommandStartTime < 0) {
+        _currentCommandStartTime = time;
+        _currentCommand = 0;
 
-        const Json::Value& node = (*_history)[i];
-        string cmd = node[0u].asString();
+    // Bump to the next command if it's time.
+    } else if (_IsDiscreteCommand(_GetCurrentCommand())) {
+        _currentCommandStartTime = time;
+        ++_currentCommand;
+    } else if ((time - _currentCommandStartTime) > _commandDuration) { 
+        _ExecuteCurrentCommand(1.0);
+        _currentCommandStartTime = time;
+        ++_currentCommand;
+    }
 
-        std::string push("Push");
-        bool isPushCmd = !cmd.compare(0, push.size(), push);
+    // Execute the command
+    float percentage = (time - _currentCommandStartTime) / _commandDuration;
+    _ExecuteCurrentCommand(percentage);
+}
 
-        if (cmdStartTime <= elapsed && elapsed < cmdEndTime) {
-            if (i != _currentCommand) {
-                _currentCommand = i;
-                //cout << cmd << endl;
-                // TODO process it here...
-                if (!isPushCmd) {
-                    continue;
-                }
-            }
-            break;
-        }
-
-        if (isPushCmd) {
-            cmdStartTime = cmdEndTime;
-            cmdEndTime += _commandDuration;
-        }
+void
+Playback::_ExecuteCurrentCommand(float percentage)
+{
+    if (_currentCommand >= _history->size()) {
+        return;
+    }
+    const Json::Value& cmd = _GetCurrentCommand();
+    if (percentage == 0) {
+        Json::FastWriter writer;
+        cout << writer.write(cmd);
+    }
+    string cmdName = cmd[0u].asString();
+    if (cmdName == "AddRectangle") {
+        // TODO
+    } else if (cmdName == "AddPolygon") { 
+        // TODO
+    } else if (cmdName == "AddInscribedRectangle") { 
+        // TODO
+    } else if (cmdName == "AddInscribedPolygon") { 
+        // TODO
+    } else if (cmdName == "PushPaths") { 
+        // TODO
+    } else if (cmdName == "PushPath") { 
+        // TODO
     }
 }
+

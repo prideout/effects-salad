@@ -28,6 +28,15 @@ toString(vec3 v)
 }
 
 const char*
+toString(vec4 v)
+{
+    static bstring msg;
+    bdestroy(msg);
+    msg = bformat("[%f, %f, %f, %f]", v.x, v.y, v.z, v.w);
+    return bdata(msg);
+}
+
+const char*
 toString(Vec3List v)
 {
     static string msg;

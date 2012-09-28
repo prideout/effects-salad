@@ -1,9 +1,3 @@
-// TODO
-// ----
-// sketchPlayback:
-//    1) doesn't handle discrete vs continuous commands well
-//    2) implement it for-reals
-
 #include "glm/gtx/rotate_vector.hpp"
 #include "common/vao.h"
 #include "common/programs.h"
@@ -38,7 +32,7 @@ BuildingGrowth::Init()
     const float depth = 4;
 
     CoplanarPath* rect =
-        _sketch.AddRectangle(width, depth, ground, offset);
+        _sketch.AddRectangle(width, depth, ground->Eqn, offset);
 
     float height = 4;
     PathList walls;
