@@ -70,7 +70,7 @@ ifeq ($(UNAME), Darwin)
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -framework OpenGL `sdl-config --libs` -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a -framework SDL_mixer
+	LIBS = -framework OpenGL `sdl-config --libs` /opt/local/lib/libSDL_mixer.dylib /opt/local/lib/libvorbisfile.a -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a 
 endif
 
 

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
 #include <SDL.h>
 #include <SDL_mixer/SDL_mixer.h>
@@ -12,11 +13,11 @@ Mix_Music *music = NULL;
 void handleKey(SDL_KeyboardEvent key);
 void musicDone();
 
-int TestAudio(void) {
+int StartAudio(void) {
 
-  SDL_Surface *screen;
-  SDL_Event event;
-  int done = 0;
+  //SDL_Surface *screen;
+  //SDL_Event event;
+  //int done = 0;
 
   /* We're going to be requesting certain things from our audio
      device, so we set them up beforehand */
@@ -25,7 +26,8 @@ int TestAudio(void) {
   int audio_channels = 2;
   int audio_buffers = 4096;
 
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+  SDL_Init(SDL_INIT_AUDIO);
+  //SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
   /* This is where we open up our audio device.  Mix_OpenAudio takes
      as its parameters the audio format we'd /like/ to have. */
@@ -39,6 +41,7 @@ int TestAudio(void) {
      in case we'd want to know later. */
   Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
 
+#if 0
   /* We're going to be using a window onscreen to register keypresses
      in.  We don't really care what it has in it, since we're not
      doing graphics, so we'll just throw something up there. */
@@ -61,7 +64,32 @@ int TestAudio(void) {
     SDL_Delay(50);
 
   }
+#endif
+	/* Actually loads up the music */
+	music = Mix_LoadMUS("dubstep-3.ogg");
+        if(!music) {
+            printf("Mix_LoadMUS(\"dubstep-3.ogg\"): %s\n", Mix_GetError());
+            exit(1);
+            // this might be a critical error...
+        }
 
+	/* This begins playing the music - the first argument is a
+	   pointer to Mix_Music structure, and the second is how many
+	   times you want it to loop (use -1 for infinite, and 0 to
+	   have it just play once) */
+	Mix_PlayMusic(music, 0);
+
+	/* We want to know when our music has stopped playing so we
+	   can free it up and set 'music' back to NULL.  SDL_Mixer
+	   provides us with a callback routine we can use to do
+	   exactly that */
+	Mix_HookMusicFinished(musicDone);
+
+
+
+}
+
+void StopAudio() {
   /* This is the cleaning up part */
   Mix_CloseAudio();
   SDL_Quit();

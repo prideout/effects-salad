@@ -3,6 +3,7 @@
 
 #include "lib/pez/pez.h"
 
+#include "common/audio.h"
 #include "common/camera.h"
 #include "common/demoContext.h"
 #include "common/init.h"
@@ -29,6 +30,8 @@ static std::string _getShotName()
 
 static void _constructScene()
 {
+    StartAudio();
+
     typedef std::map<std::string,DemoContext*> ShotMap;
     ShotMap shotMap;
 
