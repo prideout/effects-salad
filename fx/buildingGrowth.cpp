@@ -70,10 +70,9 @@ BuildingGrowth::Init()
     FOR_EACH(circle, cylinders) {
         CoplanarPath* outer = dynamic_cast<CoplanarPath*>(*circle);
         CoplanarPath* inner = _sketch->AddInscribedPolygon(0.15, outer, vec2(0, 0), 8);
-        _sketch->PushPath(inner, -0.1);
-        //inners.push_back(inner);
+        inners.push_back(inner);
     }
-    //_sketch->PushPaths(inners, -0.1);
+    _sketch->PushPaths(inners, -0.2);
     cylinders.clear();
 
     for (float y = -3.25; y < 3.26; y += 1.0) {
@@ -84,12 +83,12 @@ BuildingGrowth::Init()
     }
     _sketch->PushPaths(cylinders, -0.1);
 
-    CoplanarPath* topFace = dynamic_cast<CoplanarPath*>(walls[5]);
+    // Pop out an "antenna"
     CoplanarPath* c1 = _sketch->AddInscribedPolygon(
         1.5,
-        topFace,
+        _roof,
         vec2(0, 0),
-        5); // pentagon
+        4);
     _sketch->PushPath(c1, 4);
 
     const Json::Value& history = _sketch->GetHistory();

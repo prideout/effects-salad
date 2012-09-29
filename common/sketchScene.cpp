@@ -574,7 +574,7 @@ void
 Scene::_WalkPath(const Path* path, Vec3List* dest, float arcTessLength) const
 {
     Vec3List vecs;
-    if (path->Edges.empty()) {
+    if (not path || path->Edges.empty()) {
         return;
     }
 
