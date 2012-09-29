@@ -137,7 +137,7 @@ void Tree::Draw() {
     cam.Bind(pos);
 
     // brown tree color
-    glUniform3f(u("MaterialColor"), 0.2, 0.1, 0.01);
+    glUniform3f(u("MaterialColor"), 0.2*2, 0.1*2, 0.01*2);
     FOR_EACH(tube, _branches) {
         (*tube)->Draw();
     }
@@ -151,7 +151,7 @@ void Tree::Draw() {
 
     glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
-    //glDrawArrays(GL_TRIANGLES, 0, _leaves.vertexCount);
+    glDrawArrays(GL_TRIANGLES, 0, _leaves.vertexCount);
     glEnable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 
