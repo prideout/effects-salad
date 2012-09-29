@@ -153,4 +153,5 @@ void musicDone() {
   Mix_HaltMusic();
   Mix_FreeMusic(music);
   music = NULL;
+  exit(0);
 }
