@@ -32,7 +32,7 @@ void CityGrowth::Init()
         FloatList normals;
         IndexList indices;
         const int SIZE = 150;
-        const float SCALE = 0.25;
+        const float SCALE = 0.35;
         TerrainUtil::Smooth(SIZE, SCALE, &ground, &normals, &indices);
         _terrainVao = Vao(3, ground, indices);
         _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
@@ -59,6 +59,9 @@ void CityGrowth::Draw()
 
     // Draw terrain
     if (true) {
+        //glDisable(GL_DEPTH_TEST);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
         glUseProgram(progs["Buildings.Terrain"]);
         surfaceCam.Bind(glm::mat4());

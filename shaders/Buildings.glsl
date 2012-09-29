@@ -232,5 +232,5 @@ void main()
     vec3 L = LightPosition;
     float df = abs(dot(N, L));
     vec3 C = AmbientMaterial + df * Color;
-    FragColor = vec4(C, 1);
+    FragColor = vec4(C, 0.25);
 }
