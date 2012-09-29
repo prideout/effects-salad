@@ -5,14 +5,7 @@
 #include <iostream>
 
 #include <SDL.h>
-
-#ifdef __APPLE__
-    #include <SDL_mixer/SDL_mixer.h>
-#else
-    // this works on RHEL, but not sure if it will work on other distros or on
-    // windows
-    #include <SDL/SDL_mixer.h>
-#endif
+#include <SDL_mixer.h>
 
 /* Mix_Music actually holds the music information.  */
 Mix_Music *music = NULL;

@@ -30,8 +30,6 @@ static std::string _getShotName()
 
 static void _constructScene()
 {
-    StartAudio();
-
     typedef std::map<std::string,DemoContext*> ShotMap;
     ShotMap shotMap;
 
@@ -209,6 +207,7 @@ static void _constructScene()
     //  - allow shots to be reused
 
     DemoContext::SetCurrent(sequence[0]);
+    StartAudio();
 }
 
 void PezInitialize()
