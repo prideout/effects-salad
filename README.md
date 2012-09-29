@@ -1,12 +1,24 @@
 effects-salad
 =============
 
-BULBUL
-CB507FE83F
-
 1) Go to lib/jsoncpp and run ./setup.sh
 
 2) Go to lib/tetgen and run "make tetlib"
+
+3) Setup SDL
+
+
+> **For OSX:**
+>
+> http://www.libsdl.org/release/SDL-1.2.15.dmg
+>
+> http://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.dmg
+>
+> Copy SDL.framework and SDL_mixer.framework into /Library/Frameworks
+>
+>**For Linux:**
+>
+>sudo yum install SDL_mixer-devel
 
 Inspiration
 -----------
