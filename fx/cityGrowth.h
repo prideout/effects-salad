@@ -25,5 +25,5 @@ private:
     sketch::Scene* _historicalSketch;
     sketch::Tessellator* _tess;
     sketch::Playback* _player;
-    Vao _vao;
+    Vao _terrainVao;
 };

@@ -103,8 +103,8 @@ static void _constructScene()
         ctx->drawables.push_back(fps);
     }
 
-    {   // Building Grow
-        DemoContext* ctx = DemoContext::New("BuildingGrow");
+    {   // Machine Grow
+        DemoContext* ctx = DemoContext::New("MachineGrow");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 
