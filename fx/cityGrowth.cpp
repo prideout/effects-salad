@@ -47,9 +47,9 @@ void CityGrowth::Update()
     float time = GetContext()->elapsedTime;
     PerspCamera* camera = &GetContext()->mainCam;
     camera->eye.x = 0;
-    camera->eye.y = 35;
-    camera->eye.z = 70;
-    camera->center.y = 20;
+    camera->eye.y = 100;
+    camera->eye.z = 150;
+    camera->up = vec3(0, 1, 0);
 }
 
 void CityGrowth::Draw()
