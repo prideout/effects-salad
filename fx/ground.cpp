@@ -49,9 +49,10 @@ void Ground::Init() {
         grass[i*8+0+2] = z;
         grass[i*8+0+3] = ground[index+3];
 
-        grass[i*8+4+0] = x+normals[index+0];
-        grass[i*8+4+1] = y+normals[index+1];
-        grass[i*8+4+2] = z+normals[index+2];
+        float h = (.7 - .25* (float(rand()) / float(RAND_MAX)));
+        grass[i*8+4+0] = x+normals[index+0]*h;
+        grass[i*8+4+1] = y+normals[index+1]*h;
+        grass[i*8+4+2] = z+normals[index+2]*h;
         grass[i*8+4+3] = ground[index+3];
     }
 
