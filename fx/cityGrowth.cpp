@@ -14,6 +14,13 @@
 #include "common/programs.h"
 #include "common/demoContext.h"
 
+static const int TerrainSize = 150;
+static const float TerrainScale = 0.35;
+static const int CircleCount = 10;
+static const float MinRadius = 1;
+static const float MaxRadius = 3;
+static const float CirclePadding = 0.25;
+
 CityGrowth::CityGrowth()
 {
 }
@@ -31,13 +38,27 @@ void CityGrowth::Init()
         FloatList ground;
         FloatList normals;
         IndexList indices;
-        const int SIZE = 150;
-        const float SCALE = 0.35;
-        TerrainUtil::Smooth(SIZE, SCALE, &ground, &normals, &indices);
+        TerrainUtil::Smooth(TerrainSize, TerrainScale,
+                            &ground, &normals, &indices);
         _terrainVao = Vao(3, ground, indices);
         _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
     }
 
+    // Pack some circles
+    for (int i = 0; i < CircleCount; ++i) {
+        CityElement element;
+        element.Position.x = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
+        element.Position.y = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
+        element.Radius = MinRadius + (MaxRadius - MinRadius) *
+            (rand() / float(RAND_MAX));
+        if (_Collides(element)) {
+            --i;
+            continue;
+        }
+        _elements.push_back(element);
+    }
+
+    // Compile shaders
     Programs& progs = Programs::GetInstance();
     progs.Load("Buildings.Terrain", false);
 }
@@ -59,14 +80,16 @@ void CityGrowth::Draw()
 
     // Draw terrain
     if (true) {
-        //glDisable(GL_DEPTH_TEST);
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDisable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
         glUseProgram(progs["Buildings.Terrain"]);
         surfaceCam.Bind(glm::mat4());
         _terrainVao.Bind();
-        glDrawElements(GL_TRIANGLE_STRIP, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
     }
+}
+
+bool CityGrowth::_Collides(const CityElement& e) const
+{
+    return false;
 }
 

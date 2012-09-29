@@ -130,7 +130,13 @@ static void _constructScene()
         DemoContext* ctx = DemoContext::New("CityGrow");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
-        ctx->drawables.push_back(new CityGrowth());
+        Fullscreen::Mask mask = Fullscreen::VignetteFlag;
+        mask |= Fullscreen::SupersampleFlag;
+        Fullscreen* fullscreen = new Fullscreen(mask);
+        vec4 hotPink(1.000, 0.078, 0.576, 1);
+        fullscreen->clearColor = vec4(hotPink);
+        fullscreen->AddChild(new CityGrowth());
+        ctx->drawables.push_back(fullscreen);
     }
 
     {   // Test 

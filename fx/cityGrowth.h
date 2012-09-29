@@ -20,6 +20,7 @@ public:
     virtual void Update();
     virtual void Draw();
 private:
+    bool _Collides(const CityElement& e) const;
     CityElements _elements;
     sketch::Scene* _sketch;
     sketch::Scene* _historicalSketch;
