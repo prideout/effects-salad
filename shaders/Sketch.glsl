@@ -63,9 +63,28 @@ out vec4 FragColor;
 uniform vec3 LightPosition = vec3(0, 0, 1);
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 
+float randhash(uint seed, float b)
+{
+    const float InverseMaxInt = 1.0 / 4294967295.0;
+    uint i=(seed^12345391u)*2654435769u;
+    i^=(i<<6u)^(i>>26u);
+    i*=2654435769u;
+    i+=(i<<5u)^(i>>12u);
+    return float(b * i) * InverseMaxInt;
+}
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
 void main()
 {
     if (gColor.a == 0) {
+        discard;
+    }
+
+    // Screen door transparency
+    if (rand(gPosition.xy) < 0.5) {
         discard;
     }
 

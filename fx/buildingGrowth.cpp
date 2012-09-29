@@ -1,9 +1,3 @@
-// TODO
-// ----
-// sketchPlayback:
-//    1) doesn't handle discrete vs continuous commands well
-//    2) implement it for-reals
-
 #include "glm/gtx/rotate_vector.hpp"
 #include "common/vao.h"
 #include "common/programs.h"
@@ -18,6 +12,8 @@ using namespace glm;
 
 BuildingGrowth::BuildingGrowth() : _tess(0)
 {
+    _sketch = new sketch::Scene();
+    _historicalSketch = new sketch::Scene();
 }
 
 BuildingGrowth::~BuildingGrowth()
@@ -32,64 +28,67 @@ BuildingGrowth::Init()
         return;
     }
 
-    const Plane* ground = _sketch.GroundPlane();
+    const Plane* ground = _sketch->GroundPlane();
     glm::vec2 offset(0, 0);
     const float width = 8;
     const float depth = 4;
 
     CoplanarPath* rect =
-        _sketch.AddRectangle(width, depth, ground, offset);
+        _sketch->AddRectangle(width, depth, ground->Eqn, offset);
 
     float height = 4;
     PathList walls;
-    _sketch.PushPath(rect, height, &walls);
-    _sketch.PushPath(rect, -1, &walls);
+    _sketch->PushPath(rect, height, &walls);
+    _sketch->PushPath(rect, -1, &walls);
     _roof = rect;
 
     CoplanarPath* wall;
     wall = dynamic_cast<CoplanarPath*>(walls[0]);
-    rect = _sketch.AddInscribedRectangle(1, 1, wall, vec2(0, 0));
+    rect = _sketch->AddInscribedRectangle(1, 1, wall, vec2(0, 0));
     PathList walls2;
-    _sketch.PushPath(rect, 1, &walls2);
+    _sketch->PushPath(rect, 1, &walls2);
     {
         wall = dynamic_cast<CoplanarPath*>(walls2[0]);
-        rect = _sketch.AddInscribedRectangle(0.5, 0.5, wall, vec2(0, 0));
-        _sketch.PushPath(rect, 0.5);
+        rect = _sketch->AddInscribedRectangle(0.5, 0.5, wall, vec2(0, 0));
+        _sketch->PushPath(rect, 0.5);
     }
     wall = dynamic_cast<CoplanarPath*>(walls[1]);
-    rect = _sketch.AddInscribedRectangle(1, 1.5, wall, vec2(0, 0));
-    _sketch.PushPath(rect, -0.5);
+    rect = _sketch->AddInscribedRectangle(1, 1.5, wall, vec2(0, 0));
+    _sketch->PushPath(rect, -0.5);
 
     wall = dynamic_cast<CoplanarPath*>(walls[2]);
     
     sketch::PathList cylinders;
 
     for (float y = -3.25; y < 3.26; y += 1.0) {
-        CoplanarPath* circle = _sketch.AddInscribedPolygon(0.3, wall, vec2(0, y), 48);
+        CoplanarPath* circle = _sketch->AddInscribedPolygon(0.3, wall, vec2(0, y), 48);
         cylinders.push_back(circle);
     }
-    _sketch.PushPaths(cylinders, 3);
+
+    _sketch->PushPaths(cylinders, 3);
     FOR_EACH(circle, cylinders) {
         CoplanarPath* outer = dynamic_cast<CoplanarPath*>(*circle);
-        CoplanarPath* inner = _sketch.AddInscribedPolygon(0.15, outer, vec2(0, 0), 8);
-        _sketch.PushPath(inner, -0.1);
+        CoplanarPath* inner = _sketch->AddInscribedPolygon(0.15, outer, vec2(0, 0), 8);
+        _sketch->PushPath(inner, -0.1);
     }
     cylinders.clear();
 
     for (float y = -3.25; y < 3.26; y += 1.0) {
-        CoplanarPath* c1 = _sketch.AddInscribedPolygon(0.3, wall, vec2(-1, y), 48);
-        CoplanarPath* c2 = _sketch.AddInscribedPolygon(0.3, wall, vec2(+1, y), 48);
+        CoplanarPath* c1 = _sketch->AddInscribedPolygon(0.3, wall, vec2(-1, y), 48);
+        CoplanarPath* c2 = _sketch->AddInscribedPolygon(0.3, wall, vec2(+1, y), 48);
         cylinders.push_back(c1);
         cylinders.push_back(c2);
     }
-    _sketch.PushPaths(cylinders, -0.1);
+    _sketch->PushPaths(cylinders, -0.1);
 
-    const Json::Value& history = _sketch.GetHistory();
-    _player = new sketch::Playback(history, &_sketch);
+    const Json::Value& history = _sketch->GetHistory();
+    std::swap(_historicalSketch, _sketch);
 
-    _sketch.EnableHistory(false);
+    _player = new sketch::Playback(history, _sketch);
+    _sketch->EnableHistory(false);
+    _historicalSketch->EnableHistory(false);
 
-    _tess = new Tessellator(_sketch);
+    _tess = new Tessellator(*_sketch);
     _tess->PullFromScene();
 
     Programs& progs = Programs::GetInstance();
@@ -109,8 +108,6 @@ BuildingGrowth::Update()
 
     long ms = (long) (time * 1000);
     _tween.step(ms);
-
-    _sketch.SetPathPlane(_roof, _roofHeight);
 
     _player->Update();
     _tess->PullFromScene();

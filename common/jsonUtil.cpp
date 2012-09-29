@@ -9,6 +9,23 @@ using namespace glm;
 
 // glm/gtx/string_cast.inl can already stringify vectors, but we'd prefer something more JSON-amenable
 
+// I almost feel like inheriting from Json::Value and providing asVec2 etc.. methods for glm.
+
+vec2
+vec2FromJson(const Json::Value& root)
+{
+    return vec2(root[0u].asDouble(), root[1u].asDouble());
+}
+
+vec4
+vec4FromJson(const Json::Value& root)
+{
+    return vec4(root[0u].asDouble(),
+                root[1u].asDouble(),
+                root[2u].asDouble(),
+                root[3u].asDouble());
+}
+
 const char*
 toString(vec2 v)
 {
@@ -24,6 +41,15 @@ toString(vec3 v)
     static bstring msg;
     bdestroy(msg);
     msg = bformat("[%f, %f, %f]", v.x, v.y, v.z);
+    return bdata(msg);
+}
+
+const char*
+toString(vec4 v)
+{
+    static bstring msg;
+    bdestroy(msg);
+    msg = bformat("[%f, %f, %f, %f]", v.x, v.y, v.z, v.w);
     return bdata(msg);
 }
 

@@ -4,6 +4,8 @@
 
 namespace sketch
 {
+    typedef std::map<std::string, sketch::Path*> PathHandles;
+
     class Playback
     {
     public:
@@ -11,9 +13,16 @@ namespace sketch
         void SetCommandDuration(float seconds);
         void Update();
     private:
+        void _ExecuteCurrentCommand(float percentage);
+        const Json::Value& _GetCurrentCommand() const;
+        bool _IsDiscreteCommand(const Json::Value&) const;
         const Json::Value* _history;
         sketch::Scene* _scene;
         float _commandDuration;
         unsigned _currentCommand;
+        float _currentCommandStartTime;
+        float _previousTime;
+        PathHandles _handles;
+        glm::vec4 _originalPlane;
     };
 }

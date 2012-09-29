@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
-CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. `sdl-config --cflags` -g -O3
-CXXFLAGS=-Wall -c -Ilib -I. `sdl-config --cflags` -g -O3
+CFLAGS=-std=c99 -Wall -c -Wc++-compat -Ilib -I. -g
+CXXFLAGS=-Wall -c -Ilib -I. -g
 OBJDIR=build
 
 SHARED := \
