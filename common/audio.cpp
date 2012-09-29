@@ -73,7 +73,7 @@ int StartAudio(void) {
   }
 #endif
 	/* Actually loads up the music */
-	music = Mix_LoadMUS("audio/moonlight.ogg");
+	music = Mix_LoadMUS("audio/moonlight-remix.ogg");
         if(!music) {
             printf("Mix_LoadMUS(\"audio/moonlight.ogg\"): %s\n", Mix_GetError());
             exit(1);
