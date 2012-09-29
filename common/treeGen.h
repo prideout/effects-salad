@@ -12,7 +12,8 @@ struct BranchDef {
         name("0"),
         width(.15),
         levels(6),
-        isLeaf(false)
+        isLeaf(false),
+        isTrunk(false)
     {
         level = levels;
         // brown
@@ -30,6 +31,7 @@ struct BranchDef {
     int levels;
     float level;
     bool isLeaf;
+    bool isTrunk;
     Vec3List cvs;
     FloatList widths;
 };

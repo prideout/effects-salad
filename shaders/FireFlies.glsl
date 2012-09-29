@@ -110,7 +110,8 @@ void main()
     float d = max(0.0, dot(n, l));
     //d = 1.5;
     vec3 MaterialColor = vec3(.08, .60, .2);
-    FragColor = vec4(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor, 1.0);
+    float occFactor = .5;
+    FragColor = vec4(occFactor*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 }
 
 -- Stars.FS
@@ -304,6 +305,9 @@ void main()
 in vec3 vNormal;
 in vec4 vPosition;
 //in vec2 vUvCoord;
+
+in float vOcc;
+
 out vec4 FragColor;
 
 uniform mat4 Projection;
@@ -319,7 +323,7 @@ void main()
     vec3 l = normalize((vec4(-4, 5.0, 4, 1.0)).xyz); // - vPosition).xyz);
     float d = max(0.0, dot(n, l));
     //d = 1.5;
-    FragColor = vec4(ambientLight*MaterialColor + d*diffuseLight*MaterialColor, 1.0);
+    FragColor = vec4(vOcc * (ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
 }
@@ -332,6 +336,8 @@ layout(location = 1) in vec3 Normal;
 out vec4 vPosition;
 out vec3 vNormal;
 
+out float vOcc;
+
 uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat4 ViewMatrix;
@@ -342,6 +348,8 @@ uniform int VertsPerSlice;
 uniform float Time;
 uniform float TimeToGrow;
 
+uniform float MinOcc;
+
 uniform samplerBuffer Centerline;
 uniform samplerBuffer Frames;
 uniform samplerBuffer Scales;
@@ -349,6 +357,8 @@ uniform samplerBuffer Scales;
 void main()
 {
     int id = int(gl_VertexID / VertsPerSlice);
+
+    vOcc = clamp(float(id*5) / Slices, MinOcc, 1.0);
 
     // the time when this slices starts
     float sliceTime = (TimeToGrow / Slices);

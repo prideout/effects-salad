@@ -15,7 +15,9 @@ void Tree::Init() {
     progs.Load("FireFlies.Tree", "FireFlies.Tree.FS", "FireFlies.Tube.VS");
     progs.Load("FireFlies.Blossom", "FireFlies.Blossom.FS", "FireFlies.Quad.VS");
 
-    _treeSys.queue.push_back(new BranchDef());
+    BranchDef* trunk = new BranchDef();
+    trunk->isTrunk = true;
+    _treeSys.queue.push_back(trunk);
     _treeSys.GrowAll();
 
     FloatList leaves;
@@ -46,7 +48,12 @@ void Tree::Init() {
             tube->startTime = (.25 - (rand() / float(RAND_MAX))*.5) + (growTime / maxLevel) * (maxLevel - branch->levels - ((branch->levels > 0) ? .8 : 0));
             tube->timeToGrow = (growTime / maxLevel) * (branch->levels);
 
-            _branches.push_back(tube);
+            if (branch->isTrunk) {
+                _branches.insert(_branches.begin(), tube);
+            } else {
+                _branches.push_back(tube);
+            }
+
             tube->Init();
         } else {
             // make a leaf instead
@@ -138,8 +145,10 @@ void Tree::Draw() {
 
     // brown tree color
     glUniform3f(u("MaterialColor"), 0.2*2, 0.1*2, 0.01*2);
+    glUniform1f(u("MinOcc"), 0.0);
     FOR_EACH(tube, _branches) {
         (*tube)->Draw();
+        glUniform1f(u("MinOcc"), 1.0);
     }
 
     glUseProgram(progs["FireFlies.Blossom"]);
