@@ -57,7 +57,7 @@ BuildingGrowth::Init()
     _sketch->PushPath(rect, -0.5);
 
     wall = dynamic_cast<CoplanarPath*>(walls[2]);
-    
+
     sketch::PathList cylinders;
 
     for (float y = -3.25; y < 3.26; y += 1.0) {
@@ -66,11 +66,14 @@ BuildingGrowth::Init()
     }
 
     _sketch->PushPaths(cylinders, 3);
+    PathList inners;
     FOR_EACH(circle, cylinders) {
         CoplanarPath* outer = dynamic_cast<CoplanarPath*>(*circle);
         CoplanarPath* inner = _sketch->AddInscribedPolygon(0.15, outer, vec2(0, 0), 8);
         _sketch->PushPath(inner, -0.1);
+        //inners.push_back(inner);
     }
+    //_sketch->PushPaths(inners, -0.1);
     cylinders.clear();
 
     for (float y = -3.25; y < 3.26; y += 1.0) {
@@ -81,14 +84,22 @@ BuildingGrowth::Init()
     }
     _sketch->PushPaths(cylinders, -0.1);
 
+    CoplanarPath* topFace = dynamic_cast<CoplanarPath*>(walls[5]);
+    CoplanarPath* c1 = _sketch->AddInscribedPolygon(
+        1.5,
+        topFace,
+        vec2(0, 0),
+        5); // pentagon
+    _sketch->PushPath(c1, 4);
+
     const Json::Value& history = _sketch->GetHistory();
     std::swap(_historicalSketch, _sketch);
 
-    _player = new sketch::Playback(history, _sketch);
+    _tess = new Tessellator(*_sketch);
+    _player = new sketch::Playback(history, _sketch, _tess);
     _sketch->EnableHistory(false);
     _historicalSketch->EnableHistory(false);
 
-    _tess = new Tessellator(*_sketch);
     _tess->PullFromScene();
 
     Programs& progs = Programs::GetInstance();
@@ -117,7 +128,7 @@ BuildingGrowth::Update()
     camera->eye.y = 7;
     camera->eye.z = 15;
     camera->center.y = 2;
-    camera->eye = glm::rotateY(camera->eye, time * -48);
+    camera->eye = glm::rotateY(camera->eye, -30 + 10 * sin(10 * time));
 }
 
 void

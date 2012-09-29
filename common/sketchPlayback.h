@@ -1,15 +1,18 @@
 #pragma once
-#include "common/sketchScene.h"
 #include "common/typedefs.h"
 
 namespace sketch
 {
     typedef std::map<std::string, sketch::Path*> PathHandles;
+    class Tessellator;
+    class Scene;
 
     class Playback
     {
     public:
-        Playback(const Json::Value& history, sketch::Scene* scene);
+        Playback(const Json::Value& history,
+                 sketch::Scene* scene,
+                 sketch::Tessellator* tess);
         void SetCommandDuration(float seconds);
         void Update();
     private:
@@ -23,6 +26,7 @@ namespace sketch
         float _currentCommandStartTime;
         float _previousTime;
         PathHandles _handles;
-        glm::vec4 _originalPlane;
+        FloatList _originalPlanes;
+        sketch::Tessellator* _tess;
     };
 }

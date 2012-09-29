@@ -316,8 +316,24 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
 void
 Scene::SetPathPlane(CoplanarPath* path, float w)
 {
+    bool previous = _recording;
+    _recording = false;
     float delta = w - path->Plane->Eqn.w;
     PushPath(path, delta);
+    _recording = previous;
+}
+
+void
+Scene::SetPathPlanes(PathList paths, FloatList ws)
+{
+    bool previous = _recording;
+    _recording = false;
+    for (size_t i = 0; i < paths.size(); ++i) {
+        CoplanarPath* cop = dynamic_cast<CoplanarPath*>(paths[i]);
+        float delta = ws[i] - cop->Plane->Eqn.w;
+        PushPath(cop, delta);
+    }
+    _recording = previous;
 }
 
 Edge*

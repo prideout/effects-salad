@@ -15,6 +15,7 @@ namespace sketch
     private:
         const sketch::Scene* _scene;
         TriList _tris;
-        unsigned int _topologyHash;
+        unsigned int _topologyHashPushToGpu;
+        unsigned int _topologyHashDelaunay;
     };
 }

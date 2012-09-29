@@ -12,13 +12,14 @@ using namespace std;
 Tessellator::Tessellator(const sketch::Scene& scene) :
     _scene(&scene)
 {
-    _topologyHash = 0;
+    _topologyHashPushToGpu = 0;
+    _topologyHashDelaunay = 0;
 }
 
 void
 sketch::Tessellator::PullFromScene()
 {
-    if (_topologyHash == _scene->GetTopologyHash()) {
+    if (_topologyHashDelaunay == _scene->GetTopologyHash()) {
         return;
     }
 
@@ -89,6 +90,7 @@ sketch::Tessellator::PullFromScene()
             }
         }
     }
+    _topologyHashDelaunay = _scene->GetTopologyHash();
 }
 
 void
@@ -115,7 +117,7 @@ sketch::Tessellator::PushToGpu(Vao& vao)
                  GL_STATIC_DRAW);
     Vao::totalBytesBuffered += sizeof(verts[0]) * verts.size();
 
-    if (_topologyHash != _scene->GetTopologyHash()) {
+    if (_topologyHashPushToGpu != _scene->GetTopologyHash()) {
     
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
                      sizeof(_tris[0]) * _tris.size(), 
@@ -124,6 +126,6 @@ sketch::Tessellator::PushToGpu(Vao& vao)
         Vao::totalBytesBuffered += sizeof(_tris[0]) * _tris.size();
 
         vao.indexCount = _tris.size() * 3;
-        _topologyHash = _scene->GetTopologyHash();
+        _topologyHashPushToGpu = _scene->GetTopologyHash();
     }
 }

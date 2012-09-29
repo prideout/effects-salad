@@ -1,17 +1,22 @@
 #include "common/jsonUtil.h"
+#include "common/sketchScene.h"
 #include "common/sketchPlayback.h"
+#include "common/sketchTess.h"
 #include "common/demoContext.h"
 
 using namespace sketch;
 using namespace std;
 
-Playback::Playback(const Json::Value& history, sketch::Scene* scene) :
+Playback::Playback(const Json::Value& history,
+                   sketch::Scene* scene,
+                   sketch::Tessellator* tess) :
     _history(&history),
     _scene(scene),
-    _commandDuration(0.5),
+    _commandDuration(0.25),
     _currentCommand(0),
     _currentCommandStartTime(-1),
-    _previousTime(0)
+    _previousTime(0),
+    _tess(tess)
 {
     cout << _history->size() << " commands in sketchPlayback.\n";
 }
@@ -127,9 +132,22 @@ Playback::_ExecuteCurrentCommand(float percentage)
         }
         float delta = cmd[2u].asDouble();
         if (percentage == 0) {
+            _originalPlanes.clear();
+            FOR_EACH(p, paths) {
+                CoplanarPath* cop = dynamic_cast<CoplanarPath*>(*p);
+                _originalPlanes.push_back(cop->Plane->Eqn.w);
+            }
             _scene->PushPaths(paths, delta);
+            _tess->PullFromScene();
+            _scene->SetPathPlanes(paths, _originalPlanes);
         } else {
-            // TODO
+            FloatList newPlanes;
+            delta *= percentage;
+            FOR_EACH(p, _originalPlanes) {
+                newPlanes.push_back(*p + delta);
+            }
+            _scene->SetPathPlanes(paths, newPlanes);
+
         }
     } else if (cmdName == "PushPath") { 
         string handle = cmd[1u].asString();
@@ -139,14 +157,17 @@ Playback::_ExecuteCurrentCommand(float percentage)
         float delta = cmd[2u].asDouble();
         PathList walls;
         if (percentage == 0) {
-            _originalPlane = cop->Plane->Eqn;
+            _originalPlanes.clear();
+            _originalPlanes.push_back( cop->Plane->Eqn.w );
             _scene->PushPath(cop, delta, &walls);
-            //_scene->SetPathPlane(cop, _originalPlane.w);
+            _tess->PullFromScene();
+            _scene->SetPathPlane(cop, _originalPlanes.front());
             for (size_t i = 0; i < walls.size(); ++i) {
                 _handles[cmd[3u][i].asString()] = walls[i];
             }
         } else {
-            //_scene->SetPathPlane(cop, _originalPlane.w + delta * percentage);
+            delta *= percentage;
+            _scene->SetPathPlane(cop, _originalPlanes.front() + delta);
         }
     } else {
         pezFatal("Unknown command: %s", cmdName.c_str());

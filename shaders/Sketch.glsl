@@ -84,7 +84,7 @@ void main()
     }
 
     // Screen door transparency
-    if (rand(gPosition.xy) < 0.5) {
+    if (false && rand(gPosition.xy) < 0.5) {
         discard;
     }
 

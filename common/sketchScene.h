@@ -91,8 +91,14 @@ namespace sketch
         void
         PushPaths(PathList paths, float delta);
 
+        // Adjust the 'w' component of a path's plane equation.
+        // This provides a way to efficiently animate an existing extrusion.
         void
         SetPathPlane(CoplanarPath* path, float w);
+
+        // Ditto, but for multiple paths.
+        void
+        SetPathPlanes(PathList paths, FloatList ws);
 
         #ifdef NOT_YET_SUPPORTED
 
