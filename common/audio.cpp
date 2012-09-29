@@ -7,7 +7,7 @@
 #include <SDL.h>
 
 #ifdef __APPLE__
-    #include <SDL_mixer/SDL_mixer.h>
+    #include <SDL_mixer.h>
 #else
     // this works on RHEL, but not sure if it will work on other distros or on
     // windows
