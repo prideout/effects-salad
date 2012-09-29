@@ -256,7 +256,7 @@ Tube::SweepPolygon(const Vec3List& centerline,
         p.z = mesh[m+2];
         center = centerline[i];
 
-        glm::vec3 normal = glm::normalize(p - center);
+        glm::vec3 normal = glm::normalize(p); // - center);
 
         // Stamp n into 'm', skipping over the position:
         mesh[m+3+0] = normal.x;

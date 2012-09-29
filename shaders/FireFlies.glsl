@@ -310,12 +310,12 @@ uniform vec3 MaterialColor;
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    float diffuseLight = 15;
-    float ambientLight = 0;
+    float diffuseLight = 1;
+    float ambientLight = .3;
     vec3 n = vNormal;
-    vec3 l = normalize((ViewMatrix*vec4(-4, -2.0, 4, 1.0)).xyz); // - vPosition).xyz);
+    vec3 l = normalize((vec4(-4, 5.0, 4, 1.0)).xyz); // - vPosition).xyz);
     float d = max(0.0, dot(n, l));
-    d = 1.5;
+    //d = 1.5;
     FragColor = vec4(ambientLight*MaterialColor + d*diffuseLight*MaterialColor, 1.0);
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
@@ -379,16 +379,17 @@ void main()
                            texelFetch(Frames, (id-1)*3+2).rgb);
         vPosition.xyz = mix(basis2*vPosition.xyz, basis*vPosition.xyz, pct);
         vPosition.xyz += mix(texelFetch(Centerline, id-1).rgb, texelFetch(Centerline, id).rgb, pct);
-        vNormal = mat3(ViewMatrix) * mix(basis2*Normal, basis*Normal, pct) * Normal;
+        vNormal = mat3(ModelMatrix) * mix(basis2*Normal, basis*Normal, pct);
     } else {
         vPosition.xyz = basis*vPosition.xyz;
         vPosition.xyz += texelFetch(Centerline, id).rgb;
-        vNormal = mat3(Modelview) * basis*Normal;
+        vNormal = mat3(ModelMatrix) * basis*Normal;
     }
 
     gl_Position = Projection * Modelview * vPosition;
     //vNormal = mat3(Modelview) * vNormal;
-    vPosition = Modelview * vPosition;
+    vPosition = ModelMatrix * vPosition;
+    vNormal = normalize(vNormal);
 }
 
 
