@@ -3,6 +3,9 @@
 #include "common/typedefs.h"
 #include "glm/glm.hpp"
 
+glm::vec4 vec4FromString(std::string s);
+glm::vec2 vec2FromString(std::string s);
+
 const char* toString(Vec3List v);
 const char* toString(glm::vec4 v);
 const char* toString(glm::vec3 v);

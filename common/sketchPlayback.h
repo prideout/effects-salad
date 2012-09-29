@@ -4,6 +4,8 @@
 
 namespace sketch
 {
+    typedef std::map<std::string, sketch::Path*> PathHandles;
+
     class Playback
     {
     public:
@@ -20,5 +22,6 @@ namespace sketch
         unsigned _currentCommand;
         float _currentCommandStartTime;
         float _previousTime;
+        PathHandles _handles;
     };
 }

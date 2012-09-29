@@ -1,3 +1,4 @@
+#include "common/jsonUtil.h"
 #include "common/sketchPlayback.h"
 #include "common/demoContext.h"
 
@@ -67,6 +68,7 @@ Playback::Update()
 void
 Playback::_ExecuteCurrentCommand(float percentage)
 {
+    #if 0
     if (_currentCommand >= _history->size()) {
         return;
     }
@@ -74,20 +76,49 @@ Playback::_ExecuteCurrentCommand(float percentage)
     if (percentage == 0) {
         Json::FastWriter writer;
         cout << writer.write(cmd);
+    } else {
+        return; // TODO this it temporary until we start honoring 'percentage'
     }
     string cmdName = cmd[0u].asString();
     if (cmdName == "AddRectangle") {
-        // TODO
+        string handle = cmd[1u].asString();
+        float width = cmd[2u].asDouble();
+        float height = cmd[3u].asDouble();
+        vec4 eqn = vec4FromString(cmd[4u].asString());
+        vec2 offset = vec2FromString(cmd[5u].asString());
+        CoplanarPath* path = _scene->AddRectangle(width, height, eqn, offset);
+        _handles[handle] = path;
     } else if (cmdName == "AddPolygon") { 
-        // TODO
+        string handle = cmd[1u].asString();
+        float radius = cmd[2u].asDouble();
+        vec4 eqn = vec4FromString(cmd[3u].asString());
+        vec2 offset = vec2FromString(cmd[4u].asString());
+        int numPoints = cmd[5u].asInt();
+        CoplanarPath* path = _scene->AddPolygon(radius, eqn, offset, numPoints);
+        _handles[handle] = path;
     } else if (cmdName == "AddInscribedRectangle") { 
-        // TODO
+        string handle = cmd[1u].asString();
+        float width = cmd[2u].asDouble();
+        float height = cmd[3u].asDouble();
+        Path* outer = _handles[cmd[4u].asString()];
+        CoplanarPath* cop = dynamic_cast<CoplanarPath*>(outer);
+        vec2 offset = vec2FromString(cmd[5u].asString());
+        CoplanarPath* path = _scene->AddInscribedRectangle(width, height, cop, offset);
+        _handles[handle] = path;
     } else if (cmdName == "AddInscribedPolygon") { 
-        // TODO
+        string handle = cmd[1u].asString();
+        float radius = cmd[2u].asDouble();
+        Path* outer = _handles[cmd[3u].asString()];
+        CoplanarPath* cop = dynamic_cast<CoplanarPath*>(outer);
+        vec2 offset = vec2FromString(cmd[4u].asString());
+        int numPoints = cmd[5u].asInt();
+        CoplanarPath* path = _scene->AddInscribedPolygon(radius, cop, offset, numPoints);
+        _handles[handle] = path;
     } else if (cmdName == "PushPaths") { 
         // TODO
     } else if (cmdName == "PushPath") { 
         // TODO
     }
+    #endif
 }
 
