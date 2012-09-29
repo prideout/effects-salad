@@ -12,22 +12,14 @@ using namespace glm;
 // I almost feel like inheriting from Json::Value and providing asVec2 etc.. methods for glm.
 
 vec2
-vec2FromString(string s)
+vec2FromJson(const Json::Value& root)
 {
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(s.c_str(), root);
-    pezCheck(parsingSuccessful);
     return vec2(root[0u].asDouble(), root[1u].asDouble());
 }
 
 vec4
-vec4FromString(string s)
+vec4FromJson(const Json::Value& root)
 {
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(s.c_str(), root);
-    pezCheck(parsingSuccessful);
     return vec4(root[0u].asDouble(),
                 root[1u].asDouble(),
                 root[2u].asDouble(),

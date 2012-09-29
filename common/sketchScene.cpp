@@ -103,8 +103,8 @@ Scene::AddPolygon(float radius, vec4 eqn, vec2 offset, int numPoints)
     if (_recording) {
         appendJson(
             _history,
-            "[ \"AddPolygon\", \"%8.8x\", %f, %s, %s]",
-            retval, radius, toString(eqn), toString(offset) );
+            "[ \"AddPolygon\", \"%8.8x\", %f, %s, %s, %d]",
+            retval, radius, toString(eqn), toString(offset), numPoints );
     }
     return retval;
 }
@@ -120,7 +120,12 @@ Scene::AddInscribedRectangle(float width, float height,
     mat3 inverseCoordSys = inverse(plane->GetCoordSys());
     vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
     vec2 offset = vec2(planeOffset.x, planeOffset.z);
+
+    bool previous = _recording;
+    _recording = false;
     CoplanarPath* inner = AddRectangle(width, height, plane->Eqn, offset);
+    _recording = previous;
+
     CoplanarPath* hole = new CoplanarPath();
     _topologyHash++;
     FOR_EACH(edge, inner->Edges) {
@@ -150,7 +155,12 @@ Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
     mat3 inverseCoordSys = inverse(plane->GetCoordSys());
     vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
     vec2 offset = vec2(planeOffset.x, planeOffset.z);
+
+    bool previous = _recording;
+    _recording = false;
     CoplanarPath* inner = AddPolygon(radius, plane->Eqn, offset, numPoints);
+    _recording = previous;
+
     CoplanarPath* hole = new CoplanarPath();
     _topologyHash++;
     FOR_EACH(edge, inner->Edges) {
@@ -163,8 +173,8 @@ Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
     if (_recording) {
         appendJson(
             _history,
-            "[ \"AddInscribedPolygon\", \"%8.8x\", %f, \"%8.8x\", %s]",
-            inner, radius, outer, toString(pathOffset) );
+            "[ \"AddInscribedPolygon\", \"%8.8x\", %f, \"%8.8x\", %s, %d]",
+            inner, radius, outer, toString(pathOffset), numPoints );
     }
 
     return inner;

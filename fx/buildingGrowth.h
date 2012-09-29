@@ -15,7 +15,8 @@ public:
     virtual void Draw();
 private:
     tween::Tweener _tween;
-    sketch::Scene _sketch;
+    sketch::Scene* _sketch;
+    sketch::Scene* _historicalSketch;
     sketch::Tessellator* _tess;
     sketch::CoplanarPath* _roof;
     sketch::Playback* _player;
