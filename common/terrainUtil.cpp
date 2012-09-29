@@ -121,7 +121,7 @@ TerrainUtil::Smooth(int SIZE,
     for (float x = 0; x < SIZE; x++) {
         for (float z = 0; z < SIZE; z++) {
 
-            const float e = 0.01;
+            const float e = 0.1;
 
             vec3 p = SampleTerrain(noise, SIZE, SCALE, x, z);
             vec3 p1 = SampleTerrain(noise, SIZE, SCALE, x+e, z);
