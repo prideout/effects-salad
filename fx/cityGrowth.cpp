@@ -1,24 +1,32 @@
 // TODO LIST
 // ---------
-// terrain
-// x y height radius
-// pop up simple cylinders for now
-// camera work
+// fix lighting
+// push to ground
+// add CityElement->Height
+// camera work; add CityElement->ViewingAngle; add 'BirdsEye' mode for debugging
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
+
+#include "glm/glm.hpp"
+#include "glm/ext.hpp"
 
 #include "common/init.h"
 #include "fx/cityGrowth.h"
 #include "common/terrainUtil.h"
 #include "common/programs.h"
 #include "common/demoContext.h"
+#include "common/sketchScene.h"
+#include "common/sketchTess.h"
+
+using namespace std;
+using namespace glm;
 
 static const int TerrainSize = 150;
 static const float TerrainScale = 0.25;
-static const int CircleCount = 10;
+static const size_t CircleCount = 100;
 static const float MinRadius = 1;
-static const float MaxRadius = 3;
+static const float MaxRadius = 7;
 static const float CirclePadding = 0.25;
 
 CityGrowth::CityGrowth()
@@ -27,6 +35,10 @@ CityGrowth::CityGrowth()
 
 CityGrowth::~CityGrowth()
 {
+    FOR_EACH(e, _elements) {
+        delete e->CpuShape;
+        delete e->CpuTriangles;
+    }
 }
 
 Perlin noise(2, .1, 2, 0);
@@ -57,27 +69,54 @@ void CityGrowth::Init()
     }
 
     // Pack some circles
-    for (int i = 0; i < CircleCount; ++i) {
+    while (_elements.size() < CircleCount) {
         CityElement element;
+
         element.Position.x = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
-        element.Position.y = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
+        element.Position.y = 0;
+        element.Position.z = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
+
+        vec3 xlate = 0.5f * element.Position;
+        xlate.x *= 1.75;
+
+        xlate += vec3(0, -5, 30); // move towards the camera and push downwards
+        element.Position = xlate;
+
         element.Radius = MinRadius + (MaxRadius - MinRadius) *
             (rand() / float(RAND_MAX));
+
         if (_Collides(element)) {
-            --i;
             continue;
         }
         _elements.push_back(element);
     }
 
+    // Create simple starting points for the buildings
+    FOR_EACH(e, _elements) {
+        sketch::Scene* shape = new sketch::Scene;
+
+        const sketch::Plane* ground = shape->GroundPlane();
+
+        int numSides = 20;
+        sketch::CoplanarPath* circle =
+            shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), numSides);
+        shape->PushPath(circle, 5.5);
+
+        e->CpuShape = shape;
+        e->CpuTriangles = new sketch::Tessellator(*shape);
+        e->CpuTriangles->PullFromScene();
+        e->CpuTriangles->PushToGpu(e->GpuTriangles);
+    }
+
     // Compile shaders
     Programs& progs = Programs::GetInstance();
     progs.Load("Buildings.Terrain", false);
+    progs.Load("Sketch.Facets", true);
 }
 
 void CityGrowth::Update()
 {
-    float time = GetContext()->elapsedTime;
+    //float time = GetContext()->elapsedTime;
     PerspCamera* camera = &GetContext()->mainCam;
     camera->eye.x = 0;
     camera->eye.y = 100;
@@ -87,6 +126,7 @@ void CityGrowth::Update()
 
 void CityGrowth::Draw()
 {
+    glEnable(GL_DEPTH_TEST);
     Programs& progs = Programs::GetInstance();
     PerspCamera surfaceCam = GetContext()->mainCam;
 
@@ -98,10 +138,28 @@ void CityGrowth::Draw()
         _terrainVao.Bind();
         glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
     }
+
+    glDisable(GL_CULL_FACE);
+
+    glUseProgram(progs["Sketch.Facets"]);
+    surfaceCam.Bind(glm::mat4());
+
+    FOR_EACH(e, _elements) {
+        e->GpuTriangles.Bind();
+        glUniform3fv(u("Translate"), 1, ptr(e->Position));
+        glDrawElements(GL_TRIANGLES, e->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
+    }
 }
 
-bool CityGrowth::_Collides(const CityElement& e) const
+bool CityGrowth::_Collides(const CityElement& a) const
 {
+    FOR_EACH(b, _elements) {
+        float r = a.Radius + b->Radius + CirclePadding;
+        if (glm::distance2(a.Position, b->Position) < r * r) {
+            return true;
+        }
+    }
     return false;
 }
+
 

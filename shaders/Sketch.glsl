@@ -5,7 +5,7 @@ layout(location = 0) in vec4 Position;
 uniform mat4 Projection;
 uniform mat4 Modelview;
 
-uniform vec3 Translate;
+uniform vec3 Translate = vec3(0);
 uniform vec3 Scale = vec3(1);
 
 out vec3 vPosition;

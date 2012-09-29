@@ -6,8 +6,11 @@
 #include "glm/glm.hpp"
 
 struct CityElement {
-    glm::vec2 Position;
+    glm::vec3 Position;
     float Radius;
+    sketch::Scene* CpuShape;
+    sketch::Tessellator* CpuTriangles;
+    Vao GpuTriangles;
 };
 
 typedef std::vector<CityElement> CityElements;
@@ -22,8 +25,6 @@ public:
 private:
     bool _Collides(const CityElement& e) const;
     CityElements _elements;
-    sketch::Scene* _sketch;
-    sketch::Scene* _historicalSketch;
     sketch::Tessellator* _tess;
     sketch::Playback* _player;
     Vao _terrainVao;

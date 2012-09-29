@@ -21,8 +21,10 @@
  * ====================================================
  */
 
+#ifdef WINDOWS
 #pragma warning(push)
 #pragma warning(disable : 4127)
+#endif
 
 typedef union
 {
@@ -171,7 +173,9 @@ namespace detail
 }//namespace detail
 }//namespace glm
 
+#ifdef WINDOWS
 #pragma warning(pop)
+#endif
 
 #if(GLM_COMPILER & GLM_COMPILER_VC || GLM_COMPILER & GLM_COMPILER_INTEL)
 #	define GLM_NEXT_AFTER_FLT(x, toward) glm::detail::nextafterf((x), (toward))
