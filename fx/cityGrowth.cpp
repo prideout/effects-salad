@@ -15,7 +15,7 @@
 #include "common/demoContext.h"
 
 static const int TerrainSize = 150;
-static const float TerrainScale = 0.35;
+static const float TerrainScale = 0.25;
 static const int CircleCount = 10;
 static const float MinRadius = 1;
 static const float MaxRadius = 3;
@@ -29,6 +29,18 @@ CityGrowth::~CityGrowth()
 {
 }
 
+Perlin noise(2, .1, 2, 0);
+
+vec3
+MyTerrainFunc(vec2 v)
+{
+    float tx = v.x * TerrainScale;
+    float tz = v.y * TerrainScale;
+    float y = noise.Get(tx, tz) + 20 * noise.Get(tx/5, tz/5);
+    vec3 p = vec3(v.x, y, v.y);
+    return p;
+}
+
 void CityGrowth::Init()
 {
     srand(42);
@@ -38,7 +50,7 @@ void CityGrowth::Init()
         FloatList ground;
         FloatList normals;
         IndexList indices;
-        TerrainUtil::Smooth(TerrainSize, TerrainScale,
+        TerrainUtil::Smooth(TerrainSize, MyTerrainFunc,
                             &ground, &normals, &indices);
         _terrainVao = Vao(3, ground, indices);
         _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);

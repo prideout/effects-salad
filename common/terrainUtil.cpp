@@ -99,33 +99,21 @@ TerrainUtil::ComputeNormals(const FloatList& ground,
     }
 }
 
-vec3
-TerrainUtil::SampleTerrain(Perlin& noise, int SIZE, float SCALE, float x, float z)
-{
-    float tx = x * SCALE;
-    float tz = z * SCALE;
-    float y = noise.Get(tx, tz);
-    vec3 p = vec3(x, y, z);
-    return p;
-}
-
 void
 TerrainUtil::Smooth(int SIZE,
-                    float SCALE,
+                    TerrainFunc func,
                     FloatList* positions,
                     FloatList* normals,
                     IndexList* indices)
 {
-    Perlin noise = GetNoise();
-
     for (float x = 0; x < SIZE; x++) {
         for (float z = 0; z < SIZE; z++) {
 
-            const float e = 0.1;
+            const float e = 5;
 
-            vec3 p = SampleTerrain(noise, SIZE, SCALE, x, z);
-            vec3 p1 = SampleTerrain(noise, SIZE, SCALE, x+e, z);
-            vec3 p2 = SampleTerrain(noise, SIZE, SCALE, x, z+e);
+            vec3 p = func(vec2(x, z));
+            vec3 p1 = func(vec2(x+e, z));
+            vec3 p2 = func(vec2(x, z+e));
 
             vec3 du = p1 - p;
             vec3 dv = p2 - p;

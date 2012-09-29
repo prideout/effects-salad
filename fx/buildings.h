@@ -54,7 +54,6 @@ private:
     TemplateList _templates;
     BatchList _batches;
     Vao _emptyVao;
-    Vao _terrainVao;
     CracksEffect* _cracks;
     bool _explode;
 

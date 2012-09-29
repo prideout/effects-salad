@@ -17,8 +17,10 @@ namespace TerrainUtil
                         const IndexList& indices,                    
                         FloatList* normals);
 
+    typedef glm::vec3(*TerrainFunc)(glm::vec2);
+
     void Smooth(int size,
-                float scale,
+                TerrainFunc func,
                 FloatList* points,
                 FloatList* normals,
                 IndexList* indices);

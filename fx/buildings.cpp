@@ -16,7 +16,7 @@
 #include "common/programs.h"
 #include "common/camera.h"
 #include "common/demoContext.h"
-#include "common/terrainUtil.h"
+#include "tween/CppTweener.h"
 
 using namespace std;
 using glm::mat4;
@@ -66,18 +66,6 @@ Buildings::Init()
     vector<tthread::thread*> threads;
     for (size_t i = 0; i < params.size(); ++i) {
         threads.push_back(new tthread::thread(GenerateBuilding, &params[i]));
-    }
-
-    // Tessellate the ground
-    if (true) {
-        FloatList ground;
-        FloatList normals;
-        IndexList indices;
-        const int SIZE = 150;
-        const float SCALE = 0.25;
-        TerrainUtil::Smooth(SIZE, SCALE, &ground, &normals, &indices);
-        _terrainVao = Vao(3, ground, indices);
-        _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
     }
 
     // Allocate batches for each template
@@ -146,7 +134,6 @@ Buildings::Init()
     progs.Load("Tetra.Solid", false);
     progs.Load("Buildings.XZPlane", false);
     progs.Load("Buildings.Facets", true);
-    progs.Load("Buildings.Terrain", false);
     
     // Misc initialization
     _emptyVao.InitEmpty();
@@ -184,10 +171,18 @@ Buildings::Update()
         camera->center.y = 20;
         camera->eye = glm::rotateY(camera->eye, time * 48);
     } else {
+        tween::Quad tweener;
+
         camera->eye.x = 8 - time / 1.5f;
-        camera->eye.y = 40 - time * 3.0f;
+        camera->eye.y = tweener.easeOut(time, 40, -20, 5);
         camera->eye.z = 60;
-        camera->center.y = 20;
+
+        float starty = 60;
+        float endy = 20;
+        float swingDuration = 1;
+        
+        float t = time > swingDuration ? swingDuration : time;
+        camera->center.y = tweener.easeOut(t, starty, endy-starty, swingDuration);
     }
 
     _cracks->Update();
@@ -215,21 +210,12 @@ Buildings::Draw()
     }
 
     // Draw floor
-    if (false) {
+    if (true) {
         glDisable(GL_CULL_FACE);
         glUseProgram(progs["Buildings.XZPlane"]);
         surfaceCam.Bind(glm::mat4());
         _emptyVao.Bind();
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
-
-    // Draw terrain
-    if (true) {
-        glDisable(GL_CULL_FACE);
-        glUseProgram(progs["Buildings.Terrain"]);
-        surfaceCam.Bind(glm::mat4());
-        _terrainVao.Bind();
-        glDrawElements(GL_TRIANGLE_STRIP, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
     }
 }
 
