@@ -103,8 +103,8 @@ static void _constructScene()
         ctx->drawables.push_back(fps);
     }
 
-    {   // CityGrow
-        DemoContext* ctx = DemoContext::New("CityGrow");
+    {   // Building Grow
+        DemoContext* ctx = DemoContext::New("BuildingGrow");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 
@@ -114,7 +114,7 @@ static void _constructScene()
 
         // Instance the effects, but do not place them into the scene graph:
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
-        //mask |= Fullscreen::SupersampleFlag;
+        mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
         fullscreen->clearColor = vec4(0.1,0.9,0.7,1);
 
@@ -124,6 +124,13 @@ static void _constructScene()
 
         ctx->drawables.push_back(fullscreen);
         ctx->drawables.push_back(new FpsOverlay());
+    }
+
+    {   // City Grow
+        DemoContext* ctx = DemoContext::New("CityGrow");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+        ctx->drawables.push_back(new CityGrowth());
     }
 
     {   // Test 
