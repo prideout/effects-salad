@@ -72,12 +72,14 @@ Playback::_ExecuteCurrentCommand(float percentage)
         return;
     }
     const Json::Value& cmd = _GetCurrentCommand();
+
+    #if 0
     if (percentage == 0) {
         Json::FastWriter writer;
         cout << writer.write(cmd);
-    } else {
-        return; // TODO this it temporary until we start honoring 'percentage'
     }
+    #endif
+
     string cmdName = cmd[0u].asString();
     if (cmdName == "AddRectangle") {
         string handle = cmd[1u].asString();
@@ -124,7 +126,11 @@ Playback::_ExecuteCurrentCommand(float percentage)
             pezCheck(paths[i] != NULL, "Invalid handle %s\n", handle.c_str());
         }
         float delta = cmd[2u].asDouble();
-        _scene->PushPaths(paths, delta);
+        if (percentage == 0) {
+            _scene->PushPaths(paths, delta);
+        } else {
+            // TODO
+        }
     } else if (cmdName == "PushPath") { 
         string handle = cmd[1u].asString();
         Path* path = _handles[handle];
@@ -132,9 +138,15 @@ Playback::_ExecuteCurrentCommand(float percentage)
         CoplanarPath* cop = dynamic_cast<CoplanarPath*>(path);
         float delta = cmd[2u].asDouble();
         PathList walls;
-        _scene->PushPath(cop, delta, &walls);
-        for (size_t i = 0; i < walls.size(); ++i) {
-            _handles[cmd[3u][i].asString()] = walls[i];
+        if (percentage == 0) {
+            _originalPlane = cop->Plane->Eqn;
+            _scene->PushPath(cop, delta, &walls);
+            //_scene->SetPathPlane(cop, _originalPlane.w);
+            for (size_t i = 0; i < walls.size(); ++i) {
+                _handles[cmd[3u][i].asString()] = walls[i];
+            }
+        } else {
+            //_scene->SetPathPlane(cop, _originalPlane.w + delta * percentage);
         }
     } else {
         pezFatal("Unknown command: %s", cmdName.c_str());

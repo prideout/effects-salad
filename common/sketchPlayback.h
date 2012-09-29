@@ -23,5 +23,6 @@ namespace sketch
         float _currentCommandStartTime;
         float _previousTime;
         PathHandles _handles;
+        glm::vec4 _originalPlane;
     };
 }

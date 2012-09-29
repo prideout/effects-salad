@@ -13,7 +13,7 @@ using namespace sketch;
 using namespace glm;
 using namespace std;
 
-Scene::Scene() : _threshold(0.001)
+Scene::Scene() : _threshold(0.0001)
 {
     _recording = true;
     Plane* ground = new Plane;
