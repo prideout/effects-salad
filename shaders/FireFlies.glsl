@@ -151,7 +151,7 @@ void main()
     float att = min(1.0, 1.0 / (dist*dist*.01));
     l = normalize(l);
     float d = 1.0; //max(0.0, dot(n, l));
-    vec3 MaterialColor = vec3(.05, .2, .02);
+    vec3 MaterialColor = vec3(.05, .3, vOcc*vOcc*vOcc*.28);
     FragColor = vec4(vOcc*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 
     //FragColor = r*MaterialColor;
