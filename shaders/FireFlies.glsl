@@ -78,10 +78,12 @@ float snoise(vec2 v)
 }
 // --------------------- ( END NOISE LIB CODE ) --------------------------------
 
-
+ // Ground.FS
+uniform mat4 ViewMatrix;
 
 void main()
 {
+#if 0
     vec3 light = normalize(vec3(1., 1., 1.) + Eye);
     //float s = vUvCoord.x + vUvCoord.y;
     //float r = min(1, max(10-sqrt(vPosition.x * vPosition.x + vPosition.z * vPosition.z), 0));
@@ -89,13 +91,29 @@ void main()
     float r = clamp(.3+snoise(vPosition.xz/25.)+2*.5, 0., 1.);
     r = r*clamp(1-.045*distance(Eye.xyz, vPosition.xyz), 0., 1.);
 
-    // blinn-phong (in progress)
-    //float NdotHV = max(dot(vNormal, light),0.0);
-    //float specular = 5 * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
 
     //FragColor = NdotHV * vec4(.7, .7, .2, 1.0);
     FragColor = r * vec4(.098, .063, .02, .2);
     //FragColor = r * vec4(.22, .15, .0, 1.0);
+#endif
+
+    //float s = vUvCoord.x + vUvCoord.y;
+    float diffuseLight = .8;
+    float ambientLight = .1;
+    vec3 n = vNormal;
+    //vec3 l = normalize((ViewMatrix*vec4(-4, 10.0, 4, 1.0)).xyz);
+
+    vec3 l = (vec4(Eye, 1.0) - vPosition).xyz;
+    //vec3 l = (vec4(-3, 2.0, 2, 1.0) - vPosition).xyz;
+    float dist = length(l);
+    float att = min(1.0, 1.0 / (dist*dist*.05));
+    l = normalize(l);
+    float d = max(0.0, dot(n, l));
+    //d = 1.5;
+    vec3 MaterialColor = vec3(.08, .60, .2);
+    FragColor = vec4(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor, 1.0);
+    //FragColor = vec4(d,d,d, 1.0);
+    //FragColor = vec4(n, 1.0);
 }
 
 -- Stars.FS
@@ -197,7 +215,8 @@ void main()
     */
     vPosition = Position;
     gl_Position = Projection * Modelview * vPosition;
-    vNormal = normalize(Normal.xyz);
+    vPosition = ModelMatrix * vPosition;
+    vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
 }
 
 -- Blossom.FS

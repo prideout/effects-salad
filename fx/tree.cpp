@@ -132,7 +132,7 @@ void Tree::Draw() {
     PerspCamera cam = GetContext()->mainCam;
 
     glUseProgram(progs["FireFlies.Tree"]);
-    cam.Bind(glm::translate(glm::mat4(), glm::vec3(-3,-2,2)));
+    cam.Bind(glm::translate(glm::mat4(), glm::vec3(-3,-2.25,2)));
 
     // brown tree color
     glUniform3f(u("MaterialColor"), 0.02, 0.01, 0.001);

@@ -160,7 +160,7 @@ void FireFlies::Draw() {
     Effect::Draw();
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     glUseProgram(progs["FireFlies.Flies"]);
 
@@ -186,12 +186,12 @@ void FireFlies::Draw() {
         //cam.center = cameraPoints.After(GetContext()->elapsedTime); //[counter+1 % cameraPoints.size()];
 
         glUseProgram(progs["FireFlies.Tube"]);
-        cam.Bind(glm::mat4());
+        cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
         _tube.Draw();
 
-glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         _tree.Draw();
-glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
         glUseProgram(progs["FireFlies.Flies"]);
         cam.Bind(glm::mat4());
@@ -214,7 +214,7 @@ glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
         _ground.Draw();
 
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     _milkyway.Draw();
 
     cam = oldCam;

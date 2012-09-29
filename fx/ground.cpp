@@ -94,7 +94,6 @@ void Ground::Draw() {
     // Progressively add grass (for debugging)
     int t = int(GetContext()->elapsedTime*100000) % (_grass.vertexCount+1);
     t = _grass.vertexCount;
-    //glDrawArrays(GL_POINTS, 0, t);
     glDrawArrays(GL_LINES,0, t);
     glDisable(GL_BLEND);
 }
