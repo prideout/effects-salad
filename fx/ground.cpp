@@ -25,7 +25,7 @@ void Ground::Init() {
     FloatList normals;
     TerrainUtil::ComputeNormals(ground, indices, &normals);
 
-    const int GRASS_COUNT = SIZE*SIZE*10;
+    const int GRASS_COUNT = SIZE*SIZE*50;
 
     FloatList grass(GRASS_COUNT*8, 0);
     for (int i = 0; i < GRASS_COUNT; i++) {

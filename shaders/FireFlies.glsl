@@ -132,6 +132,7 @@ uniform vec3 Eye;
 
 //in vec3 vNormal;
 in vec4 vPosition;
+in float vOcc;
 //in vec2 vUvCoord;
 out vec4 FragColor;
 
@@ -150,7 +151,7 @@ void main()
     l = normalize(l);
     float d = 1.0; //max(0.0, dot(n, l));
     vec3 MaterialColor = vec3(.05, .2, .02);
-    FragColor = vec4(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor, 1.0);
+    FragColor = vec4(vOcc*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 
     //FragColor = r*MaterialColor;
 }
@@ -164,6 +165,7 @@ layout(location = 1) in vec4 Normal;
 out vec4 vPosition;
 //out vec2 vUvCoord;
 out vec3 vNormal;
+out float vOcc;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -181,6 +183,7 @@ void main()
     vNormal = NormalMatrix * Normal;
     */
     vPosition = Position;
+    vOcc = float(mod(gl_VertexID, 2));
     vPosition.xz += .5* mod(gl_VertexID, 2) * vec2(cos(Time), 0);
     gl_Position = Projection * Modelview * vPosition;
     vNormal = normalize(Normal.xyz);
