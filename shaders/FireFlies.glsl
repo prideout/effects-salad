@@ -185,7 +185,7 @@ void main()
     */
     vPosition = Position;
     vOcc = float(mod(gl_VertexID, 2));
-    vPosition.xz += .5* mod(gl_VertexID, 2) * vec2(cos(Time), 0);
+    vPosition.xz += .5* mod(gl_VertexID, 2) * vec2(cos(Time + gl_VertexID * .0000003), 0);
     gl_Position = Projection * Modelview * vPosition;
     vNormal = normalize(Normal.xyz);
 }
