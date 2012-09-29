@@ -12,7 +12,7 @@ Playback::Playback(const Json::Value& history,
                    sketch::Tessellator* tess) :
     _history(&history),
     _scene(scene),
-    _commandDuration(0.25),
+    _commandDuration(0.5),
     _currentCommand(0),
     _currentCommandStartTime(-1),
     _previousTime(0),
@@ -142,7 +142,7 @@ Playback::_ExecuteCurrentCommand(float percentage)
             _scene->SetPathPlanes(paths, _originalPlanes);
         } else {
             FloatList newPlanes;
-            delta *= percentage;
+            delta = _Tween(delta, percentage);
             FOR_EACH(p, _originalPlanes) {
                 newPlanes.push_back(*p + delta);
             }
@@ -166,10 +166,17 @@ Playback::_ExecuteCurrentCommand(float percentage)
                 _handles[cmd[3u][i].asString()] = walls[i];
             }
         } else {
-            delta *= percentage;
+            delta = _Tween(delta, percentage);
             _scene->SetPathPlane(cop, _originalPlanes.front() + delta);
         }
     } else {
         pezFatal("Unknown command: %s", cmdName.c_str());
     }
+}
+
+float
+Playback::_Tween(float goalValue, float percentage)
+{
+    tween::Elastic tweener;
+    return tweener.easeOut(percentage, 0, goalValue, 1.0f);
 }

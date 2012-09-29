@@ -1,5 +1,6 @@
 #pragma once
 #include "common/typedefs.h"
+#include "tween/CppTweener.h"
 
 namespace sketch
 {
@@ -16,9 +17,12 @@ namespace sketch
         void SetCommandDuration(float seconds);
         void Update();
     private:
+        float _Tween(float goalValue, float percentage);
         void _ExecuteCurrentCommand(float percentage);
         const Json::Value& _GetCurrentCommand() const;
         bool _IsDiscreteCommand(const Json::Value&) const;
+    private:
+        tween::Tweener _tween;
         const Json::Value* _history;
         sketch::Scene* _scene;
         float _commandDuration;
