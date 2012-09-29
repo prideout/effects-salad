@@ -79,7 +79,7 @@ void Ground::Draw() {
     cam.Bind(glm::mat4());
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     _ground.Bind();
-    glDrawElements(GL_TRIANGLE_STRIP, _ground.indexCount, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLES, _ground.indexCount, GL_UNSIGNED_INT, NULL);
 
 
     glUseProgram(progs["FireFlies.Grass"]);

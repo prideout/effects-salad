@@ -1,7 +1,13 @@
 #include "common/terrainUtil.h"
-#include "noise/perlin.h"
 
 using namespace glm;
+
+Perlin
+TerrainUtil::GetNoise() 
+{
+    return Perlin(2, .1, 2, 0);
+}
+
 
 void
 TerrainUtil::Tessellate(vec3 cent,
@@ -10,7 +16,7 @@ TerrainUtil::Tessellate(vec3 cent,
                         FloatList* ground,
                         IndexList* indices)
 {
-    Perlin noise(2, .1, 2, 0);
+    Perlin noise = GetNoise();
     // don't mess with Y because it isn't effected by SIZE
     cent.x = cent.x - float(SIZE/2.*SCALE);
     cent.z = cent.z - float(SIZE/2.*SCALE);
@@ -23,23 +29,19 @@ TerrainUtil::Tessellate(vec3 cent,
             ground->push_back(1.);
         }
     } 
+    
+    // Build up triangles for all the points
+    for (int x = 0; x < SIZE - 1; x++) {
+        for (int z =0; z < SIZE - 1; z++) {
+            int idx = x*SIZE + z;
+            indices->push_back(idx+SIZE);
+            indices->push_back(idx);
+            indices->push_back(idx+SIZE+1);
 
-    // build up a triangle strip over the surface
-    int index = SIZE - 1;
-    bool isFirstIndex = true;
-    int di = -1;
-    while (index < (SIZE*SIZE) - SIZE) {
-        for (int i = 0; i < SIZE; i++) {
-            if (i > 0 or isFirstIndex) {
-                indices->push_back(index);
-                isFirstIndex = false;
-            }
-            indices->push_back(index+SIZE);
-            //std::cout << index + SIZE<< std::endl;
-            index += di;
+            indices->push_back(idx+SIZE+1);
+            indices->push_back(idx);
+            indices->push_back(idx+1);
         }
-        di *= -1;
-        index += SIZE + di;
     }
 }
 
@@ -97,8 +99,8 @@ TerrainUtil::ComputeNormals(const FloatList& ground,
     }
 }
 
-static vec3
-_SampleTerrain(Perlin& noise, int SIZE, float SCALE, float x, float z)
+vec3
+TerrainUtil::SampleTerrain(Perlin& noise, int SIZE, float SCALE, float x, float z)
 {
     float tx = x * SCALE;
     float tz = z * SCALE;
@@ -114,16 +116,16 @@ TerrainUtil::Smooth(int SIZE,
                     FloatList* normals,
                     IndexList* indices)
 {
-    Perlin noise(2, .1, 2, 0);
+    Perlin noise = GetNoise();
 
     for (float x = 0; x < SIZE; x++) {
         for (float z = 0; z < SIZE; z++) {
 
             const float e = 0.01;
 
-            vec3 p = _SampleTerrain(noise, SIZE, SCALE, x, z);
-            vec3 p1 = _SampleTerrain(noise, SIZE, SCALE, x+e, z);
-            vec3 p2 = _SampleTerrain(noise, SIZE, SCALE, x, z+e);
+            vec3 p = SampleTerrain(noise, SIZE, SCALE, x, z);
+            vec3 p1 = SampleTerrain(noise, SIZE, SCALE, x+e, z);
+            vec3 p2 = SampleTerrain(noise, SIZE, SCALE, x, z+e);
 
             vec3 du = p1 - p;
             vec3 dv = p2 - p;
@@ -140,20 +142,17 @@ TerrainUtil::Smooth(int SIZE,
         }
     } 
 
-    // build up a triangle strip over the surface
-    int index = SIZE - 1;
-    bool isFirstIndex = true;
-    int di = -1;
-    while (index < (SIZE*SIZE) - SIZE) {
-        for (int i = 0; i < SIZE; i++) {
-            if (i > 0 or isFirstIndex) {
-                indices->push_back(index);
-                isFirstIndex = false;
-            }
-            indices->push_back(index+SIZE);
-            index += di;
+    // Build up triangles for all the points
+    for (int x = 0; x < SIZE - 1; x++) {
+        for (int z =0; z < SIZE - 1; z++) {
+            int idx = x*SIZE + z;
+            indices->push_back(idx+SIZE);
+            indices->push_back(idx);
+            indices->push_back(idx+SIZE+1);
+
+            indices->push_back(idx+SIZE+1);
+            indices->push_back(idx);
+            indices->push_back(idx+1);
         }
-        di *= -1;
-        index += SIZE + di;
     }
 }
