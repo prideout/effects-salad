@@ -101,7 +101,6 @@ void main()
     float diffuseLight = .8;
     float ambientLight = .1;
     vec3 n = vNormal;
-    //vec3 l = normalize((ViewMatrix*vec4(-4, 10.0, 4, 1.0)).xyz);
 
     vec3 l = (vec4(Eye, 1.0) - vPosition).xyz;
     //vec3 l = (vec4(-3, 2.0, 2, 1.0) - vPosition).xyz;
@@ -112,8 +111,6 @@ void main()
     //d = 1.5;
     vec3 MaterialColor = vec3(.08, .60, .2);
     FragColor = vec4(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor, 1.0);
-    //FragColor = vec4(d,d,d, 1.0);
-    //FragColor = vec4(n, 1.0);
 }
 
 -- Stars.FS
@@ -142,7 +139,20 @@ void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
     float r = clamp(.2+1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
-    FragColor = r*vec4(.05, .2, .02, 1.);
+
+    float diffuseLight = .9;
+    float ambientLight = .1;
+    //vec3 n = vNormal;
+
+    vec3 l = (vec4(Eye, 1.0) - vPosition).xyz;
+    float dist = length(l);
+    float att = min(1.0, 1.0 / (dist*dist*.01));
+    l = normalize(l);
+    float d = 1.0; //max(0.0, dot(n, l));
+    vec3 MaterialColor = vec3(.05, .2, .02);
+    FragColor = vec4(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor, 1.0);
+
+    //FragColor = r*MaterialColor;
 }
 
 
