@@ -3,15 +3,24 @@
 #include "common/effect.h"
 #include "common/sketchPlayback.h"
 #include "common/vao.h"
+#include "glm/glm.hpp"
 
-class BuildingGrowth : public Effect {
+struct CityElement {
+    glm::vec2 Position;
+    float Radius;
+};
+
+typedef std::vector<CityElement> CityElements;
+
+class CityGrowth : public Effect {
 public:
-    BuildingGrowth();
-    virtual ~BuildingGrowth();
+    CityGrowth();
+    virtual ~CityGrowth();
     virtual void Init();
     virtual void Update();
     virtual void Draw();
 private:
+    CityElements _elements;
     sketch::Scene* _sketch;
     sketch::Scene* _historicalSketch;
     sketch::Tessellator* _tess;

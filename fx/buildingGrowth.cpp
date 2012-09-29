@@ -1,9 +1,11 @@
-#include "glm/gtx/rotate_vector.hpp"
+#include "fx/buildingGrowth.h"
 #include "common/vao.h"
 #include "common/programs.h"
 #include "common/camera.h"
 #include "common/demoContext.h"
-#include "fx/buildingGrowth.h"
+#include "common/sketchScene.h"
+#include "common/sketchTess.h"
+#include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtx/string_cast.hpp"
 
 using namespace sketch;
@@ -40,7 +42,7 @@ BuildingGrowth::Init()
     PathList walls;
     _sketch->PushPath(rect, height, &walls);
     _sketch->PushPath(rect, -1, &walls);
-    _roof = rect;
+    CoplanarPath* roof = rect;
     CoplanarPath* wall;
 
     wall = dynamic_cast<CoplanarPath*>(walls[1]);
@@ -77,7 +79,7 @@ BuildingGrowth::Init()
     // Pop out an "antenna"
     CoplanarPath* c1 = _sketch->AddInscribedPolygon(
         1.5,
-        _roof,
+        roof,
         vec2(0, 0),
         4);
     _sketch->PushPath(c1, 4);
@@ -94,21 +96,12 @@ BuildingGrowth::Init()
 
     Programs& progs = Programs::GetInstance();
     progs.Load("Sketch.Facets", true);
-
-    tween::TweenerParam param(1000, tween::ELASTIC, tween::EASE_OUT);
-    param.addProperty(&_roofHeight, 5);
-    param.setRepeatWithReverse(999, true);
-    _roofHeight = 4;
-    _tween.addTween(param);
 }
 
 void
 BuildingGrowth::Update()
 {
     float time = DemoContext::totalTime;
-
-    long ms = (long) (time * 1000);
-    _tween.step(ms);
 
     _player->Update();
     _tess->PullFromScene();

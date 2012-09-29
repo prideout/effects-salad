@@ -1,9 +1,13 @@
 #pragma once
+#include "common/jsonUtil.h"
 #include "common/typedefs.h"
 #include "tween/CppTweener.h"
+#include <string>
+#include <map>
 
 namespace sketch
 {
+    struct Path;
     typedef std::map<std::string, sketch::Path*> PathHandles;
     class Tessellator;
     class Scene;

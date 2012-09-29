@@ -33,6 +33,7 @@ SHARED := \
 	$(OBJDIR)/common/sketchUtil.o \
 	$(OBJDIR)/common/sketchTess.o \
 	$(OBJDIR)/common/sketchPlayback.o \
+	$(OBJDIR)/fx/cityGrowth.o \
 	$(OBJDIR)/fx/buildingGrowth.o \
 	$(OBJDIR)/fx/fullscreen.o \
 	$(OBJDIR)/fx/ground.o \
