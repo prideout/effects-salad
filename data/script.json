@@ -55,7 +55,7 @@
 
 [
 
-["GrassIntro", 15.0, "GrassIntroCurve", [
+["GrassIntro", 17.0, "GrassIntroCurve", [
     ["Moon Pond Grass", 0,   {"RippleHeight": 3.2, "LunarBrightness": 1.1}],
     ["Fireflies",       0.1, {"SpriteSize": 1.1}]]],
 
