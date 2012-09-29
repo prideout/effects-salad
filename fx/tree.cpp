@@ -144,7 +144,7 @@ void Tree::Draw() {
     cam.Bind(pos);
 
     // brown tree color
-    glUniform3f(u("MaterialColor"), 0.2*2, 0.1*2, 0.01*2);
+    glUniform3f(u("MaterialColor"), 0.3, 0.2, 0.15);
     glUniform1f(u("MinOcc"), 0.0);
     FOR_EACH(tube, _branches) {
         (*tube)->Draw();
