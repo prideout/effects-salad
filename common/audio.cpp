@@ -4,13 +4,18 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include <SDL.h>
-#include <SDL_mixer.h>
+#if __APPLE__
+    #include <SDL/SDL.h>
+    #include <SDL_mixer/SDL_mixer.h>
+#else
+    #include <SDL.h>
+    #include <SDL_mixer.h>
+#endif
 
 /* Mix_Music actually holds the music information.  */
 Mix_Music *music = NULL;
 
-void handleKey(SDL_KeyboardEvent key);
+//void handleKey(SDL_KeyboardEvent key);
 void musicDone();
 
 int StartAudio(void) {
@@ -86,6 +91,7 @@ int StartAudio(void) {
 	Mix_HookMusicFinished(musicDone);
 
 
+    return 0;
 
 }
 
@@ -96,6 +102,7 @@ void StopAudio() {
 
 }
 
+#if 0
 void handleKey(SDL_KeyboardEvent key) {
   switch(key.keysym.sym) {
   case SDLK_m:
@@ -136,6 +143,7 @@ void handleKey(SDL_KeyboardEvent key) {
     }
   }
 }
+#endif
 
 /* This is the function that we told SDL_Mixer to call when the music
    was finished. In our case, we're going to simply unload the music
