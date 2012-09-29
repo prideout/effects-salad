@@ -61,7 +61,7 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
-	CXXFLAGS := $(CXXFLAGS)
+	CXXFLAGS := $(CXXFLAGS) `sdl-config --cflags`
 	LIBS = -pthread -lX11 -lGL `sdl-config --libs` -lSDL_mixer lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
@@ -70,7 +70,7 @@ ifeq ($(UNAME), Darwin)
 	CC = clang
 	CXX = clang++
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.cocoa.o
-	LIBS = -framework OpenGL `sdl-config --libs` -lSDL_mixer -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a 
+	LIBS = -framework OpenGL -framework SDL -framework SDL_mixer -framework AppKit lib/jsoncpp/libjson_linux-gcc-4.2.1_libmt.a lib/tetgen/libtet.a 
 endif
 
 

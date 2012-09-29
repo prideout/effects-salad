@@ -5,14 +5,7 @@
 #include <iostream>
 
 #include <SDL.h>
-
-#ifdef __APPLE__
-    #include <SDL_mixer/SDL_mixer.h>
-#else
-    // this works on RHEL, but not sure if it will work on other distros or on
-    // windows
-    #include <SDL/SDL_mixer.h>
-#endif
+#include <SDL_mixer.h>
 
 /* Mix_Music actually holds the music information.  */
 Mix_Music *music = NULL;
@@ -73,9 +66,9 @@ int StartAudio(void) {
   }
 #endif
 	/* Actually loads up the music */
-	music = Mix_LoadMUS("dubstep-3.ogg");
+	music = Mix_LoadMUS("audio/moonlight-remix.ogg");
         if(!music) {
-            printf("Mix_LoadMUS(\"dubstep-3.ogg\"): %s\n", Mix_GetError());
+            printf("Mix_LoadMUS(\"audio/moonlight.ogg\"): %s\n", Mix_GetError());
             exit(1);
             // this might be a critical error...
         }
@@ -153,4 +146,3 @@ void musicDone() {
   Mix_FreeMusic(music);
   music = NULL;
 }
-
