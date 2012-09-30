@@ -1,8 +1,8 @@
 // TODO LIST
 // ---------
-// sketch::Path should have a flag for smooth normals
-// add CityElement->Height
-// camera work; add CityElement->ViewingAngle; add 'BirdsEye' mode for debugging
+// camera work:
+//    add CityElement->ViewingAngle
+//    keep 'BirdsEye' mode for debugging
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
@@ -27,6 +27,11 @@ static const float TerrainScale = 0.25;
 static const size_t CircleCount = 150;
 static const float MinRadius = 2;
 static const float MaxRadius = 7;
+
+static const float MinHeight = 2;
+static const float MaxHeight = 10;
+static const float SkyscraperHeight = 50;
+
 static const float CirclePadding = 0.25;
 
 CityGrowth::CityGrowth()
@@ -83,6 +88,15 @@ void CityGrowth::Init()
         element.Position.z = TerrainSize * coord.y;
         element.NumSides = 20;
 
+        // Low-lying buildings vs Skyscrapers
+        if (rand() % 3 != 0) {
+            element.Height = MinHeight + (MaxHeight - MinHeight) *
+                (rand() / float(RAND_MAX));
+        } else {
+            element.Height = MaxHeight + (SkyscraperHeight - MaxHeight) *
+                (rand() / float(RAND_MAX));
+        }
+
         element.Radius = MinRadius + (MaxRadius - MinRadius) *
             (rand() / float(RAND_MAX));
 
@@ -100,7 +114,8 @@ void CityGrowth::Init()
 
         sketch::CoplanarPath* circle =
             shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), e->NumSides);
-        shape->PushPath(circle, 1.0);
+        //shape->PushPath(circle, 1.0);
+        shape->PushPath(circle, e->Height);
 
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);

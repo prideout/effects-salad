@@ -8,6 +8,7 @@
 struct CityElement {
     glm::vec3 Position;
     float Radius;
+    float Height;
     int NumSides;
     sketch::Scene* CpuShape;
     sketch::Tessellator* CpuTriangles;
