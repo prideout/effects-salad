@@ -224,7 +224,7 @@ uniform mat3 NormalMatrix;
 
 uniform vec3 LightPosition = normalize(vec3(0, 1, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
-uniform vec3 Color = vec3(1);
+uniform vec3 Color = vec3(0.627, 0.322, 0.176);
 
 out vec4 FragColor;
 

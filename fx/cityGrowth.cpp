@@ -1,5 +1,6 @@
 // TODO LIST
 // ---------
+// simple lerping for the building heights
 // camera work:
 //    add CityElement->ViewingAngle
 //    keep 'BirdsEye' mode for debugging
@@ -33,6 +34,11 @@ static const float MaxHeight = 10;
 static const float SkyscraperHeight = 50;
 
 static const float CirclePadding = 0.25;
+
+static const float BeatsPerMinute = 140;
+static const float SecondsPerBeatInterval = 60.0 / BeatsPerMinute;
+static const float BeatsPerBuilding = 1;
+static const float SecondsPerBuilding = BeatsPerBuilding * SecondsPerBeatInterval;
 
 CityGrowth::CityGrowth()
 {
@@ -122,14 +128,20 @@ void CityGrowth::Init()
 
         const sketch::Plane* ground = shape->GroundPlane();
 
-        sketch::CoplanarPath* circle =
+        e->RoofPath =
             shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), e->NumSides);
-        //shape->PushPath(circle, 1.0);
-        shape->PushPath(circle, e->Height);
 
+        e->RoofBegin = e->RoofPath->Plane->Eqn.w;
+        shape->PushPath(e->RoofPath, e->Height);
+        e->RoofEnd = e->RoofPath->Plane->Eqn.w;
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
         e->CpuTriangles->PullFromScene();
+
+        shape->SetPathPlane(e->RoofPath, e->RoofBegin);
+        shape->PushPath(e->RoofPath, 2.0);
+        e->CpuTriangles->PullFromScene();
+ 
         e->CpuTriangles->PushToGpu(e->GpuTriangles);
     }
 
@@ -137,6 +149,10 @@ void CityGrowth::Init()
     Programs& progs = Programs::GetInstance();
     progs.Load("Buildings.Terrain", false);
     progs.Load("Sketch.Facets", true);
+
+    // Set up some growth state
+    _currentBuildingStartTime = 0;
+    _currentBuildingIndex = 0;
 }
 
 void CityGrowth::Update()
@@ -147,8 +163,27 @@ void CityGrowth::Update()
     camera->eye.x = 0;
     camera->eye.y = 100;
     camera->eye.z = 150;
-    camera->eye = glm::rotateY(camera->eye, time * 48);
+    //camera->eye = glm::rotateY(camera->eye, time * 48);
     camera->up = vec3(0, 1, 0);
+
+    if (_currentBuildingIndex >= _elements.size()) {
+        return;
+    }
+
+    CityElement& building = _elements[_currentBuildingIndex];
+
+    if (time - _currentBuildingStartTime > SecondsPerBuilding) {
+
+        // Snap it to the end
+        building.CpuShape->SetPathPlane(building.RoofPath, building.RoofEnd);
+        building.CpuTriangles->PullFromScene();
+        building.CpuTriangles->PushToGpu(building.GpuTriangles);
+
+        // TODO finalize by freeing CPU memory
+        _currentBuildingIndex++;
+
+        _currentBuildingStartTime = time;
+    }
 }
 
 void CityGrowth::Draw()
