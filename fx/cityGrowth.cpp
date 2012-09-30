@@ -1,7 +1,7 @@
 // TODO LIST
 // ---------
-// fix lighting
-// push to ground
+// reject circles that are on steep gradients
+// sketch::Path should have a flag for smooth normals
 // add CityElement->Height
 // camera work; add CityElement->ViewingAngle; add 'BirdsEye' mode for debugging
 // tetra integration
@@ -48,7 +48,7 @@ MyTerrainFunc(vec2 v)
 {
     float tx = v.x * TerrainScale;
     float tz = v.y * TerrainScale;
-    float y = noise.Get(tx, tz) + 20 * noise.Get(tx/5, tz/5);
+    float y = noise.Get(tx, tz) + 20.0 * noise.Get(tx/5.0, tz/5.0);
     vec3 p = vec3(v.x, y, v.y);
     return p;
 }
@@ -72,15 +72,15 @@ void CityGrowth::Init()
     while (_elements.size() < CircleCount) {
         CityElement element;
 
-        element.Position.x = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
-        element.Position.y = 0;
-        element.Position.z = TerrainSize * (rand() / float(RAND_MAX) - 0.5);
+        vec2 coord;
+        coord.x = (rand() / float(RAND_MAX) - 0.5);
+        coord.y = (rand() / float(RAND_MAX) - 0.5);
 
-        vec3 xlate = 0.5f * element.Position;
-        xlate.x *= 1.75;
+        vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
 
-        xlate += vec3(0, -5, 30); // move towards the camera and push downwards
-        element.Position = xlate;
+        element.Position.x = TerrainSize * coord.x;
+        element.Position.y = MyTerrainFunc(domain).y;
+        element.Position.z = TerrainSize * coord.y;
 
         element.Radius = MinRadius + (MaxRadius - MinRadius) *
             (rand() / float(RAND_MAX));
@@ -100,7 +100,7 @@ void CityGrowth::Init()
         int numSides = 20;
         sketch::CoplanarPath* circle =
             shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), numSides);
-        shape->PushPath(circle, 5.5);
+        shape->PushPath(circle, 1.0);
 
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
@@ -118,6 +118,7 @@ void CityGrowth::Update()
 {
     //float time = GetContext()->elapsedTime;
     PerspCamera* camera = &GetContext()->mainCam;
+    camera->far = 400;
     camera->eye.x = 0;
     camera->eye.y = 100;
     camera->eye.z = 150;
@@ -140,19 +141,25 @@ void CityGrowth::Draw()
     }
 
     glDisable(GL_CULL_FACE);
-
     glUseProgram(progs["Sketch.Facets"]);
-    surfaceCam.Bind(glm::mat4());
+    glUniform3f(u("Scale"), 1, 1, 1);
+    glUniform3f(u("Translate"), 0, 0, 0);
 
     FOR_EACH(e, _elements) {
         e->GpuTriangles.Bind();
-        glUniform3fv(u("Translate"), 1, ptr(e->Position));
+        mat4 xlate = glm::translate(e->Position);
+        surfaceCam.Bind(xlate);
         glDrawElements(GL_TRIANGLES, e->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
     }
 }
 
 bool CityGrowth::_Collides(const CityElement& a) const
 {
+    if (a.Position.x - a.Radius < -TerrainSize/2) return true;
+    if (a.Position.z - a.Radius < -TerrainSize/2) return true;
+    if (a.Position.x + a.Radius > TerrainSize/2) return true;
+    if (a.Position.z + a.Radius > TerrainSize/2) return true;
+
     FOR_EACH(b, _elements) {
         float r = a.Radius + b->Radius + CirclePadding;
         if (glm::distance2(a.Position, b->Position) < r * r) {
