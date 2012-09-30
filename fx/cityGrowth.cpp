@@ -1,9 +1,8 @@
 // TODO LIST
 // ---------
-// simple lerping for the building heights
 // camera work:
-//    add CityElement->ViewingAngle
-//    keep 'BirdsEye' mode for debugging
+//    _UpdateFlight else clause
+//    Obliterate the previous camera xform perhaps by keeping a local copy of the camera
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
@@ -96,6 +95,8 @@ void CityGrowth::Init()
         element.Position.y = MyTerrainFunc(domain).y;
         element.Position.z = TerrainSize * coord.y;
 
+        element.ViewingAngleRadians = (rand() / float(RAND_MAX)) * TwoPi;
+
         float shaper = rand() / float(RAND_MAX);
         if (shaper < 0.8) {
             element.NumSides = 4;
@@ -154,29 +155,15 @@ void CityGrowth::Init()
     progs.Load("Sketch.Facets", true);
 
     // Set up some growth state
-    _currentBuildingStartTime = 0;
+    _stateStartTime = 0;
     _currentBuildingIndex = 0;
+    _state = GROWTH;
+    _UpdateFlight(2 * SecondsPerFlight);
 }
 
-void CityGrowth::Update()
+void CityGrowth::_UpdateGrowth(float elapsedTime)
 {
-    float time = GetContext()->elapsedTime;
-    PerspCamera* camera = &GetContext()->mainCam;
-    camera->far = 400;
-    camera->eye.x = 0;
-    camera->eye.y = 100;
-    camera->eye.z = 150;
-    //camera->eye = glm::rotateY(camera->eye, time * 48);
-    camera->up = vec3(0, 1, 0);
-
-    if (_currentBuildingIndex >= _elements.size()) {
-        return;
-    }
-
     CityElement& building = _elements[_currentBuildingIndex];
-
-    float elapsedTime = time - _currentBuildingStartTime;
-
     if (elapsedTime > SecondsPerBuilding) {
         building.CpuShape->SetPathPlane(building.RoofPath, building.RoofEnd);
         building.CpuTriangles->PullFromScene();
@@ -185,8 +172,16 @@ void CityGrowth::Update()
         // TODO finalize by freeing CPU memory
 
         _currentBuildingIndex++;
-        _currentBuildingStartTime = time;
+        _stateStartTime = GetContext()->elapsedTime;
+        if (_state != DEBUG) {
+            _state = FLIGHT;
+        }
+
     } else {
+
+        if (elapsedTime < 0) {
+            return;
+        }
 
         tween::Elastic tweener;
         float w = tweener.easeOut(
@@ -197,6 +192,57 @@ void CityGrowth::Update()
         building.CpuShape->SetPathPlane(building.RoofPath, w);
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
+    }
+}
+
+void CityGrowth::_UpdateFlight(float elapsedTime)
+{
+    PerspCamera* camera = &GetContext()->mainCam;
+    CityElement& building = _elements[_currentBuildingIndex];
+    if (elapsedTime > SecondsPerFlight) {
+
+        camera->far = 400;
+
+        float viewingDistance = 40.0;
+
+        camera->center = building.Position + vec3(0, 20, 0);
+        camera->eye = normalize(vec3(0, -1, 1));
+        camera->eye = camera->center - viewingDistance * glm::rotateY(camera->eye, building.ViewingAngleRadians);
+  
+        _stateStartTime = GetContext()->elapsedTime;
+        _state = GROWTH;
+        
+    } else {
+        // TODO
+    }
+}
+
+void CityGrowth::Update()
+{
+    float time = GetContext()->elapsedTime;
+    PerspCamera* camera = &GetContext()->mainCam;
+
+    if (_state == DEBUG) {
+        camera->far = 400;
+        camera->eye.x = 0;
+        camera->eye.y = 100;
+        camera->eye.z = 150;
+        camera->up = vec3(0, 1, 0);
+    }
+
+    if (_currentBuildingIndex >= _elements.size()) {
+        return;
+    }
+
+    float elapsedTime = time - _stateStartTime;
+    switch (_state) {
+    case DEBUG:
+    case GROWTH:
+        _UpdateGrowth(elapsedTime);
+        break;
+    case FLIGHT:
+        _UpdateFlight(elapsedTime);
+        break;
     }
 }
 
@@ -231,8 +277,7 @@ void CityGrowth::Draw()
 
 bool CityGrowth::_Collides(const CityElement& a) const
 {
-    const float twopi = 2 * pi<float>();
-    const float dtheta = twopi / a.NumSides;
+    const float dtheta = TwoPi / a.NumSides;
     float theta = 0;
     vec2 center = vec2(a.Position.x, a.Position.z);
     for (int i = 0; i < a.NumSides; ++i, theta += dtheta) {
