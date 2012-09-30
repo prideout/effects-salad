@@ -98,7 +98,7 @@ void main()
 #endif
 
     //float s = vUvCoord.x + vUvCoord.y;
-    float diffuseLight = .8;
+    float diffuseLight = .2;
     float ambientLight = .1;
     vec3 n = vNormal;
 
@@ -185,7 +185,7 @@ void main()
     */
     vPosition = Position;
     vOcc = float(mod(gl_VertexID, 2));
-    vPosition.xz += .5* mod(gl_VertexID, 2) * vec2(cos(Time + gl_VertexID * .0000003), 0);
+    vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(cos(Time + gl_VertexID * .0000003), 0);
     gl_Position = Projection * Modelview * vPosition;
     vNormal = normalize(Normal.xyz);
 }
@@ -237,8 +237,26 @@ void main()
 
 //in vec3 vNormal;
 in vec4 vPosition;
-//in vec2 vUvCoord;
+in vec2 vUv;
+
 out vec4 FragColor;
+
+vec3 blossom( float x, float y )
+{
+    float t = 0.0; //time;
+    float bmps = 5.0;
+    float a = atan(x,y);
+    float r = sqrt(x*x+y*y);
+    float s = 0.5 + 0.5*sin(bmps*a + t);
+    float g = sin(1.57+bmps*a+t);
+    float d = 0.7 + 0.3*sqrt(s) + 0.02*g*g;
+    float h = r/d;
+    float k = max(.5, h*3.0); //min(2.5, 1.0 / h);
+    float f = 1.0-smoothstep( 0.98, 1.0, h );
+    //k *= 1.0-0.5*(1.0-h)*smoothstep(0.95+0.05*h,1.0,sin(bmps*a+t));
+    return mix( vec3(.0), vec3(.4+0.4*k,0.3*k,0.3*k), f );
+}
+
 
 void main()
 {
@@ -254,10 +272,12 @@ void main()
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
 */
-    FragColor = vec4(.8, .3, .3, .5);
+    vec2 p = vUv; //(-1.0+2.0*gl_FragCoord.xz);
+    FragColor = vec4(p.x, p.y, 0, 1.0); //vec4(blossom(p.x,p.y), 1.0); //vec4(.8, .3, .3, .5);
+    FragColor = vec4(blossom(p.x,p.y), .5); //vec4(.8, .3, .3, .5);
+    if (FragColor.r == 0.0)
+        discard;
 }
-
-
 
 
 
@@ -267,6 +287,7 @@ layout(location = 0) in vec3 Position;
 
 out vec4 vPosition;
 //out vec3 vNormal;
+out vec2 vUv;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -281,6 +302,14 @@ uniform samplerBuffer LeafData;
 void main()
 {
     int id = int(gl_VertexID / 12)*2;
+    int uvId = int(mod(gl_VertexID, 6));
+
+    // XXX: yuck, would be nice to have a single expression
+    vUv.x = 2.0 * float(mod(uvId, 2)) - 1.0;
+    if (uvId < 2 || uvId == 3)
+        vUv.y = -1.0;
+    else if (uvId > 3 || uvId == 2)
+        vUv.y = 1.0;
 
     vPosition.xyz = Position.xyz;
     vPosition.w = 1.0;
