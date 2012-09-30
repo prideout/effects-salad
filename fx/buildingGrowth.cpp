@@ -101,7 +101,7 @@ BuildingGrowth::Init()
 void
 BuildingGrowth::Update()
 {
-    float time = DemoContext::totalTime;
+    float time = GetContext()->elapsedTime;
 
     _player->Update();
     _tess->PullFromScene();

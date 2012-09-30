@@ -203,7 +203,6 @@ void CityGrowth::Init()
 void CityGrowth::_UpdateGrowth(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
-    bool duplex = building.Rect.SideWall.Path;
     float duration = SecondsPerBuilding;
 
     if (elapsedTime > duration) {
