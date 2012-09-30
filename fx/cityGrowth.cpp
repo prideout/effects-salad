@@ -19,6 +19,7 @@
 #include "common/sketchScene.h"
 #include "common/sketchTess.h"
 #include "glm/gtx/constants.inl"
+#include "tween/CppTweener.h"
 
 using namespace std;
 using namespace glm;
@@ -38,7 +39,9 @@ static const float CirclePadding = 0.25;
 static const float BeatsPerMinute = 140;
 static const float SecondsPerBeatInterval = 60.0 / BeatsPerMinute;
 static const float BeatsPerBuilding = 1;
+static const float BeatsPerFlight = 1;
 static const float SecondsPerBuilding = BeatsPerBuilding * SecondsPerBeatInterval;
+static const float SecondsPerFlight = BeatsPerFlight * SecondsPerBeatInterval;
 
 CityGrowth::CityGrowth()
 {
@@ -172,17 +175,28 @@ void CityGrowth::Update()
 
     CityElement& building = _elements[_currentBuildingIndex];
 
-    if (time - _currentBuildingStartTime > SecondsPerBuilding) {
+    float elapsedTime = time - _currentBuildingStartTime;
 
-        // Snap it to the end
+    if (elapsedTime > SecondsPerBuilding) {
         building.CpuShape->SetPathPlane(building.RoofPath, building.RoofEnd);
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
 
         // TODO finalize by freeing CPU memory
-        _currentBuildingIndex++;
 
+        _currentBuildingIndex++;
         _currentBuildingStartTime = time;
+    } else {
+
+        tween::Elastic tweener;
+        float w = tweener.easeOut(
+            elapsedTime,
+            building.RoofBegin,
+            building.RoofEnd,
+            SecondsPerBuilding);
+        building.CpuShape->SetPathPlane(building.RoofPath, w);
+        building.CpuTriangles->PullFromScene();
+        building.CpuTriangles->PushToGpu(building.GpuTriangles);
     }
 }
 
