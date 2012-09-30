@@ -34,7 +34,7 @@ protected:
     void _UpdateGrowth(float elapsedTime);
     void _UpdateFlight(float elapsedTime);
     bool _Collides(const CityElement& e) const;
-    void _InitCamera();
+    PerspCamera _InitialCamera();
 private:
     CityElements _elements;
     sketch::Tessellator* _tess;

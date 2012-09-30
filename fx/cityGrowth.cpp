@@ -157,7 +157,7 @@ void CityGrowth::Init()
     _stateStartTime = 0;
     _currentBuildingIndex = 0;
     _state = ENTER;
-    _InitCamera();
+    _UpdateFlight(0);
 }
 
 void CityGrowth::_UpdateGrowth(float elapsedTime)
@@ -192,19 +192,20 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
     }
 }
 
-void CityGrowth::_InitCamera()
+PerspCamera CityGrowth::_InitialCamera()
 {
     CityElement& building = _elements[_currentBuildingIndex];
-    _previousCamera.far = 2000;
-    _previousCamera.up = vec3(0, 1, 0);
+    PerspCamera cam;
+    cam.far = 2000;
+    cam.up = vec3(0, 1, 0);
     float viewingDistance = 1600;
     vec3 center = building.Position + vec3(0, 10, 0);
     vec3 gaze = normalize(vec3(0, -1, 1));
     gaze = glm::rotateY(gaze, building.ViewingAngle * 2);
     vec3 eye = _camera.center - viewingDistance * gaze;
-    _previousCamera.center = center;
-    _previousCamera.eye = eye;
-    _camera = _previousCamera;
+    cam.center = center;
+    cam.eye = eye;
+    return cam;
 }
 
 void CityGrowth::_UpdateFlight(float elapsedTime)
@@ -218,11 +219,14 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
     vec3 eye = _camera.center - viewingDistance * gaze;
 
     float flightTime = SecondsPerFlight;
+    float introDuration = 0;
+
     if (_state != FLIGHT) {
         flightTime *= 5;
+        introDuration = SecondsPerFlight * 4;
     }
 
-    if (elapsedTime > flightTime) {
+    if (elapsedTime > flightTime + introDuration) {
 
         _previousCamera = _camera;
         _camera.center = center;
@@ -230,15 +234,32 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
         _stateStartTime = GetContext()->elapsedTime;
         _state = GROWTH;
         
+    } else if (elapsedTime < introDuration) {
+
+        gaze = normalize(vec3(0, -0.5, 1));
+        gaze = glm::rotateY(gaze, building.ViewingAngle * 4);
+        eye = _camera.center - viewingDistance * gaze;
+
+        _camera = _previousCamera = _InitialCamera();
+        tween::Quad tweener;
+        float t = tweener.easeOut(
+            elapsedTime,
+            0,
+            1,
+            introDuration);
+        _camera.center = mix(_previousCamera.center, center, t);
+        _camera.eye = mix(_previousCamera.eye, eye, t);
+        _previousCamera = _camera;
+
     } else {
 
+        elapsedTime -= introDuration;
         tween::Quad tweener;
         float t = tweener.easeOut(
             elapsedTime,
             0,
             1,
             flightTime);
-
         _camera.center = mix(_previousCamera.center, center, t);
         _camera.eye = mix(_previousCamera.eye, eye, t);
     }
@@ -255,8 +276,6 @@ void CityGrowth::Update()
         _camera.eye.z = 150;
         _camera.up = vec3(0, 1, 0);
     }
-
-    GetContext()->mainCam = _camera;
 
     if (_currentBuildingIndex >= _elements.size()) {
         return;
@@ -280,13 +299,12 @@ void CityGrowth::Draw()
 {
     glEnable(GL_DEPTH_TEST);
     Programs& progs = Programs::GetInstance();
-    PerspCamera surfaceCam = GetContext()->mainCam;
 
     // Draw terrain
     if (true) {
         glEnable(GL_CULL_FACE);
         glUseProgram(progs["Buildings.Terrain"]);
-        surfaceCam.Bind(glm::mat4());
+        _camera.Bind(glm::mat4());
         _terrainVao.Bind();
         glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
     }
@@ -299,7 +317,7 @@ void CityGrowth::Draw()
     FOR_EACH(e, _elements) {
         e->GpuTriangles.Bind();
         mat4 xlate = glm::translate(e->Position);
-        surfaceCam.Bind(xlate);
+        _camera.Bind(xlate);
         glUniform1i(u("Smooth"), e->NumSides > 5 ? 1 : 0);
         glDrawElements(GL_TRIANGLES, e->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
     }
