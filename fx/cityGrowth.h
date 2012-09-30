@@ -4,6 +4,7 @@
 #include "common/sketchPlayback.h"
 #include "common/sketchScene.h"
 #include "common/vao.h"
+#include "common/camera.h"
 #include "glm/glm.hpp"
 
 struct CityElement {
@@ -48,4 +49,6 @@ private:
     float _stateStartTime;
 
     size_t _currentBuildingIndex;
+    PerspCamera _camera;
+    PerspCamera _previousCamera;
 };

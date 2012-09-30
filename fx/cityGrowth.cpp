@@ -1,8 +1,6 @@
 // TODO LIST
 // ---------
-// camera work:
-//    _UpdateFlight else clause
-//    Obliterate the previous camera xform perhaps by keeping a local copy of the camera
+// non-square rectangles
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
@@ -24,16 +22,16 @@ using namespace std;
 using namespace glm;
 
 static const int TerrainSize = 150;
-static const float TerrainScale = 0.25;
-static const size_t CircleCount = 150;
-static const float MinRadius = 2;
+static const float TerrainScale = 0.5;
+static const size_t CircleCount = 64;
+static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
-static const float MinHeight = 2;
+static const float MinHeight = 7;
 static const float MaxHeight = 10;
-static const float SkyscraperHeight = 50;
+static const float SkyscraperHeight = 60;
 
-static const float CirclePadding = 0.25;
+static const float CirclePadding = 1.25;
 
 static const float BeatsPerMinute = 140;
 static const float SecondsPerBeatInterval = 60.0 / BeatsPerMinute;
@@ -95,7 +93,7 @@ void CityGrowth::Init()
         element.Position.y = MyTerrainFunc(domain).y;
         element.Position.z = TerrainSize * coord.y;
 
-        element.ViewingAngleRadians = (rand() / float(RAND_MAX)) * TwoPi;
+        element.ViewingAngleRadians = (rand() / float(RAND_MAX)) * 360;
 
         float shaper = rand() / float(RAND_MAX);
         if (shaper < 0.8) {
@@ -197,38 +195,51 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
 
 void CityGrowth::_UpdateFlight(float elapsedTime)
 {
-    PerspCamera* camera = &GetContext()->mainCam;
     CityElement& building = _elements[_currentBuildingIndex];
+    _camera.far = 400;
+    _camera.up = vec3(0, 1, 0);
+
+    float viewingDistance = 40.0 + building.Radius + building.Height * 2;
+    vec3 center = building.Position + vec3(0, 10, 0);
+    vec3 gaze = normalize(vec3(0, -0.5, 1));
+    gaze = glm::rotateY(gaze, building.ViewingAngleRadians);
+    vec3 eye = _camera.center - viewingDistance * gaze;
+
     if (elapsedTime > SecondsPerFlight) {
 
-        camera->far = 400;
-
-        float viewingDistance = 40.0;
-
-        camera->center = building.Position + vec3(0, 20, 0);
-        camera->eye = normalize(vec3(0, -1, 1));
-        camera->eye = camera->center - viewingDistance * glm::rotateY(camera->eye, building.ViewingAngleRadians);
-  
+        _previousCamera = _camera;
+        _camera.center = center;
+        _camera.eye = eye;
         _stateStartTime = GetContext()->elapsedTime;
         _state = GROWTH;
         
     } else {
-        // TODO
+
+        tween::Quad tweener;
+        float t = tweener.easeOut(
+            elapsedTime,
+            0,
+            1,
+            SecondsPerFlight);
+
+        _camera.center = mix(_previousCamera.center, center, t);
+        _camera.eye = mix(_previousCamera.eye, eye, t);
     }
 }
 
 void CityGrowth::Update()
 {
     float time = GetContext()->elapsedTime;
-    PerspCamera* camera = &GetContext()->mainCam;
 
     if (_state == DEBUG) {
-        camera->far = 400;
-        camera->eye.x = 0;
-        camera->eye.y = 100;
-        camera->eye.z = 150;
-        camera->up = vec3(0, 1, 0);
+        _camera.far = 400;
+        _camera.eye.x = 0;
+        _camera.eye.y = 100;
+        _camera.eye.z = 150;
+        _camera.up = vec3(0, 1, 0);
     }
+
+    GetContext()->mainCam = _camera;
 
     if (_currentBuildingIndex >= _elements.size()) {
         return;
