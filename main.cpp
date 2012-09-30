@@ -49,7 +49,7 @@ static void _constructScene()
 
         ctx->mainCam.eye.z = 5;
         ctx->drawables.push_back(new FireFlies());
-        ctx->drawables.push_back(new FpsOverlay(FpsOverlay::MemUsage));
+        ctx->drawables.push_back(new FpsOverlay()); //FpsOverlay::MemUsage));
     }
 
 
@@ -243,7 +243,10 @@ PezConfig PezGetConfig()
         config.Height = config.Height * 2 / 3;
     }
 
-    config.Multisampling = false;
+    config.Height = pezGetDesktopHeight();
+    config.Width = pezGetDesktopWidth();
+
+    config.Multisampling = true;
     config.VerticalSync = true;
     return config;
 }
