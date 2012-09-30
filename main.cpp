@@ -133,8 +133,8 @@ static void _constructScene()
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
-        vec4 hotPink(1.000, 0.078, 0.576, 1);
-        fullscreen->clearColor = vec4(hotPink);
+        //vec4 hotPink(1.000, 0.078, 0.576, 1);
+        //fullscreen->clearColor = vec4(hotPink);
         fullscreen->AddChild(new CityGrowth());
         ctx->drawables.push_back(fullscreen);
     }

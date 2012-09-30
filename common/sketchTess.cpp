@@ -36,6 +36,11 @@ sketch::Tessellator::PullFromScene()
         IndexList indices;
         _scene->_WalkPath(coplanar, &rim2d, arcTessLength, &indices);
 
+        if (rim2d.size() == 3) {
+            _tris.push_back(ivec3(indices[0],indices[1], indices[2]));
+            continue;
+        }
+
         list<vector<p2t::Point*> > holes;
         vector<p2t::Point*> polyline;
         map<p2t::Point*, unsigned int> pointmap;

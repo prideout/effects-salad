@@ -2,6 +2,7 @@
 
 #include "common/effect.h"
 #include "common/sketchPlayback.h"
+#include "common/sketchScene.h"
 #include "common/vao.h"
 #include "glm/glm.hpp"
 
@@ -10,6 +11,9 @@ struct CityElement {
     float Radius;
     float Height;
     int NumSides;
+    sketch::CoplanarPath* RoofPath;
+    float RoofBegin;
+    float RoofEnd;
     sketch::Scene* CpuShape;
     sketch::Tessellator* CpuTriangles;
     Vao GpuTriangles;
@@ -30,4 +34,7 @@ private:
     sketch::Tessellator* _tess;
     sketch::Playback* _player;
     Vao _terrainVao;
+
+    float _currentBuildingStartTime;
+    size_t _currentBuildingIndex;
 };
