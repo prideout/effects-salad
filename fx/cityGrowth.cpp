@@ -1,6 +1,7 @@
 // TODO LIST
 // ---------
 // non-square rectangles
+// free CPU memory in UpdateGrowth before transitioning
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
@@ -93,7 +94,7 @@ void CityGrowth::Init()
         element.Position.y = MyTerrainFunc(domain).y;
         element.Position.z = TerrainSize * coord.y;
 
-        element.ViewingAngleRadians = (rand() / float(RAND_MAX)) * 360;
+        element.ViewingAngle = (rand() / float(RAND_MAX)) * 360;
 
         float shaper = rand() / float(RAND_MAX);
         if (shaper < 0.8) {
@@ -155,8 +156,8 @@ void CityGrowth::Init()
     // Set up some growth state
     _stateStartTime = 0;
     _currentBuildingIndex = 0;
-    _state = GROWTH;
-    _UpdateFlight(2 * SecondsPerFlight);
+    _state = ENTER;
+    _InitCamera();
 }
 
 void CityGrowth::_UpdateGrowth(float elapsedTime)
@@ -171,9 +172,7 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
 
         _currentBuildingIndex++;
         _stateStartTime = GetContext()->elapsedTime;
-        if (_state != DEBUG) {
-            _state = FLIGHT;
-        }
+        _state = FLIGHT;
 
     } else {
 
@@ -193,19 +192,37 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
     }
 }
 
+void CityGrowth::_InitCamera()
+{
+    CityElement& building = _elements[_currentBuildingIndex];
+    _previousCamera.far = 2000;
+    _previousCamera.up = vec3(0, 1, 0);
+    float viewingDistance = 1600;
+    vec3 center = building.Position + vec3(0, 10, 0);
+    vec3 gaze = normalize(vec3(0, -1, 1));
+    gaze = glm::rotateY(gaze, building.ViewingAngle * 2);
+    vec3 eye = _camera.center - viewingDistance * gaze;
+    _previousCamera.center = center;
+    _previousCamera.eye = eye;
+    _camera = _previousCamera;
+}
+
 void CityGrowth::_UpdateFlight(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
-    _camera.far = 400;
-    _camera.up = vec3(0, 1, 0);
 
     float viewingDistance = 40.0 + building.Radius + building.Height * 2;
     vec3 center = building.Position + vec3(0, 10, 0);
     vec3 gaze = normalize(vec3(0, -0.5, 1));
-    gaze = glm::rotateY(gaze, building.ViewingAngleRadians);
+    gaze = glm::rotateY(gaze, building.ViewingAngle);
     vec3 eye = _camera.center - viewingDistance * gaze;
 
-    if (elapsedTime > SecondsPerFlight) {
+    float flightTime = SecondsPerFlight;
+    if (_state != FLIGHT) {
+        flightTime *= 5;
+    }
+
+    if (elapsedTime > flightTime) {
 
         _previousCamera = _camera;
         _camera.center = center;
@@ -220,7 +237,7 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
             elapsedTime,
             0,
             1,
-            SecondsPerFlight);
+            flightTime);
 
         _camera.center = mix(_previousCamera.center, center, t);
         _camera.eye = mix(_previousCamera.eye, eye, t);
@@ -251,6 +268,8 @@ void CityGrowth::Update()
     case GROWTH:
         _UpdateGrowth(elapsedTime);
         break;
+    case ENTER:
+    case EXIT:
     case FLIGHT:
         _UpdateFlight(elapsedTime);
         break;

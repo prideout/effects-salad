@@ -18,7 +18,7 @@ struct CityElement {
     sketch::Scene* CpuShape;
     sketch::Tessellator* CpuTriangles;
     Vao GpuTriangles;
-    float ViewingAngleRadians;
+    float ViewingAngle;
 };
 
 typedef std::vector<CityElement> CityElements;
@@ -33,17 +33,20 @@ public:
 protected:
     void _UpdateGrowth(float elapsedTime);
     void _UpdateFlight(float elapsedTime);
-private:
     bool _Collides(const CityElement& e) const;
+    void _InitCamera();
+private:
     CityElements _elements;
     sketch::Tessellator* _tess;
     sketch::Playback* _player;
     Vao _terrainVao;
 
     enum StateMachine {
+        ENTER,
         GROWTH,
         FLIGHT,
         DEBUG,
+        EXIT,
     };
     StateMachine _state;
     float _stateStartTime;
