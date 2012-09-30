@@ -243,10 +243,12 @@ PezConfig PezGetConfig()
         config.Height = config.Height * 2 / 3;
     }
 
-    config.Height = pezGetDesktopHeight();
+    config.Width = 1024; //pezGetDesktopWidth();
+    config.Height = 768; //pezGetDesktopHeight();
     config.Width = pezGetDesktopWidth();
+    config.Height = pezGetDesktopHeight();
 
-    config.Multisampling = true;
+    config.Multisampling = false;
     config.VerticalSync = true;
     return config;
 }
