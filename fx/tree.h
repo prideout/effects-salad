@@ -21,8 +21,10 @@ class Tree : public Effect {
     BufferTexture _leafData;
 
 public:
+    glm::vec3 pos;
 
-    Tree() : Effect() 
+    Tree() : Effect(),
+        pos(glm::vec3(-3,-2.25,2))
     { 
     }
    
