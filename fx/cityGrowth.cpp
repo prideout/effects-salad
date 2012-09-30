@@ -157,15 +157,24 @@ void CityGrowth::Init()
         if (e->NumSides == 4 && !(rand() % 2)) {
             sketch::Path* wall = walls[2];
             e->Rect.SideWall.Path = shape->AddInscribedRectangle(
-                e->Height,
-                e->Rect.Size.x,
+                e->Height / 2,
+                e->Rect.Size.x * 0.9,
                 dynamic_cast<sketch::CoplanarPath*>(wall),
                 vec2(0, 0));
             e->Rect.SideWall.BeginW = e->Rect.SideWall.Path->Plane->Eqn.w;
+            sketch::PathList secondaryWalls;
+
             shape->PushPath(
                 e->Rect.SideWall.Path,
-                1.0);
+                1.0,
+                &secondaryWalls);
+
+            e->Rect.SideWallRoof.Path = 
+                dynamic_cast<sketch::CoplanarPath*>(secondaryWalls[1]);
+
+            e->Rect.SideWallRoof.EndW = e->Rect.SideWallRoof.Path->Plane->Eqn.w;
             e->Rect.SideWall.EndW = e->Rect.SideWall.Path->Plane->Eqn.w;
+
         } else {
             e->Rect.SideWall.Path = 0;
         }
@@ -176,8 +185,18 @@ void CityGrowth::Init()
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
         e->CpuTriangles->PullFromScene();
+
+        // Collapse the main building vertically
         shape->SetPathPlane(e->Roof.Path, e->Roof.BeginW);
 
+        // Collapse the side wall vertically
+        if (e->Rect.SideWallRoof.Path) {
+            shape->PushPath(e->Rect.SideWallRoof.Path,
+                            -e->Height/2);
+            e->Rect.SideWallRoof.BeginW = e->Rect.SideWallRoof.Path->Plane->Eqn.w;
+        }
+
+        // Collapse the side wall horizontally
         if (e->Rect.SideWall.Path) {
             shape->SetPathPlane(e->Rect.SideWall.Path,
                                 e->Rect.SideWall.BeginW);
@@ -204,6 +223,9 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
     float duration = SecondsPerBuilding;
+    if (building.Rect.SideWall.Path) {
+        duration *= 2;
+    }
 
     if (elapsedTime > duration) {
         building.CpuShape->SetPathPlane(building.Roof.Path, building.Roof.EndW);
@@ -221,23 +243,31 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
         if (elapsedTime < 0) {
             return;
         }
-        AnimElement* anim = &building.Roof;
+
+        vector<AnimElement*> anims;
+        anims.push_back(&building.Roof);
+
         float remainingTime = duration;
         if (building.Rect.SideWall.Path) {
             if (elapsedTime > remainingTime / 2) {
-                elapsedTime -= remainingTime / 2;
-                anim = &building.Rect.SideWall;
+                float error = elapsedTime - remainingTime / 2;
+                elapsedTime -= remainingTime / 2 - error;
+                anims[0] = &building.Rect.SideWall;
+                anims.push_back(&building.Rect.SideWallRoof);
             }
             remainingTime /= 2;
         }
 
         tween::Elastic tweener;
-        float w = tweener.easeOut(
-            elapsedTime,
-            anim->BeginW,
-            anim->EndW,
-            remainingTime);
-        building.CpuShape->SetPathPlane(anim->Path, w);
+        FOR_EACH(a, anims) {
+            float w = tweener.easeOut(
+                elapsedTime,
+                (*a)->BeginW,
+                (*a)->EndW,
+                remainingTime);
+            building.CpuShape->SetPathPlane((*a)->Path, w);
+        }
+
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
     }

@@ -41,6 +41,10 @@ sketch::Tessellator::PullFromScene()
             continue;
         }
 
+        if (rim2d.size() < 3) {
+            continue;
+        }
+
         list<vector<p2t::Point*> > holes;
         vector<p2t::Point*> polyline;
         map<p2t::Point*, unsigned int> pointmap;

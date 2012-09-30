@@ -17,6 +17,7 @@ struct RectElement {
     glm::vec2 Size;
     glm::vec2 Offset;
     AnimElement SideWall;
+    AnimElement SideWallRoof;
 };
 
 struct CityElement {
