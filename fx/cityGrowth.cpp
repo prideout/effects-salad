@@ -1,6 +1,5 @@
 // TODO LIST
 // ---------
-// fix bugs with the SideWall stuff
 // windows AND window frames
 // SSAO !!!
 // free CPU memory in UpdateGrowth before transitioning
