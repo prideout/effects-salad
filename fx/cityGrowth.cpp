@@ -176,6 +176,7 @@ void CityGrowth::Init()
 
         } else {
             e->Rect.SideWall.Path = 0;
+            e->Rect.SideWallRoof.Path = 0;
         }
 
         shape->PushPath(e->Roof.Path, e->Height/2, &walls);
