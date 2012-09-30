@@ -1,6 +1,5 @@
 // TODO LIST
 // ---------
-// reject circles that are on steep gradients
 // sketch::Path should have a flag for smooth normals
 // add CityElement->Height
 // camera work; add CityElement->ViewingAngle; add 'BirdsEye' mode for debugging
@@ -150,6 +149,7 @@ void CityGrowth::Draw()
         e->GpuTriangles.Bind();
         mat4 xlate = glm::translate(e->Position);
         surfaceCam.Bind(xlate);
+        glUniform1i(u("Smooth"), e->NumSides > 5 ? 1 : 0);
         glDrawElements(GL_TRIANGLES, e->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
     }
 }

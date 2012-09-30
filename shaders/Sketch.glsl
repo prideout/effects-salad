@@ -31,22 +31,29 @@ out vec4 gColor;
 out vec3 gFacetNormal;
 out vec3 gPosition;
 
+uniform bool Smooth = false;
+
 void main()
 {
     gColor = vec4(1, 1, 1, 1);
 
     vec3 A = vPosition[2].xyz - vPosition[0].xyz;
     vec3 B = vPosition[1].xyz - vPosition[0].xyz;
-    gFacetNormal = NormalMatrix * normalize(cross(A, B));
+    gFacetNormal = normalize(cross(A, B));
+    bool smoothie = Smooth && abs(gFacetNormal.y) < 0.01;
+    gFacetNormal = NormalMatrix * gFacetNormal;
 
+    if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[0].x, 0, vPosition[0].z));
     gPosition = vPosition[0];
     gl_Position = Projection * Modelview * vec4(vPosition[0], 1);
     EmitVertex();
 
+    if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[1].x, 0, vPosition[1].z));
     gPosition = vPosition[1];
     gl_Position = Projection * Modelview * vec4(vPosition[1], 1);
     EmitVertex();
 
+    if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[2].x, 0, vPosition[2].z));
     gPosition = vPosition[2];
     gl_Position = Projection * Modelview * vec4(vPosition[2], 1);
     EmitVertex();
