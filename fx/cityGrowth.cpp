@@ -18,14 +18,15 @@
 #include "common/demoContext.h"
 #include "common/sketchScene.h"
 #include "common/sketchTess.h"
+#include "glm/gtx/constants.inl"
 
 using namespace std;
 using namespace glm;
 
 static const int TerrainSize = 150;
 static const float TerrainScale = 0.25;
-static const size_t CircleCount = 100;
-static const float MinRadius = 1;
+static const size_t CircleCount = 150;
+static const float MinRadius = 2;
 static const float MaxRadius = 7;
 static const float CirclePadding = 0.25;
 
@@ -81,6 +82,7 @@ void CityGrowth::Init()
         element.Position.x = TerrainSize * coord.x;
         element.Position.y = MyTerrainFunc(domain).y;
         element.Position.z = TerrainSize * coord.y;
+        element.NumSides = 20;
 
         element.Radius = MinRadius + (MaxRadius - MinRadius) *
             (rand() / float(RAND_MAX));
@@ -97,9 +99,8 @@ void CityGrowth::Init()
 
         const sketch::Plane* ground = shape->GroundPlane();
 
-        int numSides = 20;
         sketch::CoplanarPath* circle =
-            shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), numSides);
+            shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), e->NumSides);
         shape->PushPath(circle, 1.0);
 
         e->CpuShape = shape;
@@ -155,10 +156,27 @@ void CityGrowth::Draw()
 
 bool CityGrowth::_Collides(const CityElement& a) const
 {
-    if (a.Position.x - a.Radius < -TerrainSize/2) return true;
-    if (a.Position.z - a.Radius < -TerrainSize/2) return true;
-    if (a.Position.x + a.Radius > TerrainSize/2) return true;
-    if (a.Position.z + a.Radius > TerrainSize/2) return true;
+    const float twopi = 2 * pi<float>();
+    const float dtheta = twopi / a.NumSides;
+    float theta = 0;
+    vec2 center = vec2(a.Position.x, a.Position.z);
+    for (int i = 0; i < a.NumSides; ++i, theta += dtheta) {
+        vec2 p = center + a.Radius * vec2(sin(theta), cos(theta));
+        if (p.x < -TerrainSize/2 + CirclePadding) return true;
+        if (p.x > TerrainSize/2 - CirclePadding) return true;
+        if (p.y < -TerrainSize/2 + CirclePadding) return true;
+        if (p.y > TerrainSize/2 - CirclePadding) return true;
+
+        vec2 coord = p / float(TerrainSize);
+        vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
+
+        float height = MyTerrainFunc(domain).y;
+        const float threshold = 1.0;
+        if (height > a.Position.y + threshold ||
+            height < a.Position.y - threshold) {
+            return true;
+        }
+    }
 
     FOR_EACH(b, _elements) {
         float r = a.Radius + b->Radius + CirclePadding;
