@@ -138,10 +138,10 @@ void Tree::Draw() {
     Programs& progs = Programs::GetInstance();
     PerspCamera cam = GetContext()->mainCam;
 
-    glm::mat4 pos = glm::translate(glm::mat4(), glm::vec3(-3,-2.25,2));
+    glm::mat4 xf = glm::translate(glm::mat4(), pos);
 
     glUseProgram(progs["FireFlies.Tree"]);
-    cam.Bind(pos);
+    cam.Bind(xf);
 
     // brown tree color
     glUniform3f(u("MaterialColor"), 0.3, 0.2, 0.15);
@@ -154,7 +154,7 @@ void Tree::Draw() {
     glUseProgram(progs["FireFlies.Blossom"]);
     glUniform3f(u("MaterialColor"), 0.8, 0.1, 0.1);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
-    cam.Bind(pos);
+    cam.Bind(xf);
     _leaves.Bind();
     _leafData.Bind(0, "LeafData");
 
