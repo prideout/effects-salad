@@ -7,18 +7,29 @@
 #include "common/camera.h"
 #include "glm/glm.hpp"
 
+struct AnimElement {
+    sketch::CoplanarPath* Path;
+    float BeginW;
+    float EndW;
+};
+
+struct RectElement {
+    glm::vec2 Size;
+    glm::vec2 Offset;
+    AnimElement SideWall;
+};
+
 struct CityElement {
     glm::vec3 Position;
     float Radius;
     float Height;
     int NumSides;
-    sketch::CoplanarPath* RoofPath;
-    float RoofBegin;
-    float RoofEnd;
+    AnimElement Roof;
     sketch::Scene* CpuShape;
     sketch::Tessellator* CpuTriangles;
     Vao GpuTriangles;
     float ViewingAngle;
+    RectElement Rect;
 };
 
 typedef std::vector<CityElement> CityElements;

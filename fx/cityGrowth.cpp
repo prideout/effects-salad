@@ -1,6 +1,8 @@
 // TODO LIST
 // ---------
-// non-square rectangles
+// fix bugs with the SideWall stuff
+// windows AND window frames
+// SSAO !!!
 // free CPU memory in UpdateGrowth before transitioning
 // tetra integration
 // details per my handwritten notes
@@ -128,23 +130,61 @@ void CityGrowth::Init()
     // Create simple starting points for the buildings
     FOR_EACH(e, _elements) {
         sketch::Scene* shape = new sketch::Scene;
-
         const sketch::Plane* ground = shape->GroundPlane();
 
-        e->RoofPath =
-            shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), e->NumSides);
+        if (e->NumSides == 4) {
+            float quadrant = TwoPi / 4;
+            float fract = rand() / float(RAND_MAX);
+            float radians = quadrant / 4 + fract * quadrant / 2;
+            float hw = e->Radius * cos(radians);
+            float hh = e->Radius * sin(radians);
+            e->Rect.Size = vec2(hw, hh);
+            e->Rect.Offset = vec2(0, 0);
+            e->Roof.Path = shape->AddRectangle(
+                hw*2, hh*2,
+                ground->Eqn,
+                e->Rect.Offset);
+        } else {
+            e->Roof.Path =
+                shape->AddPolygon(e->Radius, ground->Eqn, vec2(0,0), e->NumSides);
+        }
 
-        e->RoofBegin = e->RoofPath->Plane->Eqn.w;
-        shape->PushPath(e->RoofPath, e->Height);
-        e->RoofEnd = e->RoofPath->Plane->Eqn.w;
+        sketch::PathList walls;
+        e->Roof.BeginW = e->Roof.Path->Plane->Eqn.w;
+        shape->PushPath(e->Roof.Path, e->Height/2, &walls);
+
+        // Occasionally extrude a sidewall.
+        if (e->NumSides == 4 && !(rand() % 2)) {
+            sketch::Path* wall = walls[2];
+            e->Rect.SideWall.Path = shape->AddInscribedRectangle(
+                e->Height,
+                e->Rect.Size.x,
+                dynamic_cast<sketch::CoplanarPath*>(wall),
+                vec2(0, 0));
+            e->Rect.SideWall.BeginW = e->Rect.SideWall.Path->Plane->Eqn.w;
+            shape->PushPath(
+                e->Rect.SideWall.Path,
+                1.0);
+            e->Rect.SideWall.EndW = e->Rect.SideWall.Path->Plane->Eqn.w;
+        } else {
+            e->Rect.SideWall.Path = 0;
+        }
+
+        shape->PushPath(e->Roof.Path, e->Height/2, &walls);
+        e->Roof.EndW = e->Roof.Path->Plane->Eqn.w;
+
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
         e->CpuTriangles->PullFromScene();
+        shape->SetPathPlane(e->Roof.Path, e->Roof.BeginW);
 
-        shape->SetPathPlane(e->RoofPath, e->RoofBegin);
-        shape->PushPath(e->RoofPath, 2.0);
+        if (e->Rect.SideWall.Path) {
+            shape->SetPathPlane(e->Rect.SideWall.Path,
+                                e->Rect.SideWall.BeginW);
+        }
+
+        shape->PushPath(e->Roof.Path, 2.0);
         e->CpuTriangles->PullFromScene();
- 
         e->CpuTriangles->PushToGpu(e->GpuTriangles);
     }
 
@@ -164,7 +204,7 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
     if (elapsedTime > SecondsPerBuilding) {
-        building.CpuShape->SetPathPlane(building.RoofPath, building.RoofEnd);
+        building.CpuShape->SetPathPlane(building.Roof.Path, building.Roof.EndW);
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
 
@@ -175,18 +215,26 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
         _state = FLIGHT;
 
     } else {
-
         if (elapsedTime < 0) {
             return;
+        }
+        AnimElement* anim = &building.Roof;
+        float remainingTime = SecondsPerBuilding;
+        if (building.Rect.SideWall.Path) {
+            if (elapsedTime > remainingTime / 2) {
+                elapsedTime -= remainingTime / 2;
+                anim = &building.Rect.SideWall;
+            }
+            remainingTime /= 2;
         }
 
         tween::Elastic tweener;
         float w = tweener.easeOut(
             elapsedTime,
-            building.RoofBegin,
-            building.RoofEnd,
-            SecondsPerBuilding);
-        building.CpuShape->SetPathPlane(building.RoofPath, w);
+            anim->BeginW,
+            anim->EndW,
+            remainingTime);
+        building.CpuShape->SetPathPlane(anim->Path, w);
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
     }

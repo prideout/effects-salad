@@ -102,8 +102,8 @@ static void _constructScene()
         ctx->drawables.push_back(fps);
     }
 
-    {   // Machine Grow
-        DemoContext* ctx = DemoContext::New("MachineGrow");
+    {   // prideout credits
+        DemoContext* ctx = DemoContext::New("prideout_credits");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 

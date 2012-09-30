@@ -100,38 +100,6 @@ namespace sketch
         void
         SetPathPlanes(PathList paths, FloatList ws);
 
-        #ifdef NOT_YET_SUPPORTED
-
-        // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.
-        // Note that you have to push it past a certain point to avoid self-intersection.
-        // If a self-intersection would occur, then the function bails and return false.
-        bool
-        PushPath(CoplanarPath* path, glm::vec3 delta, PathList* walls = 0);
-
-        // Pushing a non-coplanar path is tricky because you have to push it past 
-        // a certain point to be valid, and we need a reasonable heuristic for
-        // figuring out which incident faces are existing extrusions.
-        // Maybe we'll require existing extrusions to be 1:1 with edges.
-        // That won't let you push a non-coplanar path after manually deleting
-        // an extrusion face, but hopefully that's a corner case.
-        bool
-        PushTricky(Path* path, glm::vec3 delta, PathList* walls = 0);
-
-        // Attempts to find a path with two edges that contain the given points and split it.
-        // If successful, returns the new edge that is common to the two paths.
-        Edge*
-        SplitPath(glm::vec3 a, glm::vec3 b);
-
-        // This is useful for creating a slanted rooftop.  All incident coplanar paths are
-        // adjusted automatically. As always, if translation causes the edge to "meet"
-        // with existing paths or edges, pointer-sharing occurs automatically.
-        void
-        TranslateEdge(Edge* e, glm::vec3 delta);
-
-        #endif
-
-    public:
-
         // Inscribe a path and create a hole in the outer path.
         CoplanarPath*
         AddInscribedRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
@@ -163,6 +131,36 @@ namespace sketch
 
         unsigned int
         GetTopologyHash() const { return _topologyHash; }
+
+        #ifdef NOT_YET_SUPPORTED
+
+        // Sometimes you want to extrude in a custom direction; eg, a chimney from a slanted roof.
+        // Note that you have to push it past a certain point to avoid self-intersection.
+        // If a self-intersection would occur, then the function bails and return false.
+        bool
+        PushPath(CoplanarPath* path, glm::vec3 delta, PathList* walls = 0);
+
+        // Pushing a non-coplanar path is tricky because you have to push it past 
+        // a certain point to be valid, and we need a reasonable heuristic for
+        // figuring out which incident faces are existing extrusions.
+        // Maybe we'll require existing extrusions to be 1:1 with edges.
+        // That won't let you push a non-coplanar path after manually deleting
+        // an extrusion face, but hopefully that's a corner case.
+        bool
+        PushTricky(Path* path, glm::vec3 delta, PathList* walls = 0);
+
+        // Attempts to find a path with two edges that contain the given points and split it.
+        // If successful, returns the new edge that is common to the two paths.
+        Edge*
+        SplitPath(glm::vec3 a, glm::vec3 b);
+
+        // This is useful for creating a slanted rooftop.  All incident coplanar paths are
+        // adjusted automatically. As always, if translation causes the edge to "meet"
+        // with existing paths or edges, pointer-sharing occurs automatically.
+        void
+        TranslateEdge(Edge* e, glm::vec3 delta);
+
+        #endif
 
     private:
 
