@@ -36,7 +36,7 @@ static const float SkyscraperHeight = 60;
 
 static const float CirclePadding = 1.25;
 
-static const float BeatsPerMinute = 140;
+static const float BeatsPerMinute = 140.0;
 static const float SecondsPerBeatInterval = 60.0 / BeatsPerMinute;
 static const float BeatsPerBuilding = 1;
 static const float BeatsPerFlight = 1;
@@ -203,15 +203,19 @@ void CityGrowth::Init()
 void CityGrowth::_UpdateGrowth(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
-    if (elapsedTime > SecondsPerBuilding) {
+    bool duplex = building.Rect.SideWall.Path;
+    float duration = SecondsPerBuilding;
+
+    if (elapsedTime > duration) {
         building.CpuShape->SetPathPlane(building.Roof.Path, building.Roof.EndW);
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
 
         // TODO finalize by freeing CPU memory
 
+        float error = elapsedTime - duration;
         _currentBuildingIndex++;
-        _stateStartTime = GetContext()->elapsedTime;
+        _stateStartTime = GetContext()->elapsedTime - error;
         _state = FLIGHT;
 
     } else {
@@ -219,7 +223,7 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
             return;
         }
         AnimElement* anim = &building.Roof;
-        float remainingTime = SecondsPerBuilding;
+        float remainingTime = duration;
         if (building.Rect.SideWall.Path) {
             if (elapsedTime > remainingTime / 2) {
                 elapsedTime -= remainingTime / 2;
@@ -276,10 +280,12 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
 
     if (elapsedTime > flightTime + introDuration) {
 
+        float error = elapsedTime - (flightTime + introDuration);
+
         _previousCamera = _camera;
         _camera.center = center;
         _camera.eye = eye;
-        _stateStartTime = GetContext()->elapsedTime;
+        _stateStartTime = GetContext()->elapsedTime - error;
         _state = GROWTH;
         
     } else if (elapsedTime < introDuration) {
