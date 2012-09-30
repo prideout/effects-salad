@@ -86,10 +86,20 @@ void CityGrowth::Init()
         element.Position.x = TerrainSize * coord.x;
         element.Position.y = MyTerrainFunc(domain).y;
         element.Position.z = TerrainSize * coord.y;
-        element.NumSides = 20;
+
+        float shaper = rand() / float(RAND_MAX);
+        if (shaper < 0.8) {
+            element.NumSides = 4;
+        } else if (shaper < 0.9) {
+            element.NumSides = 20;
+        } else {
+            int b = rand() % 2;
+            element.NumSides = b ? 3 : 5;
+        }
 
         // Low-lying buildings vs Skyscrapers
-        if (rand() % 3 != 0) {
+        int tallUnluckiness = element.NumSides > 5 ? 2 : 3;
+        if (rand() % tallUnluckiness != 0) {
             element.Height = MinHeight + (MaxHeight - MinHeight) *
                 (rand() / float(RAND_MAX));
         } else {
@@ -131,12 +141,13 @@ void CityGrowth::Init()
 
 void CityGrowth::Update()
 {
-    //float time = GetContext()->elapsedTime;
+    float time = GetContext()->elapsedTime;
     PerspCamera* camera = &GetContext()->mainCam;
     camera->far = 400;
     camera->eye.x = 0;
     camera->eye.y = 100;
     camera->eye.z = 150;
+    camera->eye = glm::rotateY(camera->eye, time * 48);
     camera->up = vec3(0, 1, 0);
 }
 

@@ -220,7 +220,9 @@ void main()
 in vec3 vPosition;
 in vec3 vNormal;
 
-uniform vec3 LightPosition = vec3(0, 0, 1);
+uniform mat3 NormalMatrix;
+
+uniform vec3 LightPosition = normalize(vec3(0, 1, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 uniform vec3 Color = vec3(1);
 
@@ -229,7 +231,7 @@ out vec4 FragColor;
 void main()
 {
     vec3 N = normalize(vNormal);
-    vec3 L = LightPosition;
+    vec3 L = NormalMatrix * LightPosition;
     float df = abs(dot(N, L));
     vec3 C = AmbientMaterial + df * Color;
     FragColor = vec4(C, 0.25);
