@@ -80,7 +80,7 @@ City:
   * [City Sculpture](http://www.talariaenterprises.com/images2/5089a.jpg)
   * [NYC Google Earth](http://sites.duke.edu/tlge/files/2010/02/google_earth_nyc_801.jpg)
   * [Sky scraper - sense of scale](http://www.rianicpa.com/images/resources_buildings.jpg)
-  * [City art floral flourish]()http://image.shutterstock.com/display_pic_with_logo/95809/95809,1256699441,3/stock-vector-black-city-buildings-and-graffiti-grunge-floral-arrow-design-39726994.jpg
+  * [City art floral flourish](http://image.shutterstock.com/display_pic_with_logo/95809/95809,1256699441,3/stock-vector-black-city-buildings-and-graffiti-grunge-floral-arrow-design-39726994.jpg)
 
 Cherry Blossom / Grass / Country / moon:
   * [Blossom up close](http://www.onlyinap.com/wp-content/uploads/2011/04/Cherry-Blossom-sprig1.jpg)
