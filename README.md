@@ -101,6 +101,9 @@ Misc. Tree Art:
   * [Moon Haze](http://fc08.deviantart.net/fs50/i/2009/258/e/f/moon_haze_by_CharlotteDeSmith.jpg)
   * [Cool b/w silhouette](http://i.istockimg.com/file_thumbview_approve/11177570/2/stock-photo-11177570-black-birch-betula-pendula-tree-on-hill-isolated-o_n-white.jpg)
 
+Torii:
+  * [Torii in water](http://www.kuffner.org/james/gallery/raytracing/torii/Miyajima_torii_gate_postcard.jpg)
+
 Neo-Tokyo:
   * http://www.madmind.de/wp-content/uploads/2010/03/akira-neo-tokyo.jpg
   * http://2.bp.blogspot.com/-KW_k5R8wWis/TePH6x3de9I/AAAAAAAAAms/3POananT2ds/s1600/Akira_city.jpg
@@ -116,39 +119,4 @@ Possible Sound + Music Stuff
   * [libsndfile](http://www.mega-nerd.com/libsndfile)
   * [portaudio](http://www.portaudio.com)
   * [flstudio](http://www.image-line.com/documents/flstudio.html)
-
-Framework Components
---------------------
-
-### Audio
-
-### Camera
-
-### DemoContext
-
-### Drawable
-
-### Effect
-
-### Instancer
-
-### Programs
-
-### Quad
-
-### Surface
-
-### Texture
-
-### Timer
-
-### Tube
-
-### Vao
-
-A helper class for GL Vertex Array Objects
-
-
-
-
 
