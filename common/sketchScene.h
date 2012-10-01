@@ -115,6 +115,9 @@ namespace sketch
         const sketch::Plane*
         GetPlane(float x, float y, float z, float w) { return GetPlane(glm::vec4(x, y, z, w)); }
 
+        glm::vec2
+        GetPathExtent(const CoplanarPath* path) const;
+
         Scene();
         ~Scene();
 

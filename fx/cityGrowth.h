@@ -31,6 +31,9 @@ struct CityElement {
     Vao GpuTriangles;
     float ViewingAngle;
     RectElement Rect;
+    bool HasWindows;
+    sketch::PathList WindowFrames;
+    sketch::PathList Windows;
 };
 
 typedef std::vector<CityElement> CityElements;

@@ -25,7 +25,7 @@ using namespace glm;
 
 static const int TerrainSize = 150;
 static const float TerrainScale = 0.5;
-static const size_t CircleCount = 64;
+static const size_t CircleCount = 2;//64; // prideout
 static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
@@ -97,14 +97,19 @@ void CityGrowth::Init()
 
         element.ViewingAngle = (rand() / float(RAND_MAX)) * 360;
 
+        // Decide on shape; rectangles are most common, then cylinders,
+        // then pyramids.
         float shaper = rand() / float(RAND_MAX);
-        if (shaper < 0.8) {
+        if (shaper < 0.7 || true) { // prideout
             element.NumSides = 4;
+            element.HasWindows = true;
         } else if (shaper < 0.9) {
             element.NumSides = 20;
+            element.HasWindows = false;
         } else {
             int b = rand() % 2;
             element.NumSides = b ? 3 : 5;
+            element.HasWindows = true;
         }
 
         // Low-lying buildings vs Skyscrapers
@@ -153,7 +158,9 @@ void CityGrowth::Init()
         shape->PushPath(e->Roof.Path, e->Height/2, &walls);
 
         // Occasionally extrude a sidewall.
-        if (e->NumSides == 4 && !(rand() % 2)) {
+        if (e->NumSides == 4 && false) { // !(rand() % 2)) { // prideout
+
+            e->HasWindows = false;
             sketch::Path* wall = walls[2];
             e->Rect.SideWall.Path = shape->AddInscribedRectangle(
                 e->Height / 2,
@@ -181,6 +188,29 @@ void CityGrowth::Init()
 
         shape->PushPath(e->Roof.Path, e->Height/2, &walls);
         e->Roof.EndW = e->Roof.Path->Plane->Eqn.w;
+
+        if (e->HasWindows) {
+            FOR_EACH(w, walls) {
+                sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*w);
+                vec2 extent = 0.5f * shape->GetPathExtent(cop);
+                int levels = 2; // extent.y
+                float dx = extent.x / float(levels);
+                vec2 offset = vec2(-dx * levels / 2.0, 0);
+                for (int level = 0; level < levels; ++level) {
+                    sketch::CoplanarPath* winFrame;
+                    winFrame = shape->AddInscribedRectangle(
+                        extent.x/4,
+                        extent.y, // <-- shrinking this makes it tall and thin
+                        cop,
+                        offset);
+                    e->WindowFrames.push_back(winFrame);
+                    offset.x += dx;
+                }
+            }
+            shape->PushPaths(
+                e->WindowFrames,
+                0.5);
+        }
 
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
@@ -224,7 +254,10 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
     CityElement& building = _elements[_currentBuildingIndex];
     float duration = SecondsPerBuilding;
     if (building.Rect.SideWall.Path) {
-        duration *= 2;
+        duration += SecondsPerBuilding;
+    }
+    if (building.HasWindows) {
+        duration += SecondsPerBuilding;
     }
 
     if (elapsedTime > duration) {
