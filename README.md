@@ -1,3 +1,40 @@
+sequence as of Oct 1
+====================
+ - 17s Empty Grassy Field, Wind Blowing, Highlight Fireflies, Moon
+ - 30s Beats enter, Buildings poppin' up but without detail
+ - 30s Grassy field, Tree starts growing
+ - 30s Buildings, detail starts popping in, camera crawls up buildings, zooming on detail
+ - 30s Blossoms growing and falling
+ - 20s Back to city -- explosion and camera shake?
+ - 10s Credits (music keeps going)
+
+rideout queue
+=============
+ - submerge the building "seeds"
+ - land the windows branch
+ - split the CityGrow shot in two
+ - Use the swanky new music API
+ - SSAO
+ - unify the two cities in some way
+ - laser beams for city explosions
+ - credits 
+ - make the blank terrain more interesting
+ - city layout
+
+cowles queue
+============
+ - music API
+ - finish leaves
+ - split GrassIntro into 3 shots
+ - growth camera work
+ - move grass/leaves/fireflies to music
+ - moon + moon effect
+ - city sky
+ - tree bark shading
+ - horizontal vine effect
+ - credits
+
+
 effects-salad
 =============
 
