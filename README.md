@@ -76,6 +76,12 @@ Stills:
   * http://farm3.static.flickr.com/2475/3916967801_da152c16f7_b.jpg
   * http://farm3.static.flickr.com/2789/4333057631_0e1070bdfa_o.jpg
 
+City:
+  * [City Sculpture](http://www.talariaenterprises.com/images2/5089a.jpg)
+  * [NYC Google Earth](http://sites.duke.edu/tlge/files/2010/02/google_earth_nyc_801.jpg)
+  * [Sky scraper - sense of scale](http://www.rianicpa.com/images/resources_buildings.jpg)
+  * [City art floral flourish]()http://image.shutterstock.com/display_pic_with_logo/95809/95809,1256699441,3/stock-vector-black-city-buildings-and-graffiti-grunge-floral-arrow-design-39726994.jpg
+
 Cherry Blossom / Grass / Country / moon:
   * [Blossom up close](http://www.onlyinap.com/wp-content/uploads/2011/04/Cherry-Blossom-sprig1.jpg)
   * [Blossoms & Bark, huge](http://www.danielhaydenberman.com/wp-content/images/Wallpaper%20Wednesday/week_13/cherry-tree-1920x1200.jpg)
