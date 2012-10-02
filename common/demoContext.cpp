@@ -12,6 +12,7 @@ DemoContext::DemoContext(const std::string& shot) :
     duration(0),
     elapsedTime(0),
     name(shot),
+    audio(Audio::Get()),
     clearColor(0,0,0,1) {
 }
 

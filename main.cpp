@@ -33,6 +33,8 @@ static void _constructScene()
     typedef std::map<std::string,DemoContext*> ShotMap;
     ShotMap shotMap;
 
+    //Audio::Get().Test();
+
     //
     // Check to see if a specific shot was pass on the command line
     //
@@ -279,6 +281,9 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
+    // sync up the audio sequencer
+    Audio::Get().Update(seconds);
+
     //
     // The firest couple frames may be jumpy, so try to account for that by freezing time
     // XXX: how will this impact audio? 

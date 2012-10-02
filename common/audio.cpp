@@ -250,14 +250,14 @@ Audio::Audio() :
     _snarePat(4, "snare")
 {
     _kickPat[0] = _kickPat[1] = true;
-    StampPatternRange(0, 4, &_kickPat);
+    StampPatternRange(0, 30, &_kickPat);
 }
 
 
 void 
-Audio::Update(float worldTime)
+Audio::Update(float deltaSeconds)
 {
-
+    _curTime += deltaSeconds;
 }
 
 int 

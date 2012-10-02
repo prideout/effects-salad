@@ -62,8 +62,7 @@ class Audio
 
 public:
     
-
-    static Audio& GetAudio() 
+    static Audio& Get() 
     { 
         if (not _audio) {
             _audio = new Audio();
@@ -73,7 +72,7 @@ public:
 
     void Test();
 
-    void Update(float worldTime);
+    void Update(float deltaSeconds);
 
     // 
     // Discrete Event Accessors
