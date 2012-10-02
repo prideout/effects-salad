@@ -4,6 +4,7 @@
 #include "pez/pez.h"
 
 
+#include "audio.h"
 #include "camera.h"
 #include "drawable.h"
 #include "effect.h"
@@ -22,6 +23,8 @@ public:
     float elapsedTime;
     static float totalTime;
     std::string name;
+
+    Audio* const audio;
 
     DrawableList drawables;
     LightList lights;

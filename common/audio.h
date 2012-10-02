@@ -6,7 +6,7 @@
 int StartAudio(void);
 void StopAudio();
 
-const int BPM = 140;
+const int BPM = 280;
 const float BPS = BPM / 60.0f;
 
 struct Pattern 
@@ -43,7 +43,7 @@ struct Pattern
     }
 };
 
-int TimeToBeat(float seconds);
+float TimeToBeat(float seconds);
 int GetBeat(int beat, Pattern* pat);
 void StampPattern(int beatOffset, Pattern* pat);
 
@@ -55,6 +55,7 @@ class Audio
 
     Pattern _kickPat;
     Pattern _snarePat;
+    Pattern _hihatPat;
 
     float _curTime;
 
@@ -62,8 +63,7 @@ class Audio
 
 public:
     
-
-    static Audio& GetAudio() 
+    static Audio& Get() 
     { 
         if (not _audio) {
             _audio = new Audio();
@@ -73,15 +73,16 @@ public:
 
     void Test();
 
-    void Update(float worldTime);
+    void Update(float deltaSeconds);
 
     // 
     // Discrete Event Accessors
     //   These methods return the number of events that occured since the last
     //   frame to the current frame.
     // 
-    int GetKicks();
-    int GetSnares();
+    bool GetKicks();
+    bool GetSnares();
+    bool GetHiHats();
     
 
     //

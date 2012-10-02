@@ -1,0 +1,30 @@
+bar time: (60/280) * 4
+range (bar, 1 based)
+
+kick:
+  beat: 0
+  8 beats  
+  range 21 - 139 (0:17:14 - 1:58:28)
+
+snare
+  beats: 5
+  8 beats  
+  range 21 - 139 (0:17:14 - 1:58:28)
+
+
+overkick
+  beats: 0,3
+  4 beats
+  range: 21 - 135, every other, 137 - 140
+
+high hat
+  beats: 0,1,2,3
+  4 beats
+  range: 21 - 136
+
+
+snare roll
+  beats: 2 (sn1), 2.1(sn2), 2.2(sn1) -- 3 (closed HH)
+  4 beats
+  range: 24,26,32,34,40,42,48,50,56,58,64,66,72,74,
+         24: 2,6 : (136,138)
