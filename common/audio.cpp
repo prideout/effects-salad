@@ -222,7 +222,7 @@ int GetBeat(float seconds, Pattern* pat)
     pat->lastBeatQuery = beat;
 
     if (pat->beats[beat]) {
-        std::cout << "BEAT AT (" << pat->name << "): " << seconds << " -- " << (beat - int(beat)) << std::endl;
+        //std::cout << "BEAT AT (" << pat->name << "): " << seconds << " -- " << (beat - int(beat)) << std::endl;
         return true;
     }
 
