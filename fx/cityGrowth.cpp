@@ -25,7 +25,7 @@ using namespace glm;
 
 static const int TerrainSize = 150;
 static const float TerrainScale = 0.5;
-static const size_t CircleCount = 2;//64; // prideout
+static const size_t CircleCount = 3;//64; // prideout
 static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
@@ -192,19 +192,24 @@ void CityGrowth::Init()
         if (e->HasWindows) {
             FOR_EACH(w, walls) {
                 sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*w);
-                vec2 extent = 0.5f * shape->GetPathExtent(cop);
-                int levels = 2; // extent.y
-                float dx = extent.x / float(levels);
-                vec2 offset = vec2(-dx * levels / 2.0, 0);
-                for (int level = 0; level < levels; ++level) {
+                vec2 extent = shape->GetPathExtent(cop); // height, width
+                float wallHeight = extent.x;
+                float wallWidth = extent.y;
+                int numRows = 1; // todo
+                vec2 padding(1, 1);
+                float cellHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
+                vec2 offset = vec2(0, 0); // todo padding.y - wallHeight / 2);
+                float orientation = (cop->Plane->GetCoordSys() * vec3(1, 0, 0)).y;
+                for (int row = 0; row < numRows; ++row) {
+                    vec2 center = offset * orientation;
                     sketch::CoplanarPath* winFrame;
                     winFrame = shape->AddInscribedRectangle(
-                        extent.x/4,
-                        extent.y, // <-- shrinking this makes it tall and thin
+                        cellHeight, // <-- shrinking this makes it short
+                        wallWidth - padding.x * 2, // <-- shrinking this makes it thin
                         cop,
-                        offset);
+                        vec2(center.y, center.x));
                     e->WindowFrames.push_back(winFrame);
-                    offset.x += dx;
+                    offset.y += cellHeight + padding.y;
                 }
             }
             shape->PushPaths(

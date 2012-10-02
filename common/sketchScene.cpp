@@ -523,13 +523,17 @@ Scene::GetPathExtent(const CoplanarPath* path) const
     vec2 minp(1000,1000);
     vec2 maxp(-1000,-1000);
     FOR_EACH(e, path->Edges) {
-        unsigned i = (*e)->Endpoints.x;
-        vec3 v3 = _points[i];
-        vec3 planeOffset = planeInverse * (v3 - planeCenter);
-        vec2 v2 = vec2(planeOffset.x, planeOffset.z);
-        maxp = glm::max(v2, maxp);
-        minp = glm::min(v2, minp);
+        for (int c = 0; c < 2; ++c) {
+            unsigned i = (*e)->Endpoints[c];
+            vec3 v3 = _points[i];
+            vec3 planeOffset = planeInverse * (v3 - planeCenter);
+            vec2 v2 = vec2(planeOffset.x, planeOffset.z);
+            maxp = glm::max(v2, maxp);
+            minp = glm::min(v2, minp);
+        }
     }
+    //cout << "prideout maxp " << to_string(maxp) << endl;
+    //cout << "prideout minp " << to_string(minp) << endl;
     return maxp - minp;
 }
 
