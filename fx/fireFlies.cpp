@@ -200,14 +200,27 @@ void FireFlies::Draw() {
         glClearColor(.0,.0,.9,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         */
-        glPointSize(1.5);
+        bool snare = GetContext()->audio->GetSnares();
+        bool kick = GetContext()->audio->GetKicks();
+        bool hihat = GetContext()->audio->GetHiHats();
+
+        if (kick)
+            glPointSize(5.5);
+        else if (snare)
+            glPointSize(3.5);
+        else
+            glPointSize(1.5);
+
         _fliesGpu.Bind();
         glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount);
 
 
         glUseProgram(progs["FireFlies.Stars"]);
         cam.Bind(glm::mat4());
-        glPointSize(.5);
+        if (hihat)
+            glPointSize(1.5);
+        else
+            glPointSize(.5);
         _stars.Bind();
         glDrawArrays(GL_POINTS, 0, _stars.vertexCount);
         //_tube.DrawFrames();
