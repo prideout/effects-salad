@@ -18,6 +18,20 @@ Mix_Music *music = NULL;
 //void handleKey(SDL_KeyboardEvent key);
 void musicDone();
 
+    struct MusicInfo {
+       int currentPosition;
+       Mix_Music *music;
+    };
+
+    void musicLengthCallback(void *udata, Uint8 *stream, int len)
+    {
+        MusicInfo *music = static_cast<MusicInfo *>(udata);
+        music->currentPosition += len;
+        //std::cout << music->currentPosition / 22050.0 / 4.0 << std::endl;
+    }
+
+
+
 int StartAudio(void) {
 
   //SDL_Surface *screen;
@@ -29,7 +43,7 @@ int StartAudio(void) {
   int audio_rate = 22050;
   Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
   int audio_channels = 2;
-  int audio_buffers = 4096;
+  int audio_buffers = 1024; //4096;
 
   SDL_Init(SDL_INIT_AUDIO);
   //SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -45,6 +59,10 @@ int StartAudio(void) {
      program we don't, but I'm showing the function call here anyway
      in case we'd want to know later. */
   Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
+  std::cout 
+    << "Audio Channels: " << audio_channels  << std::endl
+    << "Audio rate: " << audio_rate << std::endl
+    ;
 
 #if 0
   /* We're going to be using a window onscreen to register keypresses
@@ -70,10 +88,21 @@ int StartAudio(void) {
 
   }
 #endif
-	/* Actually loads up the music */
+        /* Setup an "effect" here so that we can monitor the current playback time
+         */
+        //int channel = 3;
+        MusicInfo* info = new MusicInfo;
+        info->currentPosition = 0;
+        Mix_SetPostMix(&musicLengthCallback, info);
+        /*) {
+            fprintf(stderr, "Mix_RegisterEffect: No such channel! (channel = %d)", channel);
+            exit(1);
+        }*/
+
+        /* Actually loads up the music */
 	music = Mix_LoadMUS("audio/moonlight-remix.ogg");
         if(!music) {
-            printf("Mix_LoadMUS(\"audio/moonlight.ogg\"): %s\n", Mix_GetError());
+            fprintf(stderr, "Mix_LoadMUS(\"audio/moonlight.ogg\"): %s\n", Mix_GetError());
             exit(1);
             // this might be a critical error...
         }
@@ -90,16 +119,17 @@ int StartAudio(void) {
 	   exactly that */
 	Mix_HookMusicFinished(musicDone);
 
+        std::cout << "Channels Playing: " << Mix_Playing(-1) << std::endl;
 
     return 0;
 
 }
 
 void StopAudio() {
-  /* This is the cleaning up part */
-  Mix_CloseAudio();
-  SDL_Quit();
-
+    /* This is the cleaning up part */
+    //Mix_UnregisterEffect(1, &musicLengthCallback);
+    Mix_CloseAudio();
+    SDL_Quit();
 }
 
 #if 0
