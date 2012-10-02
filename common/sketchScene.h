@@ -34,6 +34,7 @@ namespace sketch
     {
         EdgeList Edges;
         PathList Holes;
+        bool Visible;
         virtual ~Path() {}
     };
 
@@ -63,6 +64,12 @@ namespace sketch
         sketch::Plane* Plane;
     };
 
+    enum ExtrusionVisibility {
+        DEFAULT,
+        HIDE,
+        SHOW,
+    };
+
     // Presents an interface to the outside world for the 'sketch' subsystem.
     class Scene
     {
@@ -89,7 +96,7 @@ namespace sketch
 
         // Useful if you have an array of window sills that you want extrude simultaneously.
         void
-        PushPaths(PathList paths, float delta);
+        PushPaths(PathList paths, float delta, ExtrusionVisibility v = DEFAULT);
 
         // Adjust the 'w' component of a path's plane equation.
         // This provides a way to efficiently animate an existing extrusion.
@@ -134,6 +141,12 @@ namespace sketch
 
         unsigned int
         GetTopologyHash() const { return _topologyHash; }
+
+        void
+        SetVisible(Path* path, bool b);
+
+        void
+        SetVisible(PathList path, bool b);
 
         #ifdef NOT_YET_SUPPORTED
 

@@ -213,6 +213,8 @@ void CityGrowth::Init()
                             cop,
                             orientation * vec2(offset.y, offset.x));
                         e->WindowFrames.Paths.push_back(winFrame);
+                        shape->SetVisible(cop->Holes, false);
+                        winFrame->Visible = false;
                         offset.y += cellHeight + padding.y;
                     }
                     offset.x += cellWidth + padding.x;
@@ -302,16 +304,34 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
             return;
         }
 
-        vector<AnimElement*> anims;
-        anims.push_back(&building.Roof);
+        vector<AnimElement> anims;
+        anims.push_back(building.Roof);
 
         float remainingTime = duration;
         if (building.Rect.SideWall.Path) {
             if (elapsedTime > remainingTime / 2) {
                 float error = elapsedTime - remainingTime / 2;
                 elapsedTime -= remainingTime / 2 - error;
-                anims[0] = &building.Rect.SideWall;
-                anims.push_back(&building.Rect.SideWallRoof);
+                anims.clear();
+                anims.push_back(building.Rect.SideWall);
+                anims.push_back(building.Rect.SideWallRoof);
+            }
+            remainingTime /= 2;
+        }
+
+        if (building.HasWindows) {
+            if (elapsedTime > remainingTime / 2) {
+                float error = elapsedTime - remainingTime / 2;
+                elapsedTime -= remainingTime / 2 - error;
+                anims.clear();
+                AnimArray& frames = building.WindowFrames;
+                for (size_t i = 0; i < frames.Paths.size(); ++i) {
+                    AnimElement anim;
+                    anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
+                    anim.BeginW = frames.BeginW[i];
+                    anim.EndW = frames.EndW[i];
+                    anims.push_back(anim);
+                }
             }
             remainingTime /= 2;
         }
@@ -320,10 +340,10 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
         FOR_EACH(a, anims) {
             float w = tweener.easeOut(
                 elapsedTime,
-                (*a)->BeginW,
-                (*a)->EndW,
+                a->BeginW,
+                a->EndW,
                 remainingTime);
-            building.CpuShape->SetPathPlane((*a)->Path, w);
+            building.CpuShape->SetPathPlane(a->Path, w);
         }
 
         building.CpuTriangles->PullFromScene();

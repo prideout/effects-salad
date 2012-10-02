@@ -32,6 +32,10 @@ sketch::Tessellator::PullFromScene()
         CoplanarPath* coplanar = dynamic_cast<CoplanarPath*>(*p);
         pezCheck(coplanar != NULL, "Holes are not supported in non-coplanar paths.");
 
+        if (not coplanar->Visible) {
+            continue;
+        }
+
         Vec2List rim2d;
         IndexList indices;
         _scene->_WalkPath(coplanar, &rim2d, arcTessLength, &indices);
@@ -60,6 +64,10 @@ sketch::Tessellator::PullFromScene()
 
                 CoplanarPath* copHole = dynamic_cast<CoplanarPath*>(*hole);
                 pezCheck(copHole != NULL);
+
+                if (not copHole->Visible) {
+                    continue;
+                }
 
                 Vec2List holePath;
                 IndexList indices;
