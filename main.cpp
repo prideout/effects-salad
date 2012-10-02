@@ -49,7 +49,7 @@ static void _constructScene()
 
         ctx->mainCam.eye.z = 5;
         ctx->drawables.push_back(new FireFlies());
-        ctx->drawables.push_back(new FpsOverlay(FpsOverlay::MemUsage));
+        ctx->drawables.push_back(new FpsOverlay());
     }
 
 
