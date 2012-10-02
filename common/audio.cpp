@@ -17,6 +17,8 @@
 /* Mix_Music actually holds the music information.  */
 Mix_Music *music = NULL;
 
+float AudioPlaybackTime = 0;
+
 //void handleKey(SDL_KeyboardEvent key);
 void musicDone();
 
@@ -29,6 +31,7 @@ void musicDone();
     {
         MusicInfo *music = static_cast<MusicInfo *>(udata);
         music->currentPosition += len;
+        AudioPlaybackTime += len / 22050.0 / 4.0;
         //std::cout << music->currentPosition / 22050.0 / 4.0 << std::endl;
     }
 
@@ -189,14 +192,18 @@ void musicDone() {
 }
 
 
-int TimeToBeat(float seconds) 
+float TimeToBeat(float seconds) 
 {
     return seconds * BPS;
 }
 
 int GetBeat(float seconds, Pattern* pat)
 {
-    int beat = TimeToBeat(seconds);
+    float beatf = TimeToBeat(seconds);
+    int beat = int(beatf); // + .5);
+    //float delta = beat - int(beatf);
+    //if (delta > .1)
+    //    return false;
 
     // avoid retriggering a single beat, but
     // if there are multiple queries during the *exact* same
@@ -215,6 +222,7 @@ int GetBeat(float seconds, Pattern* pat)
     pat->lastBeatQuery = beat;
 
     if (pat->beats[beat]) {
+        std::cout << "BEAT AT (" << pat->name << "): " << seconds << " -- " << (beat - int(beat)) << std::endl;
         return true;
     }
 
@@ -246,30 +254,46 @@ void StampPatternRange(int startBeat, int endBeat, Pattern* pat)
 Audio* Audio::_audio(NULL);
 
 Audio::Audio() :
-    _kickPat(4, "kick"),
-    _snarePat(4, "snare")
+    _kickPat(8, "kick"),
+    _snarePat(8, "snare"),
+    _hihatPat(4, "hihat"), 
+    _curTime(0)
 {
-    _kickPat[0] = _kickPat[1] = true;
-    StampPatternRange(0, 30, &_kickPat);
+    _kickPat[0] = true;
+    StampPatternRange(20*4, 138*4, &_kickPat);
+    _snarePat[5] = true;
+    StampPatternRange(20*4, 138*4, &_snarePat);
+    _hihatPat[0] = _hihatPat[1] = _hihatPat[2] = _hihatPat[3] = true;
+    StampPatternRange(20*4, 135*4, &_hihatPat);
 }
 
 
 void 
 Audio::Update(float deltaSeconds)
 {
-    _curTime += deltaSeconds;
+    // world time is too sloppy, use 
+    //_curTime += deltaSeconds;
+    _curTime = AudioPlaybackTime;
+
+    //std::cout << _curTime - AudioPlaybackTime << std::endl;
 }
 
-int 
+bool 
 Audio::GetKicks()  
 { 
     return GetBeat(_curTime, &_kickPat); 
 }
 
-int 
+bool
 Audio::GetSnares() 
 { 
     return GetBeat(_curTime, &_snarePat);
+}
+
+bool
+Audio::GetHiHats()
+{
+    return GetBeat(_curTime, &_hihatPat);
 }
 
 
@@ -278,7 +302,7 @@ Audio::Test()
 {
     for (float i = 0; i < 16; i++) {
         float seconds = i* (.5/BPS);
-        int beat = TimeToBeat(seconds);
+        float beat = TimeToBeat(seconds);
         std::cout << "beat: " << beat;
         std::cout << " -> " << GetBeat(seconds, &_kickPat);
         std::cout << " , " << GetBeat(seconds, &_kickPat);

@@ -24,7 +24,7 @@ public:
     static float totalTime;
     std::string name;
 
-    Audio& audio;
+    Audio* const audio;
 
     DrawableList drawables;
     LightList lights;
