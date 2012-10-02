@@ -13,6 +13,12 @@ struct AnimElement {
     float EndW;
 };
 
+struct AnimArray {
+    sketch::PathList Paths;
+    FloatList BeginW;
+    FloatList EndW;
+};
+
 struct RectElement {
     glm::vec2 Size;
     glm::vec2 Offset;
@@ -32,8 +38,8 @@ struct CityElement {
     float ViewingAngle;
     RectElement Rect;
     bool HasWindows;
-    sketch::PathList WindowFrames;
-    sketch::PathList Windows;
+    AnimArray WindowFrames;
+    AnimArray Windows;
 };
 
 typedef std::vector<CityElement> CityElements;

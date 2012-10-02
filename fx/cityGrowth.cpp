@@ -25,7 +25,7 @@ using namespace glm;
 
 static const int TerrainSize = 150;
 static const float TerrainScale = 0.5;
-static const size_t CircleCount = 3;//64; // prideout
+static const size_t CircleCount = 64;
 static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
@@ -100,7 +100,7 @@ void CityGrowth::Init()
         // Decide on shape; rectangles are most common, then cylinders,
         // then pyramids.
         float shaper = rand() / float(RAND_MAX);
-        if (shaper < 0.7 || true) { // prideout
+        if (shaper < 0.7) {
             element.NumSides = 4;
             element.HasWindows = true;
         } else if (shaper < 0.9) {
@@ -158,7 +158,7 @@ void CityGrowth::Init()
         shape->PushPath(e->Roof.Path, e->Height/2, &walls);
 
         // Occasionally extrude a sidewall.
-        if (e->NumSides == 4 && false) { // !(rand() % 2)) { // prideout
+        if (e->NumSides == 4 && !(rand() % 2)) {
 
             e->HasWindows = false;
             sketch::Path* wall = walls[2];
@@ -192,34 +192,54 @@ void CityGrowth::Init()
         if (e->HasWindows) {
             FOR_EACH(w, walls) {
                 sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*w);
-                vec2 extent = shape->GetPathExtent(cop); // height, width
+                vec2 extent = shape->GetPathExtent(cop);
                 float wallHeight = extent.x;
                 float wallWidth = extent.y;
-                int numRows = 1; // todo
+                int numRows = std::max(1, int(wallHeight / 4.0));
+                int numCols = std::max(1, int(wallWidth / 3.0));
                 vec2 padding(1, 1);
                 float cellHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
-                vec2 offset = vec2(0, 0); // todo padding.y - wallHeight / 2);
+                float cellWidth = (wallWidth - (numCols + 1) * padding.x) / float(numCols);
                 float orientation = (cop->Plane->GetCoordSys() * vec3(1, 0, 0)).y;
-                for (int row = 0; row < numRows; ++row) {
-                    vec2 center = offset * orientation;
-                    sketch::CoplanarPath* winFrame;
-                    winFrame = shape->AddInscribedRectangle(
-                        cellHeight, // <-- shrinking this makes it short
-                        wallWidth - padding.x * 2, // <-- shrinking this makes it thin
-                        cop,
-                        vec2(center.y, center.x));
-                    e->WindowFrames.push_back(winFrame);
-                    offset.y += cellHeight + padding.y;
+                vec2 offset;
+                offset.x = padding.x + cellWidth/2 - wallWidth/2;
+                for (int col = 0; col < numCols; ++col) {
+                    offset.y = padding.y + cellHeight/2 - wallHeight/2;
+                    for (int row = 0; row < numRows; ++row) {
+                        sketch::CoplanarPath* winFrame;
+                        winFrame = shape->AddInscribedRectangle(
+                            cellHeight,
+                            cellWidth,
+                            cop,
+                            orientation * vec2(offset.y, offset.x));
+                        e->WindowFrames.Paths.push_back(winFrame);
+                        offset.y += cellHeight + padding.y;
+                    }
+                    offset.x += cellWidth + padding.x;
                 }
             }
             shape->PushPaths(
-                e->WindowFrames,
-                0.5);
+                e->WindowFrames.Paths,
+                0.2);
         }
 
+        // Tessellate the final form of the building before collapsing it
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
         e->CpuTriangles->PullFromScene();
+
+        // Collapse the window frames
+        FOR_EACH(p, e->WindowFrames.Paths) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*p);
+            e->WindowFrames.EndW.push_back(cop->Plane->Eqn.w);
+        }
+        shape->PushPaths(
+            e->WindowFrames.Paths,
+            -0.2);
+        FOR_EACH(p, e->WindowFrames.Paths) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*p);
+            e->WindowFrames.BeginW.push_back(cop->Plane->Eqn.w);
+        }
 
         // Collapse the main building vertically
         shape->SetPathPlane(e->Roof.Path, e->Roof.BeginW);
