@@ -12,6 +12,8 @@
     #include <SDL_mixer.h>
 #endif
 
+
+
 /* Mix_Music actually holds the music information.  */
 Mix_Music *music = NULL;
 
@@ -184,4 +186,103 @@ void musicDone() {
   Mix_FreeMusic(music);
   music = NULL;
   exit(0);
+}
+
+
+int TimeToBeat(float seconds) 
+{
+    return seconds * BPS;
+}
+
+int GetBeat(float seconds, Pattern* pat)
+{
+    int beat = TimeToBeat(seconds);
+
+    // avoid retriggering a single beat, but
+    // if there are multiple queries during the *exact* same
+    // time, assum that they are different clients who all
+    // need to know the beat was triggered
+
+    // XXX: if the client perterbs the time, this logic will fail
+
+    if (pat->lastTimeQuery != seconds and
+        pat->lastBeatQuery == beat)
+    {
+        return false;
+    }
+
+    pat->lastTimeQuery = seconds;
+    pat->lastBeatQuery = beat;
+
+    if (pat->beats[beat]) {
+        return true;
+    }
+
+    return false; 
+}
+
+
+void StampPattern(int beatOffset, Pattern* pat)
+{
+    for(int i = 0; i < pat->length; i++) {
+        if (pat->beats[i+beatOffset]) {
+            std::cerr << "Warning: stamp overlay at " 
+                      << beatOffset 
+                      << " for " << pat->name
+                      << std::endl;
+        }
+        pat->beats[i+beatOffset] = pat->exemplar[i];
+    }
+}
+
+void StampPatternRange(int startBeat, int endBeat, Pattern* pat) 
+{
+    for (int i = startBeat; i <= endBeat; i += pat->length) {
+        StampPattern(i, pat);
+    }
+}
+
+/* static */
+Audio* Audio::_audio(NULL);
+
+Audio::Audio() :
+    _kickPat(4, "kick"),
+    _snarePat(4, "snare")
+{
+    _kickPat[0] = _kickPat[1] = true;
+    StampPatternRange(0, 4, &_kickPat);
+}
+
+
+void 
+Audio::Update(float worldTime)
+{
+
+}
+
+int 
+Audio::GetKicks()  
+{ 
+    return GetBeat(_curTime, &_kickPat); 
+}
+
+int 
+Audio::GetSnares() 
+{ 
+    return GetBeat(_curTime, &_snarePat);
+}
+
+
+void
+Audio::Test() 
+{
+    for (float i = 0; i < 16; i++) {
+        float seconds = i* (.5/BPS);
+        int beat = TimeToBeat(seconds);
+        std::cout << "beat: " << beat;
+        std::cout << " -> " << GetBeat(seconds, &_kickPat);
+        std::cout << " , " << GetBeat(seconds, &_kickPat);
+        std::cout << std::endl;
+    }
+    exit(0);
 }
