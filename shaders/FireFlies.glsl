@@ -236,10 +236,12 @@ void main()
 
 -- Blossom.FS
 
-//in vec3 vNormal;
+in vec3 vNormal;
 in vec4 vPosition;
 in vec2 vUv;
 in float vColorVar;
+
+uniform vec3 Eye;
 
 out vec4 FragColor;
 
@@ -256,40 +258,39 @@ vec3 blossom( float x, float y )
     float k = max(.5, h*3.0); //min(2.5, 1.0 / h);
     float f = 1.0-smoothstep( 0.98, 1.0, h );
     //k *= 1.0-0.5*(1.0-h)*smoothstep(0.95+0.05*h,1.0,sin(bmps*a+t));
-    return mix( vec3(.0), vec3(vColorVar+vColorVar*k,0.3*k,0.3*k), f );
-    //return mix( vec3(.0), vec3(.4+0.4*k,0.3*k,0.3*k), f );
+    //return mix( vec3(.0), vec3(vColorVar+vColorVar*k,0.3*k,0.3*k), f );
+    return mix( vec3(.0), vec3(0.4+0.4*k,0.3*k,0.3*k), f );
 }
 
 
 void main()
 {
-/*
-    //float s = vUvCoord.x + vUvCoord.y;
-    float diffuseLight = 15;
-    float ambientLight = 0;
-    vec3 n = vNormal;
-    vec3 l = normalize((ViewMatrix*vec4(-4, -2.0, 4, 1.0) - vPosition).xyz);
-    float d = max(0.0, dot(n, l));
-    d = 1.5;
-    FragColor = vec4(ambientLight*MaterialColor + d*diffuseLight*MaterialColor, 1.0);
-    //FragColor = vec4(d,d,d, 1.0);
-    //FragColor = vec4(n, 1.0);
-*/
-    vec2 p = vUv; //(-1.0+2.0*gl_FragCoord.xz);
-    FragColor = vec4(p.x, p.y, 0, 1.0); //vec4(blossom(p.x,p.y), 1.0); //vec4(.8, .3, .3, .5);
-    FragColor = vec4(blossom(p.x,p.y), vColorVar); //vec4(.8, .3, .3, .5);
-    if (FragColor.r == 0.0)
+    vec3 MaterialColor = vec3(blossom(vUv.x, vUv.y)); //, vColorVar);
+    if (MaterialColor.r == 0.0)
         discard;
+
+    float vOcc = 1.0;
+    float diffuseLight = 0.5;
+    float ambientLight = 0.5;
+    vec3 n = normalize(vNormal);
+    vec3 l = Eye - vPosition.xyz;
+    //vec3 l = vec3(-4, 5.0, 4) - vPosition.xyz;
+    float dist = length(l);
+    l = normalize(l);
+    float d = max(0.0, dot(n, l));
+    float att = 1.0; //min(1.0, 1.0 / (dist*dist*.3));
+    FragColor = vec4(vOcc * (ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), .7);
+    //FragColor.rgb = normalize(Eye);
+    //FragColor.rgb = n;
 }
 
 
 
 -- Blossom.VS
 layout(location = 0) in vec3 Position;
-//layout(location = 1) in vec3 Normal;
 
 out vec4 vPosition;
-//out vec3 vNormal;
+out vec3 vNormal;
 out vec2 vUv;
 out float vColorVar;
 
@@ -302,10 +303,12 @@ uniform float Time;
 
 
 uniform samplerBuffer LeafData;
+uniform samplerBuffer LeafNormals;
 
 void main()
 {
-    int id = int(gl_VertexID / 12)*3;
+    int id = int(gl_VertexID / 6);
+    int dataId = id * 3;
     int uvId = int(mod(gl_VertexID, 6));
 
     // XXX: yuck, would be nice to have a single expression
@@ -315,12 +318,13 @@ void main()
     else if (uvId > 3 || uvId == 2)
         vUv.y = 1.0;
 
+    vNormal = texelFetch(LeafNormals, int(gl_VertexID / 12)).rgb;
     vPosition.xyz = Position.xyz;
     vPosition.w = 1.0;
 
-    float startTime = texelFetch(LeafData, id).r;
-    float growTime = texelFetch(LeafData, id+1).r;
-    vColorVar = texelFetch(LeafData, id+2).r;
+    float startTime = texelFetch(LeafData, dataId).r;
+    float growTime = texelFetch(LeafData, dataId+1).r;
+    vColorVar = texelFetch(LeafData, dataId+2).r;
 
     if (Time < startTime) {
         gl_Position = vec4(0);

@@ -19,6 +19,7 @@ class Tree : public Effect {
     TreeSystem _treeSys;
     Vao _leaves;
     BufferTexture _leafData;
+    BufferTexture _leafNormals;
 
 public:
     glm::vec3 pos;

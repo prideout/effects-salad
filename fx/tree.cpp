@@ -22,6 +22,7 @@ void Tree::Init() {
 
     FloatList leaves;
     FloatList leafData;
+    Vec3List leafNormals;
     float leafSize = .02;
     int leafCount = 3;
 
@@ -77,13 +78,13 @@ void Tree::Init() {
                 glm::vec3 leafQuad[4];
                 glm::mat3 basis;
 
-                glm::vec3 tangent(.5 - (rand() / float(RAND_MAX))*.5,
-                            .5 - (rand() / float(RAND_MAX))*.5,
-                            .5 - (rand() / float(RAND_MAX))*.5);
+                glm::vec3 tangent(.5 - (rand() / float(RAND_MAX)),
+                                  .5 - (rand() / float(RAND_MAX)),
+                                  .5 - (rand() / float(RAND_MAX)));
                 tangent = glm::normalize(tangent);
                 basis[2] = tangent;
 
-                glm::vec3 norm;
+                glm::vec3 norm(0,0,1);
                 glm::vec3 v = glm::vec3(1,0,0);
                 norm = glm::cross(tangent,v);
                 float e = glm::dot(norm,norm);
@@ -94,6 +95,7 @@ void Tree::Init() {
                 basis[0] = glm::normalize(norm);
                 basis[1] = glm::normalize(glm::cross(tangent, norm));
 
+                leafNormals.push_back(glm::vec3(0,0,-1) * basis);
                 // --, +-, ++, -+
                 for (int i = 0; i < 4; i++) {
                     leafQuad[i].x = (2*(i & 1) - 1.0) * leafSize;
@@ -101,6 +103,8 @@ void Tree::Init() {
                     leafQuad[i].z = 0.0;
                     leafQuad[i] = leafQuad[i] * basis;
                 }
+
+
 
                 glm::vec3 start = branch->cvs[0];
                 branch->norm /= 5.0f;
@@ -120,6 +124,7 @@ void Tree::Init() {
     }
     _leaves = Vao(3, leaves);
     _leafData.Init(leafData);
+    _leafNormals.Init(leafNormals);
 }
 
 void Tree::Update() {
@@ -149,16 +154,18 @@ void Tree::Draw() {
     }
 
     glUseProgram(progs["FireFlies.Blossom"]);
+    glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform3f(u("MaterialColor"), 0.8, 0.1, 0.1);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
     cam.Bind(xf);
     _leaves.Bind();
     _leafData.Bind(0, "LeafData");
+    _leafNormals.Bind(1, "LeafNormals");
 
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glDrawArrays(GL_TRIANGLES, 0, _leaves.vertexCount);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glDisable(GL_BLEND);
 
     //PerspCamera cam = GetContext()->mainCam;
