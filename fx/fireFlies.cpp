@@ -191,6 +191,8 @@ void FireFlies::Draw() {
 
     glUseProgram(progs["FireFlies.Flies"]);
 
+    bool fixedCam = false;
+
         //_surface.Bind();
         PerspCamera oldCam = GetContext()->mainCam;
         PerspCamera& cam = GetContext()->mainCam;
@@ -203,10 +205,14 @@ void FireFlies::Draw() {
         cam.eye.y = 1.5;
         cam.eye.z = 8;
         //  cam.center= vec3(3*sin(t),0,3*cos(t)); //cameraPoints[counter];
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
-        float t = GetContext()->elapsedTime;
-        //cam.eye = vec3(-15*sin(t/2), .5*(5+-5*cos(t/2)), -10-5*sin(t/2)); //cameraPoints[counter];
-        //cam.eye = vec3(-9*sin(t/2), .5*(1+-1*cos(t/2)), -9*cos(t/2)); //cameraPoints[counter];
+        
+        if (not fixedCam)
+            cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        else {
+            float t = GetContext()->elapsedTime;
+            cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2)); //cameraPoints[counter];
+            //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2)); //cameraPoints[counter];
+        }
 
         // look where we are walking
         //  cam.center = cameraPoints.After(0); //[counter+1 % cameraPoints.size()];

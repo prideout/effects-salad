@@ -152,7 +152,7 @@ void main()
     l = normalize(l);
     float d = 1.0; //max(0.0, dot(n, l));
     vec3 MaterialColor = vec3(.05, .3, vOcc*vOcc*vOcc*.28);
-    vec3 AmbMaterialColor = vec3(.05, .3, .2+vOcc*vOcc*vOcc*.48);
+    vec3 AmbMaterialColor = vec3(.05, .3, .3+vOcc*vOcc*vOcc*.48);
     FragColor = vec4(vOcc*(ambientLight*AmbMaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 
     //FragColor = r*MaterialColor;
@@ -269,19 +269,23 @@ void main()
     if (MaterialColor.r == 0.0)
         discard;
 
-    float vOcc = 1.0;
-    float diffuseLight = 0.5;
-    float ambientLight = 0.5;
+    float vOcc = .6 + .4*vColorVar;
+    float diffuseLight = 0.8;
+    float ambientLight = 0.4;
     vec3 n = normalize(vNormal);
     vec3 l = Eye - vPosition.xyz;
     //vec3 l = vec3(-4, 5.0, 4) - vPosition.xyz;
     float dist = length(l);
     l = normalize(l);
     float d = max(0.0, dot(n, l));
-    float att = 1.0; //min(1.0, 1.0 / (dist*dist*.3));
-    FragColor = vec4(vOcc * (ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), .7);
+    if (d == 0)
+        d = max(0.0, dot(-n, l));
+    float att = min(1.0, 1.0 / (dist*dist*dist*.004));
+    FragColor = vec4(vOcc * (ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 0.7);
     //FragColor.rgb = normalize(Eye);
     //FragColor.rgb = n;
+    //FragColor.rgb = vec3(1 / (dist *dist*.5));
+    //FragColor.rgb = vec3(d*att);
 }
 
 
@@ -333,7 +337,7 @@ void main()
     }
 
     //vNormal = mat3(Modelview) * vNormal;
-   // vPosition = Modelview * vPosition;
+    vPosition = ModelMatrix * vPosition;
 }
 
 

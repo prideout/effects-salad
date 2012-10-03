@@ -24,7 +24,7 @@ void Tree::Init() {
     FloatList leafData;
     Vec3List leafNormals;
     float leafSize = .02;
-    int leafCount = 3;
+    int leafCount = 1;
 
     FOR_EACH(branchIt, _treeSys.branches) {
         BranchDef* branch = *branchIt;
@@ -77,7 +77,7 @@ void Tree::Init() {
                 // grow time
                 leafData.push_back(3*(growTime / maxLevel) * (branch->levels));
                 // color variation
-                leafData.push_back(branch->color.r);
+                leafData.push_back(branch->parentPercent);
 
                 // 
                 // Setup the leaf quad and give it some random orientation
@@ -93,18 +93,16 @@ void Tree::Init() {
                 tangent = glm::normalize(tangent);
                 basis[2] = tangent;
 
-                glm::vec3 norm(0,0,1);
-                glm::vec3 v = glm::vec3(1,0,0);
-                norm = glm::cross(tangent,v);
+                glm::vec3 norm = glm::cross(tangent,glm::vec3(1,0,0));
                 float e = glm::dot(norm,norm);
                 if (e < 0.01) {
-                    v = glm::vec3(0,1,0); 
-                    norm = glm::cross(tangent,v);
+                    norm = glm::cross(tangent,glm::vec3(0,1,0));
                 }
                 basis[0] = glm::normalize(norm);
                 basis[1] = glm::normalize(glm::cross(tangent, norm));
 
-                leafNormals.push_back(glm::vec3(0,0,-1) * basis);
+                glm::vec3 n  = basis * glm::vec3(0,0,-1);
+                leafNormals.push_back(n);
                 // --, +-, ++, -+
                 for (int i = 0; i < 4; i++) {
                     leafQuad[i].x = (2*(i & 1) - 1.0) * leafSize;
