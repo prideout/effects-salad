@@ -10,8 +10,8 @@ sequence as of Oct 1
 
 rideout queue
 =============
- - submerge the building "seeds"
- - land the windows branch
+ - ~~submerge the building "seeds"~~
+ - ~~land the windows branch~~
  - split the CityGrow shot in two
  - Use the swanky new music API
  - SSAO
