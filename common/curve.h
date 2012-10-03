@@ -192,7 +192,7 @@ public:
         _duration(duration)
     {
         pezCheck(cvs.size() > 0, "Invalid number of curve CVs");
-        Bezier::Eval(60*duration, cvs, &_points);    
+        Bezier::EvalPiecewise(60*duration, cvs, &_points);    
     }
 
     bool IsEmpty() { return _points.size() == 0; }
