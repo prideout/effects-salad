@@ -30,7 +30,8 @@ void Tree::Init() {
         BranchDef* branch = *branchIt;
 
         int maxLevel = 6;
-        float growTime = 15.0;
+        float startTime = 9.0;
+        float growTime = 15.0 - startTime;
 
         //std::cout << "Branch: " << branch->name << std::endl;;
         if (not branch->isLeaf) {
@@ -47,7 +48,11 @@ void Tree::Init() {
                 tube->sidesPerSlice = 3;
                 tube->lod = 1;
             }
-            tube->startTime = (.25 - (rand() / float(RAND_MAX))*.5) + (growTime / maxLevel) * (maxLevel - branch->levels - ((branch->levels > 0) ? .8 : 0));
+            tube->startTime = startTime 
+                                + (.25 - (rand() / float(RAND_MAX))*.5) 
+                                + (growTime / maxLevel) 
+                                * (maxLevel - branch->levels - ((branch->levels > 0) ? .8 : 0));
+                                
             tube->timeToGrow = (growTime / maxLevel) * (branch->levels);
 
             if (branch->isTrunk) {
@@ -60,14 +65,18 @@ void Tree::Init() {
         } else {
             for (int leaf_i = 0; leaf_i < leafCount; leaf_i++) {
                 // make a leaf instead
-                leafData.push_back( (.5 - (rand() / float(RAND_MAX))*.5) 
+                // start time
+                leafData.push_back( startTime
+                                + (.1 - (float(rand()) / float(RAND_MAX))*.1) 
                                 + (growTime / maxLevel) 
                                 * (maxLevel 
                                     - branch->levels 
                                     - ((branch->levels > 0) ? .8 : 0)
-                                    + branch->parentPercent)
+                                    + 3*branch->parentPercent)
                                 );
-                leafData.push_back((growTime / maxLevel) * (branch->levels));
+                // grow time
+                leafData.push_back(3*(growTime / maxLevel) * (branch->levels));
+                // color variation
                 leafData.push_back(branch->color.r);
 
                 // 
