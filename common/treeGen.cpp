@@ -14,6 +14,7 @@ GetAxis(float theta, float phi) {
 
 void
 TreeSystem::GrowAll() { 
+    srand(2);
     // could easily multi-thread this if it becomes a bottleneck
     while(queue.size()) {
         GrowBranch();
@@ -91,7 +92,8 @@ TreeSystem::GrowBranch() {
         glm::vec2 chDist = childDist[branch->level -1 ];
         glm::vec2 chAngle = childAngles[branch->level - 1];
         for (int i = 0; i < childCount; i++) {
-            float a = chDist.x + chDist.y * (float(rand()) / RAND_MAX);
+            float r = (float(rand()) / RAND_MAX);
+            float a = chDist.x + chDist.y * r;
 
             BranchDef* child = new BranchDef;
 
@@ -123,7 +125,7 @@ TreeSystem::GrowBranch() {
                 child->name += "_LEAF";
                 child->level = 0;
                 child->levels = 1;
-                child->color = glm::vec3(.8, .1, .1);
+                child->color = glm::vec3(.2+.8*(float(rand())/RAND_MAX), .1, .1);
                 child->isLeaf = true;
             }
 

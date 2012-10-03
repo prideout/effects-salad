@@ -206,8 +206,8 @@ void FireFlies::Draw() {
 
         if (kick)
             glPointSize(5.5);
-        else if (snare)
-            glPointSize(3.5);
+        else if (hihat)
+            glPointSize(3);
         else
             glPointSize(1.5);
 
@@ -217,7 +217,9 @@ void FireFlies::Draw() {
 
         glUseProgram(progs["FireFlies.Stars"]);
         cam.Bind(glm::mat4());
-        if (hihat)
+        if (snare)
+            glPointSize(5.5);
+        else if (hihat)
             glPointSize(1.5);
         else
             glPointSize(.5);

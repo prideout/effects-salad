@@ -13,7 +13,7 @@ void Tree::Init() {
 
     Programs& progs = Programs::GetInstance();
     progs.Load("FireFlies.Tree", "FireFlies.Tree.FS", "FireFlies.Tube.VS");
-    progs.Load("FireFlies.Blossom", "FireFlies.Blossom.FS", "FireFlies.Quad.VS");
+    progs.Load("FireFlies.Blossom", "FireFlies.Blossom.FS", "FireFlies.Blossom.VS");
 
     BranchDef* trunk = new BranchDef();
     trunk->isTrunk = true;
@@ -21,7 +21,7 @@ void Tree::Init() {
     _treeSys.GrowAll();
 
     FloatList leaves;
-    FloatList times;
+    FloatList leafData;
     float leafSize = .02;
     int leafCount = 3;
 
@@ -59,14 +59,15 @@ void Tree::Init() {
         } else {
             for (int leaf_i = 0; leaf_i < leafCount; leaf_i++) {
                 // make a leaf instead
-                times.push_back( (.5 - (rand() / float(RAND_MAX))*.5) 
+                leafData.push_back( (.5 - (rand() / float(RAND_MAX))*.5) 
                                 + (growTime / maxLevel) 
                                 * (maxLevel 
                                     - branch->levels 
                                     - ((branch->levels > 0) ? .8 : 0)
                                     + branch->parentPercent)
                                 );
-                times.push_back((growTime / maxLevel) * (branch->levels));
+                leafData.push_back((growTime / maxLevel) * (branch->levels));
+                leafData.push_back(branch->color.r);
 
                 // 
                 // Setup the leaf quad and give it some random orientation
@@ -118,7 +119,7 @@ void Tree::Init() {
         }
     }
     _leaves = Vao(3, leaves);
-    _leafData.Init(times);
+    _leafData.Init(leafData);
 }
 
 void Tree::Update() {
