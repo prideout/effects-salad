@@ -261,7 +261,7 @@ Audio::Audio() :
 {
     _kickPat[0] = true;
     StampPatternRange(20*4, 138*4, &_kickPat);
-    _snarePat[5] = true;
+    _snarePat[4] = true;
     StampPatternRange(20*4, 138*4, &_snarePat);
     _hihatPat[0] = _hihatPat[1] = _hihatPat[2] = _hihatPat[3] = true;
     StampPatternRange(20*4, 135*4, &_hihatPat);

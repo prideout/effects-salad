@@ -143,7 +143,7 @@ void main()
     float r = clamp(.2+1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
 
     float diffuseLight = .9;
-    float ambientLight = .1;
+    float ambientLight = .2;
     //vec3 n = vNormal;
 
     vec3 l = (vec4(Eye, 1.0) - vPosition).xyz;
@@ -152,7 +152,8 @@ void main()
     l = normalize(l);
     float d = 1.0; //max(0.0, dot(n, l));
     vec3 MaterialColor = vec3(.05, .3, vOcc*vOcc*vOcc*.28);
-    FragColor = vec4(vOcc*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
+    vec3 AmbMaterialColor = vec3(.05, .3, .2+vOcc*vOcc*vOcc*.48);
+    FragColor = vec4(vOcc*(ambientLight*AmbMaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 
     //FragColor = r*MaterialColor;
 }
@@ -238,6 +239,7 @@ void main()
 //in vec3 vNormal;
 in vec4 vPosition;
 in vec2 vUv;
+in float vColorVar;
 
 out vec4 FragColor;
 
@@ -254,7 +256,8 @@ vec3 blossom( float x, float y )
     float k = max(.5, h*3.0); //min(2.5, 1.0 / h);
     float f = 1.0-smoothstep( 0.98, 1.0, h );
     //k *= 1.0-0.5*(1.0-h)*smoothstep(0.95+0.05*h,1.0,sin(bmps*a+t));
-    return mix( vec3(.0), vec3(.4+0.4*k,0.3*k,0.3*k), f );
+    return mix( vec3(.0), vec3(vColorVar+vColorVar*k,0.3*k,0.3*k), f );
+    //return mix( vec3(.0), vec3(.4+0.4*k,0.3*k,0.3*k), f );
 }
 
 
@@ -274,20 +277,21 @@ void main()
 */
     vec2 p = vUv; //(-1.0+2.0*gl_FragCoord.xz);
     FragColor = vec4(p.x, p.y, 0, 1.0); //vec4(blossom(p.x,p.y), 1.0); //vec4(.8, .3, .3, .5);
-    FragColor = vec4(blossom(p.x,p.y), .5); //vec4(.8, .3, .3, .5);
+    FragColor = vec4(blossom(p.x,p.y), vColorVar); //vec4(.8, .3, .3, .5);
     if (FragColor.r == 0.0)
         discard;
 }
 
 
 
--- Quad.VS
+-- Blossom.VS
 layout(location = 0) in vec3 Position;
 //layout(location = 1) in vec3 Normal;
 
 out vec4 vPosition;
 //out vec3 vNormal;
 out vec2 vUv;
+out float vColorVar;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -301,7 +305,7 @@ uniform samplerBuffer LeafData;
 
 void main()
 {
-    int id = int(gl_VertexID / 12)*2;
+    int id = int(gl_VertexID / 12)*3;
     int uvId = int(mod(gl_VertexID, 6));
 
     // XXX: yuck, would be nice to have a single expression
@@ -316,6 +320,7 @@ void main()
 
     float startTime = texelFetch(LeafData, id).r;
     float growTime = texelFetch(LeafData, id+1).r;
+    vColorVar = texelFetch(LeafData, id+2).r;
 
     if (Time < startTime) {
         gl_Position = vec4(0);
@@ -358,6 +363,78 @@ void main()
 }
 
 -- Tube.VS
+// --------------------- ( NOISE LIB CODE ) --------------------------------
+//
+// Description : Array and textureless GLSL 2D simplex noise function.
+//      Author : Ian McEwan, Ashima Arts.
+//  Maintainer : ijm
+//     Lastmod : 20110822 (ijm)
+//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
+//               Distributed under the MIT License. See LICENSE file.
+//               https://github.com/ashima/webgl-noise
+// 
+
+vec3 mod289(vec3 x) {
+  return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec2 mod289(vec2 x) {
+  return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec3 permute(vec3 x) {
+  return mod289(((x*34.0)+1.0)*x);
+}
+
+float snoise(vec2 v)
+  {
+  const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
+                      0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
+                     -0.577350269189626,  // -1.0 + 2.0 * C.x
+                      0.024390243902439); // 1.0 / 41.0
+// First corner
+  vec2 i  = floor(v + dot(v, C.yy) );
+  vec2 x0 = v -   i + dot(i, C.xx);
+
+// Other corners
+  vec2 i1;
+  //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0
+  //i1.y = 1.0 - i1.x;
+  i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  // x0 = x0 - 0.0 + 0.0 * C.xx ;
+  // x1 = x0 - i1 + 1.0 * C.xx ;
+  // x2 = x0 - 1.0 + 2.0 * C.xx ;
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+
+// Permutations
+  i = mod289(i); // Avoid truncation effects in permutation
+  vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+		+ i.x + vec3(0.0, i1.x, 1.0 ));
+
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m*m ;
+  m = m*m ;
+
+// Gradients: 41 points uniformly over a line, mapped onto a diamond.
+// The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
+
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+
+// Normalise gradients implicitly by scaling m
+// Approximation of: m *= inversesqrt( a0*a0 + h*h );
+  m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+
+// Compute final noise value at P
+  vec3 g;
+  g.x  = a0.x  * x0.x  + h.x  * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}
+// --------------------- ( END NOISE LIB CODE ) --------------------------------
 
 layout(location = 0) in vec3 Position;
 layout(location = 1) in vec3 Normal;
@@ -407,11 +484,10 @@ void main()
     float scale = s*texelFetch(Scales, id).r;
     vPosition.w = 1.0;
 
-    if (s == 89) {
-        vPosition.xyz = vec3(0,0,0);
-    } else {
     vPosition.xyz = Position.xyz * scale; // * (5 + sin(id/2));
-    }
+
+    // add noise to the current ring
+    //vPosition.xyz *=  1 + .2*snoise(vec2(id/4.,0)) + .2 * snoise(vec2(mod(id, Slices) / 4.0));
 
     float oldScale = texelFetch(Scales, id-1).r;
     if ((s == 0 && s0 > 0)) { //id > 0 && scale == 0 && oldScale > 0) {
