@@ -24,14 +24,14 @@ void Tree::Init() {
     FloatList leafData;
     Vec3List leafNormals;
     float leafSize = .02;
-    int leafCount = 1;
+    int leafCount = 3;
 
     FOR_EACH(branchIt, _treeSys.branches) {
         BranchDef* branch = *branchIt;
 
         int maxLevel = 6;
         float startTime = 9.0;
-        float growTime = 15.0 - startTime;
+        float growTime = 12.0 - startTime;
 
         //std::cout << "Branch: " << branch->name << std::endl;;
         if (not branch->isLeaf) {
