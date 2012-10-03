@@ -5,6 +5,7 @@
 
 int StartAudio(void);
 void StopAudio();
+void SetAudioPosition(float seconds);
 
 const int BPM = 280;
 const float BPS = BPM / 60.0f;

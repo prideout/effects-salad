@@ -137,6 +137,12 @@ void StopAudio() {
     SDL_Quit();
 }
 
+void SetAudioPosition(float seconds) {
+    if(Mix_SetMusicPosition(seconds)==-1) {
+        printf("Mix_SetMusicPosition: %s\n", Mix_GetError());
+    }
+}
+
 #if 0
 void handleKey(SDL_KeyboardEvent key) {
   switch(key.keysym.sym) {

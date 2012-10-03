@@ -223,6 +223,7 @@ static void _constructScene()
 
     DemoContext::SetCurrent(sequence[0]);
     StartAudio();
+    //SetAudioPosition(17);
 }
 
 void PezInitialize()
