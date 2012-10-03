@@ -52,11 +52,11 @@ void FireFlies::Init()
     // --------------------------------------------------------------------- 
 
     FloatList stars;
-    for (int i = 0; i < 2000; i ++) {
+    for (int i = 0; i < 4000; i ++) {
         // Use spherical coordinates with fixed radius to simulate a sky dome
         float r = 120;
         float theta = 3.14*(rand() / float(RAND_MAX)); 
-        float phi = 2*3.14*(rand() / float(RAND_MAX));
+        float phi = 3.14*(rand() / float(RAND_MAX));
         stars.push_back(r*sin(theta)*cos(phi) - 10);
         stars.push_back(r*sin(theta)*sin(phi));
         stars.push_back(r*cos(theta) + 10);
