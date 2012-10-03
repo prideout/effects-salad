@@ -23,9 +23,9 @@
 using namespace std;
 using namespace glm;
 
-static const int TerrainSize = 150;
+static const int TerrainSize = 1500;
 static const float TerrainScale = 0.5;
-static const size_t CircleCount = 64;
+static const size_t CircleCount = 32;
 static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
@@ -68,7 +68,7 @@ MyTerrainFunc(vec2 v)
 
 void CityGrowth::Init()
 {
-    srand(42);
+    srand(40);
 
     // Tessellate the ground
     if (true) {
@@ -88,6 +88,7 @@ void CityGrowth::Init()
         vec2 coord;
         coord.x = (rand() / float(RAND_MAX) - 0.5);
         coord.y = (rand() / float(RAND_MAX) - 0.5);
+        coord *= 0.05f;
 
         vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
 
@@ -401,7 +402,7 @@ PerspCamera CityGrowth::_InitialCamera()
     PerspCamera cam;
     cam.far = 2000;
     cam.up = vec3(0, 1, 0);
-    float viewingDistance = 1600;
+    float viewingDistance = 700;
     vec3 center = building.Position + vec3(0, 10, 0);
     vec3 gaze = normalize(vec3(0, -1, 1));
     gaze = glm::rotateY(gaze, building.ViewingAngle * 2);
