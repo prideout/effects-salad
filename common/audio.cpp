@@ -141,6 +141,8 @@ void SetAudioPosition(float seconds) {
     if(Mix_SetMusicPosition(seconds)==-1) {
         printf("Mix_SetMusicPosition: %s\n", Mix_GetError());
     }
+    AudioPlaybackTime = seconds;
+    Audio::Get().Update(seconds);
 }
 
 #if 0
