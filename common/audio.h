@@ -3,7 +3,7 @@
 #include <bitset>
 #include <vector>
 
-int StartAudio(void);
+void StartAudio(void);
 void StopAudio();
 void SetAudioPosition(float seconds);
 

@@ -14,130 +14,86 @@
 
 
 
-/* Mix_Music actually holds the music information.  */
+/* Mix_Music holds the music information.  */
 Mix_Music *music = NULL;
 
 float AudioPlaybackTime = 0;
 
-//void handleKey(SDL_KeyboardEvent key);
-void musicDone();
-
-    struct MusicInfo {
-       int currentPosition;
-       Mix_Music *music;
-    };
-
-    void musicLengthCallback(void *udata, Uint8 *stream, int len)
-    {
-        MusicInfo *music = static_cast<MusicInfo *>(udata);
-        music->currentPosition += len;
-        AudioPlaybackTime += len / 22050.0 / 4.0;
-        //std::cout << music->currentPosition / 22050.0 / 4.0 << std::endl;
-    }
+void MusicDone();
 
 
-
-int StartAudio(void) {
-
-  //SDL_Surface *screen;
-  //SDL_Event event;
-  //int done = 0;
-
-  /* We're going to be requesting certain things from our audio
-     device, so we set them up beforehand */
-  int audio_rate = 22050;
-  Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
-  int audio_channels = 2;
-  int audio_buffers = 1024; //4096;
-
-  SDL_Init(SDL_INIT_AUDIO);
-  //SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-
-  /* This is where we open up our audio device.  Mix_OpenAudio takes
-     as its parameters the audio format we'd /like/ to have. */
-  if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-    printf("Unable to open audio!\n");
-    exit(1);
-  }
-
-  /* If we actually care about what we got, we can ask here.  In this
-     program we don't, but I'm showing the function call here anyway
-     in case we'd want to know later. */
-  Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
-  std::cout 
-    << "Audio Channels: " << audio_channels  << std::endl
-    << "Audio rate: " << audio_rate << std::endl
-    ;
-
-#if 0
-  /* We're going to be using a window onscreen to register keypresses
-     in.  We don't really care what it has in it, since we're not
-     doing graphics, so we'll just throw something up there. */
-  screen = SDL_SetVideoMode(320, 240, 0, 0);
-
-  while(!done) {
-    while(SDL_PollEvent(&event)) {
-      switch(event.type) {
-      case SDL_QUIT:
-	done = 1;
-	break;
-      case SDL_KEYDOWN:
-      case SDL_KEYUP:
-	handleKey(event.key);
-	break;
-      }
-    }
-
-    /* So we don't hog the CPU */
-    SDL_Delay(50);
-
-  }
-#endif
-        /* Setup an "effect" here so that we can monitor the current playback time
-         */
-        //int channel = 3;
-        MusicInfo* info = new MusicInfo;
-        info->currentPosition = 0;
-        Mix_SetPostMix(&musicLengthCallback, info);
-        /*) {
-            fprintf(stderr, "Mix_RegisterEffect: No such channel! (channel = %d)", channel);
-            exit(1);
-        }*/
-
-        /* Actually loads up the music */
-	music = Mix_LoadMUS("audio/moonlight-remix.ogg");
-        if(!music) {
-            fprintf(stderr, "Mix_LoadMUS(\"audio/moonlight.ogg\"): %s\n", Mix_GetError());
-            exit(1);
-            // this might be a critical error...
-        }
-
-	/* This begins playing the music - the first argument is a
-	   pointer to Mix_Music structure, and the second is how many
-	   times you want it to loop (use -1 for infinite, and 0 to
-	   have it just play once) */
-	Mix_PlayMusic(music, 0);
-
-	/* We want to know when our music has stopped playing so we
-	   can free it up and set 'music' back to NULL.  SDL_Mixer
-	   provides us with a callback routine we can use to do
-	   exactly that */
-	Mix_HookMusicFinished(musicDone);
-
-        std::cout << "Channels Playing: " << Mix_Playing(-1) << std::endl;
-
-    return 0;
-
+void musicLengthCallback(void *udata, Uint8 *stream, int len)
+{
+    AudioPlaybackTime += len / 22050.0 / 4.0;
 }
 
-void StopAudio() {
+void StartAudio(void) 
+{
+    // 
+    // Setup audio format, rate, channels and buffers.
+    // Setting a larger number of buffers reduces CPU time, but also means 
+    // our AudioPlaybackTime is less accurate
+    //
+    int audio_rate = 22050;
+    Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
+    int audio_channels = 2;
+    int audio_buffers = 1024; //4096;
+
+    SDL_Init(SDL_INIT_AUDIO);
+
+    //
+    // Open the audio device.  Mix_OpenAudio takes as its parameters the audio
+    // format we'd *like* to have.
+    //
+    if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
+        std::cerr << "Unable to open audio!\n" << std::endl;
+        exit(1);
+    }
+
+    // 
+    // These are the audio settings we actually got, which may differ from the
+    // requested paramaters set above
+    //
+    Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
+    std::cout << "Audio Channels: " << audio_channels  << std::endl
+              << "Audio rate: " << audio_rate << std::endl ;
+
+    //
+    // Setup an "effect" here so that we can monitor the current playback time
+    //
+    Mix_SetPostMix(&musicLengthCallback, NULL);
+    
+    // 
+    // Load the music from source file
+    //
+    music = Mix_LoadMUS("audio/moonlight-remix.ogg");
+    if(!music) {
+        fprintf(stderr, "Mix_LoadMUS(\"audio/moonlight.ogg\"): %s\n", Mix_GetError());
+        exit(1);
+    }
+
+    // 
+    // This begins playing the music - the second argument is how many times
+    // you want it to loop (-1 for infinite, and 0 to play once)
+    //
+    Mix_PlayMusic(music, 0);
+
+    // 
+    // Setup a callback to kill the demo when the music finishes playing 
+    //
+    Mix_HookMusicFinished(MusicDone);
+}
+
+void StopAudio() 
+{
     /* This is the cleaning up part */
     //Mix_UnregisterEffect(1, &musicLengthCallback);
     Mix_CloseAudio();
     SDL_Quit();
 }
 
-void SetAudioPosition(float seconds) {
+void SetAudioPosition(float seconds) 
+{
     if(Mix_SetMusicPosition(seconds)==-1) {
         printf("Mix_SetMusicPosition: %s\n", Mix_GetError());
     }
@@ -145,54 +101,12 @@ void SetAudioPosition(float seconds) {
     Audio::Get().Update(seconds);
 }
 
-#if 0
-void handleKey(SDL_KeyboardEvent key) {
-  switch(key.keysym.sym) {
-  case SDLK_m:
-    if(key.state == SDL_PRESSED) {
 
-      /* Here we're going to have the 'm' key toggle the music on and
-	 off.  When it's on, it'll be loaded and 'music' will point to
-	 something valid.  If it's off, music will be NULL. */
-
-      if(music == NULL) {
-	
-	/* Actually loads up the music */
-	music = Mix_LoadMUS("music.ogg");
-
-	/* This begins playing the music - the first argument is a
-	   pointer to Mix_Music structure, and the second is how many
-	   times you want it to loop (use -1 for infinite, and 0 to
-	   have it just play once) */
-	Mix_PlayMusic(music, 0);
-
-	/* We want to know when our music has stopped playing so we
-	   can free it up and set 'music' back to NULL.  SDL_Mixer
-	   provides us with a callback routine we can use to do
-	   exactly that */
-	Mix_HookMusicFinished(musicDone);
-	
-      } else {
-	/* Stop the music from playing */
-	Mix_HaltMusic();
-
-	/* Unload the music from memory, since we don't need it
-	   anymore */
-	Mix_FreeMusic(music);
-	
-	music = NULL;
-      }
-      break;
-    }
-  }
-}
-#endif
-
-/* This is the function that we told SDL_Mixer to call when the music
-   was finished. In our case, we're going to simply unload the music
-   as though the player wanted it stopped.  In other applications, a
-   different music file might be loaded and played. */
-void musicDone() {
+//
+// SDL_mixer will call this when the music stops, we terminate the demo here
+//
+void MusicDone() 
+{
   Mix_HaltMusic();
   Mix_FreeMusic(music);
   music = NULL;
