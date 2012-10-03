@@ -24,14 +24,18 @@ rideout queue
 cowles queue
 ============
  - ~~music API~~
- - finish leaves
+ - ~~finish leaf shading~~
+ - finish leaf lighting
+ - make grass blow in the wind
+ - make leaves fall and float in wind
  - split GrassIntro into 3 shots
  - growth camera work
- - move grass/leaves/fireflies to music
+ - leaf keep-alive movement
+ - move fireflies to music or flocking
  - moon + moon effect
  - city sky
  - tree bark shading
- - horizontal vine effect
+ - horizontal vine effect / floral flourish
  - credits
 
 
