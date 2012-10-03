@@ -172,7 +172,7 @@ void CityGrowth::Init()
 
             shape->PushPath(
                 e->Rect.SideWall.Path,
-                1.0,
+                2.5,
                 &secondaryWalls);
 
             e->Rect.SideWallRoof.Path = 
@@ -188,6 +188,8 @@ void CityGrowth::Init()
 
         shape->PushPath(e->Roof.Path, e->Height/2, &walls);
         e->Roof.EndW = e->Roof.Path->Plane->Eqn.w;
+
+        const float windowThickness = (rand() % 4) == 0 ? 2.0 : 0.2;
 
         if (e->HasWindows) {
             FOR_EACH(w, walls) {
@@ -222,7 +224,7 @@ void CityGrowth::Init()
             }
             shape->PushPaths(
                 e->WindowFrames.Paths,
-                0.2);
+                windowThickness);
         }
 
         // Tessellate the final form of the building before collapsing it
@@ -237,7 +239,7 @@ void CityGrowth::Init()
         }
         shape->PushPaths(
             e->WindowFrames.Paths,
-            -0.2);
+            -windowThickness);
         FOR_EACH(p, e->WindowFrames.Paths) {
             sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*p);
             e->WindowFrames.BeginW.push_back(cop->Plane->Eqn.w);
@@ -307,7 +309,6 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
                 AnimElement anim;
                 building.CpuShape->SetVisible(frames.Paths[i], true);
                 anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
-                anim.BeginW = frames.BeginW[i];
                 anim.EndW = frames.EndW[i];
                 _finalize(building.CpuShape, anim);
             }
@@ -366,7 +367,7 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
             float w = tweener.easeOut(
                 elapsedTime,
                 a->BeginW,
-                a->EndW,
+                a->EndW - a->BeginW,
                 SecondsPerBuilding);
             building.CpuShape->SetPathPlane(a->Path, w);
         }
