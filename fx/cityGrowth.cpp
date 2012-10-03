@@ -259,7 +259,9 @@ void CityGrowth::Init()
                                 e->Rect.SideWall.BeginW);
         }
 
-        shape->PushPath(e->Roof.Path, 2.0);
+        // Submerge the building
+        e->Visible = false;
+
         e->CpuTriangles->PullFromScene();
         e->CpuTriangles->PushToGpu(e->GpuTriangles);
     }
@@ -276,9 +278,17 @@ void CityGrowth::Init()
     _UpdateFlight(0);
 }
 
+static void
+_finalize(sketch::Scene* shape, AnimElement anim)
+{
+    shape->SetPathPlane(anim.Path, anim.EndW);
+}
+
 void CityGrowth::_UpdateGrowth(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
+    building.Visible = true;
+
     float duration = SecondsPerBuilding;
     if (building.Rect.SideWall.Path) {
         duration += SecondsPerBuilding;
@@ -288,7 +298,22 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
     }
 
     if (elapsedTime > duration) {
-        building.CpuShape->SetPathPlane(building.Roof.Path, building.Roof.EndW);
+        if (building.Rect.SideWall.Path) {
+            _finalize(building.CpuShape, building.Rect.SideWall);
+            _finalize(building.CpuShape, building.Rect.SideWallRoof);
+        } else if (building.HasWindows) {
+            AnimArray& frames = building.WindowFrames;
+            for (size_t i = 0; i < frames.Paths.size(); ++i) {
+                AnimElement anim;
+                building.CpuShape->SetVisible(frames.Paths[i], true);
+                anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
+                anim.BeginW = frames.BeginW[i];
+                anim.EndW = frames.EndW[i];
+                _finalize(building.CpuShape, anim);
+            }
+        }
+        _finalize(building.CpuShape, building.Roof);
+
         building.CpuTriangles->PullFromScene();
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
 
@@ -308,32 +333,32 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
         anims.push_back(building.Roof);
 
         float remainingTime = duration;
+
         if (building.Rect.SideWall.Path) {
             if (elapsedTime > remainingTime / 2) {
-                float error = elapsedTime - remainingTime / 2;
-                elapsedTime -= remainingTime / 2 - error;
+                elapsedTime -= remainingTime / 2;
                 anims.clear();
                 anims.push_back(building.Rect.SideWall);
                 anims.push_back(building.Rect.SideWallRoof);
             }
-            remainingTime /= 2;
-        }
-
-        if (building.HasWindows) {
+        } else if (building.HasWindows) {
             if (elapsedTime > remainingTime / 2) {
-                float error = elapsedTime - remainingTime / 2;
-                elapsedTime -= remainingTime / 2 - error;
+                elapsedTime -= remainingTime / 2;
                 anims.clear();
                 AnimArray& frames = building.WindowFrames;
                 for (size_t i = 0; i < frames.Paths.size(); ++i) {
                     AnimElement anim;
+                    building.CpuShape->SetVisible(frames.Paths[i], true);
                     anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
                     anim.BeginW = frames.BeginW[i];
                     anim.EndW = frames.EndW[i];
                     anims.push_back(anim);
                 }
             }
-            remainingTime /= 2;
+        }
+
+        if (elapsedTime > SecondsPerBuilding) {
+            elapsedTime = SecondsPerBuilding;
         }
 
         tween::Elastic tweener;
@@ -342,7 +367,7 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
                 elapsedTime,
                 a->BeginW,
                 a->EndW,
-                remainingTime);
+                SecondsPerBuilding);
             building.CpuShape->SetPathPlane(a->Path, w);
         }
 
@@ -476,6 +501,9 @@ void CityGrowth::Draw()
     glUniform3f(u("Translate"), 0, 0, 0);
 
     FOR_EACH(e, _elements) {
+        if (not e->Visible) {
+            continue;
+        }
         e->GpuTriangles.Bind();
         mat4 xlate = glm::translate(e->Position);
         _camera.Bind(xlate);

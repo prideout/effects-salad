@@ -40,6 +40,7 @@ struct CityElement {
     bool HasWindows;
     AnimArray WindowFrames;
     AnimArray Windows;
+    bool Visible;
 };
 
 typedef std::vector<CityElement> CityElements;
