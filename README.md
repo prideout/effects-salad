@@ -1,3 +1,40 @@
+sequence as of Oct 1
+====================
+ - 17s Empty Grassy Field, Wind Blowing, Highlight Fireflies, Moon
+ - 30s Beats enter, Buildings poppin' up but without detail
+ - 30s Grassy field, Tree starts growing
+ - 30s Buildings, detail starts popping in, camera crawls up buildings, zooming on detail
+ - 30s Blossoms growing and falling
+ - 20s Back to city -- explosion and camera shake?
+ - 10s Credits (music keeps going)
+
+rideout queue
+=============
+ - ~~submerge the building "seeds"~~
+ - ~~land the windows branch~~
+ - split the CityGrow shot in two
+ - Use the swanky new music API
+ - SSAO
+ - unify the two cities in some way
+ - laser beams for city explosions
+ - credits 
+ - make the blank terrain more interesting
+ - city layout
+
+cowles queue
+============
+ - ~~music API~~
+ - finish leaves
+ - split GrassIntro into 3 shots
+ - growth camera work
+ - move grass/leaves/fireflies to music
+ - moon + moon effect
+ - city sky
+ - tree bark shading
+ - horizontal vine effect
+ - credits
+
+
 effects-salad
 =============
 
@@ -39,7 +76,14 @@ Stills:
   * http://farm3.static.flickr.com/2475/3916967801_da152c16f7_b.jpg
   * http://farm3.static.flickr.com/2789/4333057631_0e1070bdfa_o.jpg
 
+City:
+  * [City Sculpture](http://www.talariaenterprises.com/images2/5089a.jpg)
+  * [NYC Google Earth](http://sites.duke.edu/tlge/files/2010/02/google_earth_nyc_801.jpg)
+  * [Sky scraper - sense of scale](http://www.rianicpa.com/images/resources_buildings.jpg)
+  * [City art floral flourish](http://image.shutterstock.com/display_pic_with_logo/95809/95809,1256699441,3/stock-vector-black-city-buildings-and-graffiti-grunge-floral-arrow-design-39726994.jpg)
+
 Cherry Blossom / Grass / Country / moon:
+  * [Blossom up close](http://www.onlyinap.com/wp-content/uploads/2011/04/Cherry-Blossom-sprig1.jpg)
   * [Blossoms & Bark, huge](http://www.danielhaydenberman.com/wp-content/images/Wallpaper%20Wednesday/week_13/cherry-tree-1920x1200.jpg)
   * [Cool sky and moon](http://www.flickr.com/photos/25259860/2403305820/)
   * [Koi](http://www.flickr.com/photos/jpinlac/4572623911/)
@@ -63,6 +107,9 @@ Misc. Tree Art:
   * [Moon Haze](http://fc08.deviantart.net/fs50/i/2009/258/e/f/moon_haze_by_CharlotteDeSmith.jpg)
   * [Cool b/w silhouette](http://i.istockimg.com/file_thumbview_approve/11177570/2/stock-photo-11177570-black-birch-betula-pendula-tree-on-hill-isolated-o_n-white.jpg)
 
+Torii:
+  * [Torii in water](http://www.kuffner.org/james/gallery/raytracing/torii/Miyajima_torii_gate_postcard.jpg)
+
 Neo-Tokyo:
   * http://www.madmind.de/wp-content/uploads/2010/03/akira-neo-tokyo.jpg
   * http://2.bp.blogspot.com/-KW_k5R8wWis/TePH6x3de9I/AAAAAAAAAms/3POananT2ds/s1600/Akira_city.jpg
@@ -78,39 +125,4 @@ Possible Sound + Music Stuff
   * [libsndfile](http://www.mega-nerd.com/libsndfile)
   * [portaudio](http://www.portaudio.com)
   * [flstudio](http://www.image-line.com/documents/flstudio.html)
-
-Framework Components
---------------------
-
-### Audio
-
-### Camera
-
-### DemoContext
-
-### Drawable
-
-### Effect
-
-### Instancer
-
-### Programs
-
-### Quad
-
-### Surface
-
-### Texture
-
-### Timer
-
-### Tube
-
-### Vao
-
-A helper class for GL Vertex Array Objects
-
-
-
-
 

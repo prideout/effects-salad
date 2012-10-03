@@ -19,10 +19,13 @@ class Tree : public Effect {
     TreeSystem _treeSys;
     Vao _leaves;
     BufferTexture _leafData;
+    BufferTexture _leafNormals;
 
 public:
+    glm::vec3 pos;
 
-    Tree() : Effect() 
+    Tree() : Effect(),
+        pos(glm::vec3(-3,-2.25,2))
     { 
     }
    

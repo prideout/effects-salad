@@ -33,6 +33,8 @@ static void _constructScene()
     typedef std::map<std::string,DemoContext*> ShotMap;
     ShotMap shotMap;
 
+    //Audio::Get().Test();
+
     //
     // Check to see if a specific shot was pass on the command line
     //
@@ -49,7 +51,7 @@ static void _constructScene()
 
         ctx->mainCam.eye.z = 5;
         ctx->drawables.push_back(new FireFlies());
-        ctx->drawables.push_back(new FpsOverlay()); //FpsOverlay::MemUsage));
+        ctx->drawables.push_back(new FpsOverlay());
     }
 
 
@@ -85,8 +87,7 @@ static void _constructScene()
         ctx->mainCam.eye.y = 50;
 
         // Instance the effects, but do not place them into the scene graph:
-        Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag |
-                                                 Fullscreen::TeleLinesFlag);
+        Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag);
         fullscreen1->clearColor = vec4(0.1,0.9,1,1);
         Fullscreen* fullscreen2 = new Fullscreen("RadialBlur",
                                                  Fullscreen::BlendFlag |
@@ -103,8 +104,8 @@ static void _constructScene()
         ctx->drawables.push_back(fps);
     }
 
-    {   // Machine Grow
-        DemoContext* ctx = DemoContext::New("MachineGrow");
+    {   // prideout credits
+        DemoContext* ctx = DemoContext::New("prideout_credits");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 
@@ -115,8 +116,11 @@ static void _constructScene()
         // Instance the effects, but do not place them into the scene graph:
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
+        mask |= Fullscreen::TeleLinesFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
-        fullscreen->clearColor = vec4(0.1,0.9,0.7,1);
+        vec4 hotPink(1.000, 0.078, 0.576, 1);
+        fullscreen->clearColor = vec4(hotPink);
+        //fullscreen->clearColor = vec4(0.1,0.9,0.7,1);
 
         // Now, insert the effects into our poor man's "scene graph":
         ctx->drawables.push_back(fullscreen);
@@ -133,8 +137,6 @@ static void _constructScene()
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
-        vec4 hotPink(1.000, 0.078, 0.576, 1);
-        fullscreen->clearColor = vec4(hotPink);
         fullscreen->AddChild(new CityGrowth());
         ctx->drawables.push_back(fullscreen);
     }
@@ -284,6 +286,9 @@ void PezRender()
 
 void PezUpdate(float seconds)
 {
+    // sync up the audio sequencer
+    Audio::Get().Update(seconds);
+
     //
     // The firest couple frames may be jumpy, so try to account for that by freezing time
     // XXX: how will this impact audio? 

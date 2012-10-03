@@ -51,6 +51,7 @@ Scene::AddRectangle(float width, float height, vec4 eqn, vec2 offset)
     unsigned int d = _AppendPoint(AddOffset(offset + vec2(-hw, +hh), plane));
 
     retval = new CoplanarPath();
+    retval->Visible = true;
     _topologyHash++;
     _AppendEdge(retval, a, b);
     _AppendEdge(retval, b, c);
@@ -81,6 +82,7 @@ Scene::AddPolygon(float radius, vec4 eqn, vec2 offset, int numPoints)
     float theta = 0;
 
     retval = new CoplanarPath();
+    retval->Visible = true;
     _topologyHash++;
     unsigned firstIndex = 0;
     for (int i = 0; i < numPoints; ++i, theta += dtheta) {
@@ -127,6 +129,7 @@ Scene::AddInscribedRectangle(float width, float height,
     _recording = previous;
 
     CoplanarPath* hole = new CoplanarPath();
+    hole->Visible = true;
     _topologyHash++;
     FOR_EACH(edge, inner->Edges) {
         _AppendEdge(hole, *edge);
@@ -162,6 +165,7 @@ Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
     _recording = previous;
 
     CoplanarPath* hole = new CoplanarPath();
+    hole->Visible = true;
     _topologyHash++;
     FOR_EACH(edge, inner->Edges) {
         _AppendEdge(hole, *edge);
@@ -181,7 +185,7 @@ Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
 }
 
 void
-Scene::PushPaths(PathList paths, float delta)
+Scene::PushPaths(PathList paths, float delta, ExtrusionVisibility vis)
 {
     bool previous = _recording;
     _recording = false;
@@ -190,7 +194,14 @@ Scene::PushPaths(PathList paths, float delta)
         if (!cp) {
             pezFatal("Non-coplanar paths aren't really supported yet.");
         }
-        PushPath(cp, delta, NULL);
+        PathList walls;
+        PushPath(cp, delta, &walls);
+        if (vis == HIDE) {
+            FOR_EACH(w, walls) { (*w)->Visible = false; }
+        }
+        if (vis == SHOW) {
+            FOR_EACH(w, walls) { (*w)->Visible = true; }
+        }
     }
     _recording = previous;
 
@@ -241,6 +252,7 @@ Scene::PushPath(CoplanarPath* path, float delta, PathList* pWalls)
             unsigned int c = _AppendPoint(_points[b] + pushVector);
             unsigned int d = _AppendPoint(_points[a] + pushVector);
             CoplanarPath* f = new CoplanarPath();
+            f->Visible = true;
             _topologyHash++;
             _AppendEdge(f, ab);
             _AppendEdge(f, b, c);
@@ -513,6 +525,50 @@ Scene::Serialize() const
         appendJson(root, "%s", toString(points));
     }
     return root;
+}
+
+void
+Scene::SetVisible(Path* path, bool b)
+{
+    if (path->Visible != b) {
+        _topologyHash++;
+        path->Visible = b;
+    }
+}
+
+void
+Scene::SetVisible(PathList path, bool b)
+{
+    bool changed = false;
+    FOR_EACH(p, path) {
+        if ((*p)->Visible != b) {
+            changed = true;
+            (*p)->Visible = b;
+        }
+    }
+    if (changed) {
+        _topologyHash++;
+    }
+}
+
+vec2
+Scene::GetPathExtent(const CoplanarPath* path) const
+{
+    mat3 planeInverse = inverse(path->Plane->GetCoordSys());
+    vec3 planeCenter = path->Plane->GetCenterPoint();
+    vec2 minp(1000,1000);
+    vec2 maxp(-1000,-1000);
+    FOR_EACH(e, path->Edges) {
+        for (int c = 0; c < 2; ++c) {
+            unsigned i = (*e)->Endpoints[c];
+            vec3 v3 = _points[i];
+            vec3 planeOffset = planeInverse * (v3 - planeCenter);
+            vec2 v2 = vec2(planeOffset.x, planeOffset.z);
+            maxp = glm::max(v2, maxp);
+            minp = glm::min(v2, minp);
+        }
+    }
+    return maxp - minp;
 }
 
 void

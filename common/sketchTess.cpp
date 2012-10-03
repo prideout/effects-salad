@@ -32,9 +32,22 @@ sketch::Tessellator::PullFromScene()
         CoplanarPath* coplanar = dynamic_cast<CoplanarPath*>(*p);
         pezCheck(coplanar != NULL, "Holes are not supported in non-coplanar paths.");
 
+        if (not coplanar->Visible) {
+            continue;
+        }
+
         Vec2List rim2d;
         IndexList indices;
         _scene->_WalkPath(coplanar, &rim2d, arcTessLength, &indices);
+
+        if (rim2d.size() == 3) {
+            _tris.push_back(ivec3(indices[0],indices[1], indices[2]));
+            continue;
+        }
+
+        if (rim2d.size() < 3) {
+            continue;
+        }
 
         list<vector<p2t::Point*> > holes;
         vector<p2t::Point*> polyline;
@@ -51,6 +64,10 @@ sketch::Tessellator::PullFromScene()
 
                 CoplanarPath* copHole = dynamic_cast<CoplanarPath*>(*hole);
                 pezCheck(copHole != NULL);
+
+                if (not copHole->Visible) {
+                    continue;
+                }
 
                 Vec2List holePath;
                 IndexList indices;
@@ -100,6 +117,7 @@ sketch::Tessellator::PushToGpu(Vao& vao)
  
     if (!vao.vao) {
         vao = Vao(verts, _tris);
+        vao.indexCount = 0;
     }
 
     vao.Bind();

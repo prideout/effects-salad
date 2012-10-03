@@ -34,6 +34,7 @@ namespace sketch
     {
         EdgeList Edges;
         PathList Holes;
+        bool Visible;
         virtual ~Path() {}
     };
 
@@ -63,6 +64,12 @@ namespace sketch
         sketch::Plane* Plane;
     };
 
+    enum ExtrusionVisibility {
+        DEFAULT,
+        HIDE,
+        SHOW,
+    };
+
     // Presents an interface to the outside world for the 'sketch' subsystem.
     class Scene
     {
@@ -89,7 +96,7 @@ namespace sketch
 
         // Useful if you have an array of window sills that you want extrude simultaneously.
         void
-        PushPaths(PathList paths, float delta);
+        PushPaths(PathList paths, float delta, ExtrusionVisibility v = DEFAULT);
 
         // Adjust the 'w' component of a path's plane equation.
         // This provides a way to efficiently animate an existing extrusion.
@@ -99,6 +106,47 @@ namespace sketch
         // Ditto, but for multiple paths.
         void
         SetPathPlanes(PathList paths, FloatList ws);
+
+        // Inscribe a path and create a hole in the outer path.
+        CoplanarPath*
+        AddInscribedRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
+
+        CoplanarPath*
+        AddInscribedPolygon(float radius, sketch::CoplanarPath* path, glm::vec2 offset, int numPoints);
+
+        // Finds or creates a new frame-of-reference.
+        const sketch::Plane*
+        GetPlane(glm::vec4 eqn);
+
+        // Ditto.
+        const sketch::Plane*
+        GetPlane(float x, float y, float z, float w) { return GetPlane(glm::vec4(x, y, z, w)); }
+
+        glm::vec2
+        GetPathExtent(const CoplanarPath* path) const;
+
+        Scene();
+        ~Scene();
+
+    public:
+
+        void
+        EnableHistory(bool b) { _recording = b; }
+
+        const Json::Value &
+        GetHistory() const { return _history; }
+
+        Json::Value
+        Serialize() const;
+
+        unsigned int
+        GetTopologyHash() const { return _topologyHash; }
+
+        void
+        SetVisible(Path* path, bool b);
+
+        void
+        SetVisible(PathList path, bool b);
 
         #ifdef NOT_YET_SUPPORTED
 
@@ -129,40 +177,6 @@ namespace sketch
         TranslateEdge(Edge* e, glm::vec3 delta);
 
         #endif
-
-    public:
-
-        // Inscribe a path and create a hole in the outer path.
-        CoplanarPath*
-        AddInscribedRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
-
-        CoplanarPath*
-        AddInscribedPolygon(float radius, sketch::CoplanarPath* path, glm::vec2 offset, int numPoints);
-
-        // Finds or creates a new frame-of-reference.
-        const sketch::Plane*
-        GetPlane(glm::vec4 eqn);
-
-        // Ditto.
-        const sketch::Plane*
-        GetPlane(float x, float y, float z, float w) { return GetPlane(glm::vec4(x, y, z, w)); }
-
-        Scene();
-        ~Scene();
-
-    public:
-
-        void
-        EnableHistory(bool b) { _recording = b; }
-
-        const Json::Value &
-        GetHistory() const { return _history; }
-
-        Json::Value
-        Serialize() const;
-
-        unsigned int
-        GetTopologyHash() const { return _topologyHash; }
 
     private:
 

@@ -310,7 +310,8 @@ void _pezFatal(const char* pStr, va_list a)
     vsnprintf(msg, countof(msg), pStr, a);
     fputs(msg, stderr);
     fputc('\n', stderr);
-    exit(1);
+    //exit(1);
+    int* crash = 0; printf("%d", *crash);
 }
 
 void pezFatal(const char* pStr, ...)
