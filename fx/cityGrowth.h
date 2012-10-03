@@ -73,6 +73,9 @@ private:
     StateMachine _state;
     float _stateStartTime;
 
+    int _substate;
+    float _substateStartTime;
+
     size_t _currentBuildingIndex;
     PerspCamera _camera;
     PerspCamera _previousCamera;

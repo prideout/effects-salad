@@ -13,7 +13,7 @@ rideout queue
  - ~~submerge the building "seeds"~~
  - ~~land the windows branch~~
  - split the CityGrow shot in two
- - Use the swanky new music API
+ - ~~Use the swanky new music API~~
  - SSAO
  - unify the two cities in some way
  - laser beams for city explosions

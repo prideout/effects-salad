@@ -39,7 +39,7 @@ static const float BeatsPerMinute = 140.0;
 static const float SecondsPerBeatInterval = 60.0 / BeatsPerMinute;
 static const float BeatsPerBuilding = 1;
 static const float BeatsPerFlight = 1;
-static const float SecondsPerBuilding = BeatsPerBuilding * SecondsPerBeatInterval;
+static const float SecondsPerSubstate = BeatsPerBuilding * SecondsPerBeatInterval;
 static const float SecondsPerFlight = BeatsPerFlight * SecondsPerBeatInterval;
 
 CityGrowth::CityGrowth()
@@ -291,15 +291,23 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
     CityElement& building = _elements[_currentBuildingIndex];
     building.Visible = true;
 
-    float duration = SecondsPerBuilding;
+    int numSubstates = 1;
     if (building.Rect.SideWall.Path) {
-        duration += SecondsPerBuilding;
+        ++numSubstates;
     }
     if (building.HasWindows) {
-        duration += SecondsPerBuilding;
+        ++numSubstates;
     }
+    float duration = numSubstates * SecondsPerSubstate;
 
-    if (elapsedTime > duration) {
+    if (_substate >= numSubstates-1 &&
+        (GetContext()->elapsedTime - _substateStartTime) > SecondsPerSubstate) {
+
+        bool beat = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
+        if (not beat) {
+            return;
+        }
+
         if (building.Rect.SideWall.Path) {
             _finalize(building.CpuShape, building.Rect.SideWall);
             _finalize(building.CpuShape, building.Rect.SideWallRoof);
@@ -319,33 +327,40 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
         building.CpuTriangles->PushToGpu(building.GpuTriangles);
 
         // TODO finalize by freeing CPU memory
+        delete building.CpuTriangles;
+        delete building.CpuShape;
 
-        float error = elapsedTime - duration;
         _currentBuildingIndex++;
-        _stateStartTime = GetContext()->elapsedTime - error;
+        _stateStartTime = GetContext()->elapsedTime;
         _state = FLIGHT;
 
-    } else {
-        if (elapsedTime < 0) {
-            return;
+        return;
+
+    }
+
+    if (elapsedTime < 0) {
+        return;
+    }
+
+    vector<AnimElement> anims;
+    float remainingTime = duration;
+
+    if (elapsedTime > remainingTime / 2 && numSubstates == 2) {
+
+        if (_substate == 0) {
+            bool beat = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
+            if (beat) {
+                _substate++;
+                _substateStartTime = GetContext()->elapsedTime;
+            }
         }
 
-        vector<AnimElement> anims;
-        anims.push_back(building.Roof);
-
-        float remainingTime = duration;
-
-        if (building.Rect.SideWall.Path) {
-            if (elapsedTime > remainingTime / 2) {
-                elapsedTime -= remainingTime / 2;
-                anims.clear();
+        if (_substate == 1) {
+            elapsedTime = 0.01 + GetContext()->elapsedTime - _substateStartTime;
+            if (building.Rect.SideWall.Path) {
                 anims.push_back(building.Rect.SideWall);
                 anims.push_back(building.Rect.SideWallRoof);
-            }
-        } else if (building.HasWindows) {
-            if (elapsedTime > remainingTime / 2) {
-                elapsedTime -= remainingTime / 2;
-                anims.clear();
+            } else if (building.HasWindows) {
                 AnimArray& frames = building.WindowFrames;
                 for (size_t i = 0; i < frames.Paths.size(); ++i) {
                     AnimElement anim;
@@ -358,23 +373,26 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
             }
         }
 
-        if (elapsedTime > SecondsPerBuilding) {
-            elapsedTime = SecondsPerBuilding;
-        }
-
-        tween::Elastic tweener;
-        FOR_EACH(a, anims) {
-            float w = tweener.easeOut(
-                elapsedTime,
-                a->BeginW,
-                a->EndW - a->BeginW,
-                SecondsPerBuilding);
-            building.CpuShape->SetPathPlane(a->Path, w);
-        }
-
-        building.CpuTriangles->PullFromScene();
-        building.CpuTriangles->PushToGpu(building.GpuTriangles);
+    } else {
+        anims.push_back(building.Roof);
     }
+
+    if (elapsedTime > SecondsPerSubstate) {
+        elapsedTime = SecondsPerSubstate;
+    }
+
+    tween::Elastic tweener;
+    FOR_EACH(a, anims) {
+        float w = tweener.easeOut(
+            elapsedTime,
+            a->BeginW,
+            a->EndW - a->BeginW,
+            SecondsPerSubstate);
+        building.CpuShape->SetPathPlane(a->Path, w);
+    }
+
+    building.CpuTriangles->PullFromScene();
+    building.CpuTriangles->PushToGpu(building.GpuTriangles);
 }
 
 PerspCamera CityGrowth::_InitialCamera()
@@ -413,13 +431,15 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
 
     if (elapsedTime > flightTime + introDuration) {
 
-        float error = elapsedTime - (flightTime + introDuration);
-
-        _previousCamera = _camera;
-        _camera.center = center;
-        _camera.eye = eye;
-        _stateStartTime = GetContext()->elapsedTime - error;
-        _state = GROWTH;
+        bool beat = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
+        if (beat) {
+            _previousCamera = _camera;
+            _camera.center = center;
+            _camera.eye = eye;
+            _substateStartTime = _stateStartTime = GetContext()->elapsedTime;
+            _state = GROWTH;
+            _substate = 0;
+        }
         
     } else if (elapsedTime < introDuration) {
 
