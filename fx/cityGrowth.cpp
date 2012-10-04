@@ -135,7 +135,8 @@ void CityGrowth::Init()
             element.NumSides = b ? 3 : 5;
         }
 
-        bool skyscraper = (rand() % 4) == 0;
+        bool skyscraper = (rand() % 6) == 0;
+
         if (_elements.size() < script.size()) {
             element.NumSides = script[_elements.size()].NumSides;
             skyscraper = script[_elements.size()].Skyscraper;
