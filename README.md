@@ -27,7 +27,7 @@ cowles queue
 ============
  - ~~music API~~
  - ~~finish leaf shading~~
- - finish leaf lighting
+ - ~~finish leaf lighting~~ (done for now, might need to revisit)
  - make grass blow in the wind
  - make leaves fall and float in wind
  - split GrassIntro into 3 shots
