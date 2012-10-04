@@ -12,8 +12,9 @@ rideout queue
 =============
  - ~~submerge the building "seeds"~~
  - ~~land the windows branch~~
- - split the CityGrow shot in two
+ - ~~split the CityGrow shot in two~~
  - ~~Use the swanky new music API~~
+ - add building details: inset windows, antenna, roof extensions
  - SSAO
  - unify the two cities in some way
  - laser beams for city explosions

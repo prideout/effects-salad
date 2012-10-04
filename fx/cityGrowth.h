@@ -57,7 +57,8 @@ public:
     virtual void Update();
     virtual void Draw();
 protected:
-    void _UpdateGrowth(float elapsedTime);
+    void _UpdateGrowth(float elapsedTime); 
+    void _UpdateDetail(float elapsedTime);
     void _UpdateFlight(float elapsedTime);
     bool _Collides(const CityElement& e) const;
     PerspCamera _InitialCamera();
@@ -76,10 +77,6 @@ private:
     };
     StateMachine _state;
     float _stateStartTime;
-
-    int _substate;
-    float _substateStartTime;
-
     size_t _currentBuildingIndex;
     PerspCamera _camera;
     PerspCamera _previousCamera;

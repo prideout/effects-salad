@@ -39,7 +39,7 @@ static const float BeatsPerMinute = 140.0;
 static const float SecondsPerBeatInterval = 60.0 / BeatsPerMinute;
 static const float BeatsPerBuilding = 1;
 static const float BeatsPerFlight = 1;
-static const float SecondsPerSubstate = BeatsPerBuilding * SecondsPerBeatInterval;
+static const float SecondsPerBuilding = BeatsPerBuilding * SecondsPerBeatInterval;
 static const float SecondsPerFlight = BeatsPerFlight * SecondsPerBeatInterval;
 
 CityGrowth::CityGrowth(Config config) : _config(config)
@@ -66,9 +66,27 @@ MyTerrainFunc(vec2 v)
     return p;
 }
 
+
+struct BuildingConfig {
+    int NumSides;
+    bool Skyscraper;
+};
+
+const BuildingConfig BuildingScript[] = {
+    {4, false},
+    {4, false},
+    {20, false},
+    {20, true},
+    {3, false},
+    {5, true},
+};
+
 void CityGrowth::Init()
 {
     srand(40);
+
+    vector<BuildingConfig> script(&BuildingScript[0], &BuildingScript[0] +
+                                  sizeof(BuildingScript) / sizeof(BuildingScript[0]));
 
     // Tessellate the ground
     if (true) {
@@ -96,6 +114,13 @@ void CityGrowth::Init()
         element.Position.y = MyTerrainFunc(domain).y;
         element.Position.z = TerrainSize * coord.y;
 
+        element.Radius = MinRadius + (MaxRadius - MinRadius) *
+            (rand() / float(RAND_MAX));
+
+        if (_Collides(element)) {
+            continue;
+        }
+
         element.ViewingAngle = (rand() / float(RAND_MAX)) * 360;
 
         // Decide on shape; rectangles are most common, then cylinders,
@@ -103,32 +128,30 @@ void CityGrowth::Init()
         float shaper = rand() / float(RAND_MAX);
         if (shaper < 0.7) {
             element.NumSides = 4;
-            element.HasWindows = true;
         } else if (shaper < 0.9) {
             element.NumSides = 20;
-            element.HasWindows = false;
         } else {
             int b = rand() % 2;
             element.NumSides = b ? 3 : 5;
-            element.HasWindows = true;
         }
 
-        // Low-lying buildings vs Skyscrapers
-        int tallUnluckiness = element.NumSides > 5 ? 2 : 3;
-        if (rand() % tallUnluckiness != 0) {
-            element.Height = MinHeight + (MaxHeight - MinHeight) *
-                (rand() / float(RAND_MAX));
+        bool skyscraper = (rand() % 4) == 0;
+        if (_elements.size() < script.size()) {
+            element.NumSides = script[_elements.size()].NumSides;
+            skyscraper = script[_elements.size()].Skyscraper;
+        }
+
+        element.HasWindows = element.NumSides <= 5;
+
+        float heightFract = rand() / float(RAND_MAX);
+        if (skyscraper) {
+            float x = (MaxHeight + SkyscraperHeight) / 2;
+            element.Height = x + (SkyscraperHeight - x) * heightFract;
         } else {
-            element.Height = MaxHeight + (SkyscraperHeight - MaxHeight) *
-                (rand() / float(RAND_MAX));
+            float x = MinHeight;
+            element.Height = x + (MaxHeight - x) * heightFract;
         }
 
-        element.Radius = MinRadius + (MaxRadius - MinRadius) *
-            (rand() / float(RAND_MAX));
-
-        if (_Collides(element)) {
-            continue;
-        }
         _elements.push_back(element);
     }
 
@@ -287,99 +310,34 @@ _finalize(sketch::Scene* shape, AnimElement anim)
     shape->SetPathPlane(anim.Path, anim.EndW);
 }
 
-void CityGrowth::_UpdateGrowth(float elapsedTime)
+void CityGrowth::_UpdateDetail(float elapsedTime)
 {
     CityElement& building = _elements[_currentBuildingIndex];
-    building.Visible = true;
-
-    int numSubstates = 1;
-    if (building.Rect.SideWall.Path) {
-        ++numSubstates;
-    }
-    if (building.HasWindows) {
-        ++numSubstates;
-    }
-    float duration = numSubstates * SecondsPerSubstate;
-
-    if (_substate >= numSubstates-1 &&
-        (GetContext()->elapsedTime - _substateStartTime) > SecondsPerSubstate) {
-
-        bool beat = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
-        if (not beat) {
-            return;
-        }
-
-        if (building.Rect.SideWall.Path) {
-            _finalize(building.CpuShape, building.Rect.SideWall);
-            _finalize(building.CpuShape, building.Rect.SideWallRoof);
-        } else if (building.HasWindows) {
-            AnimArray& frames = building.WindowFrames;
-            for (size_t i = 0; i < frames.Paths.size(); ++i) {
-                AnimElement anim;
-                building.CpuShape->SetVisible(frames.Paths[i], true);
-                anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
-                anim.EndW = frames.EndW[i];
-                _finalize(building.CpuShape, anim);
-            }
-        }
-        _finalize(building.CpuShape, building.Roof);
-
-        building.CpuTriangles->PullFromScene();
-        building.CpuTriangles->PushToGpu(building.GpuTriangles);
-
-        // TODO finalize by freeing CPU memory
-        delete building.CpuTriangles;
-        delete building.CpuShape;
-
-        _currentBuildingIndex++;
-        _stateStartTime = GetContext()->elapsedTime;
-        _state = FLIGHT;
-
-        return;
-
-    }
-
-    if (elapsedTime < 0) {
-        return;
-    }
 
     vector<AnimElement> anims;
-    float remainingTime = duration;
 
-    if (elapsedTime > remainingTime / 2 && numSubstates == 2) {
-
-        if (_substate == 0) {
-            bool beat = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
-            if (beat) {
-                _substate++;
-                _substateStartTime = GetContext()->elapsedTime;
-            }
-        }
-
-        if (_substate == 1) {
-            elapsedTime = 0.01 + GetContext()->elapsedTime - _substateStartTime;
-            if (building.Rect.SideWall.Path) {
-                anims.push_back(building.Rect.SideWall);
-                anims.push_back(building.Rect.SideWallRoof);
-            } else if (building.HasWindows) {
-                AnimArray& frames = building.WindowFrames;
-                for (size_t i = 0; i < frames.Paths.size(); ++i) {
-                    AnimElement anim;
-                    building.CpuShape->SetVisible(frames.Paths[i], true);
-                    anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
-                    anim.BeginW = frames.BeginW[i];
-                    anim.EndW = frames.EndW[i];
-                    anims.push_back(anim);
-                }
-            }
-        }
-
-    } else {
-        anims.push_back(building.Roof);
+    // Not sure why, but this prevents a crash:
+    if (elapsedTime == 0) {
+        elapsedTime = 0.01;
     }
 
-    if (elapsedTime > SecondsPerSubstate) {
-        elapsedTime = SecondsPerSubstate;
+    if (building.Rect.SideWall.Path) {
+        anims.push_back(building.Rect.SideWall);
+        anims.push_back(building.Rect.SideWallRoof);
+    } else if (building.HasWindows) {
+        AnimArray& frames = building.WindowFrames;
+        for (size_t i = 0; i < frames.Paths.size(); ++i) {
+            AnimElement anim;
+            building.CpuShape->SetVisible(frames.Paths[i], true);
+            anim.Path = dynamic_cast<sketch::CoplanarPath*>(frames.Paths[i]);
+            anim.BeginW = frames.BeginW[i];
+            anim.EndW = frames.EndW[i];
+            anims.push_back(anim);
+        }
+    }
+
+    if (elapsedTime > SecondsPerBuilding) {
+        elapsedTime = SecondsPerBuilding;
     }
 
     tween::Elastic tweener;
@@ -388,7 +346,32 @@ void CityGrowth::_UpdateGrowth(float elapsedTime)
             elapsedTime,
             a->BeginW,
             a->EndW - a->BeginW,
-            SecondsPerSubstate);
+            SecondsPerBuilding);
+        building.CpuShape->SetPathPlane(a->Path, w);
+    }
+
+    building.CpuTriangles->PullFromScene();
+    building.CpuTriangles->PushToGpu(building.GpuTriangles);
+}
+
+void CityGrowth::_UpdateGrowth(float elapsedTime)
+{
+    CityElement& building = _elements[_currentBuildingIndex];
+    building.Visible = true;
+
+    vector<AnimElement> anims;
+    anims.push_back(building.Roof);
+    if (elapsedTime > SecondsPerBuilding) {
+        elapsedTime = SecondsPerBuilding;
+    }
+
+    tween::Elastic tweener;
+    FOR_EACH(a, anims) {
+        float w = tweener.easeOut(
+            elapsedTime,
+            a->BeginW,
+            a->EndW - a->BeginW,
+            SecondsPerBuilding);
         building.CpuShape->SetPathPlane(a->Path, w);
     }
 
@@ -432,17 +415,17 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
 
     if (elapsedTime > flightTime + introDuration) {
 
+        _previousCamera = _camera;
+        _camera.center = center;
+        _camera.eye = eye;
+
         bool beat = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
         if (beat) {
-            _previousCamera = _camera;
-            _camera.center = center;
-            _camera.eye = eye;
-            _substateStartTime = _stateStartTime = GetContext()->elapsedTime;
+            _stateStartTime = GetContext()->elapsedTime;
             _state = GROWTH;
-            _substate = 0;
         }
         
-    } else if (elapsedTime < introDuration) {
+    } if (elapsedTime < introDuration) {
 
         gaze = normalize(vec3(0, -0.5, 1));
         gaze = glm::rotateY(gaze, building.ViewingAngle * 4);
@@ -493,7 +476,29 @@ void CityGrowth::Update()
     switch (_state) {
     case DEBUG:
     case GROWTH:
-        _UpdateGrowth(elapsedTime);
+        if (elapsedTime < 0) {
+            return;
+        }
+        if (elapsedTime > SecondsPerBuilding) {
+            CityElement& building = _elements[_currentBuildingIndex];
+            bool beat = GetContext()->audio->GetKicks() ||
+                GetContext()->audio->GetSnares();
+            if (not beat) {
+                return;
+            }
+            building.CpuTriangles->PullFromScene();
+            building.CpuTriangles->PushToGpu(building.GpuTriangles);
+            delete building.CpuTriangles;
+            delete building.CpuShape;
+            _currentBuildingIndex++;
+            _stateStartTime = GetContext()->elapsedTime;
+            _state = FLIGHT;
+            return;
+        }
+        if (_config == GROW)
+            _UpdateGrowth(elapsedTime);
+        else
+            _UpdateDetail(elapsedTime);
         break;
     case ENTER:
     case EXIT:
