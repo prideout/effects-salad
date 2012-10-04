@@ -21,6 +21,7 @@ public:
 
     float duration;
     float elapsedTime;
+    float startTime;
     static float totalTime;
     std::string name;
 
