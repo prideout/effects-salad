@@ -170,6 +170,11 @@ void FireFlies::Init()
     // XXX: this is time independent right now
     //      need to make it explicit in time if we're going to keep the camera motion
     cameraPoints = AnimCurve<glm::vec3>(cvs, 0, GetContext()->duration);
+
+
+    // Placeholder for generated curves
+
+
     counter = 0;
 };
 
@@ -177,6 +182,9 @@ void FireFlies::Update() {
     Effect::Update();
     _ground.Update();
     _tube.Update();
+    FOR_EACH(tubeIt, _tubes) {
+        tubeIt->Update();
+    }
     _milkyway.Update();
     _tree.Update();
 };
@@ -221,6 +229,11 @@ void FireFlies::Draw() {
         glUseProgram(progs["FireFlies.Tube"]);
         cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
         _tube.Draw();
+
+        FOR_EACH(tubeIt, _tubes) {
+            tubeIt->Draw();
+        }
+
 
 //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         _tree.Draw();

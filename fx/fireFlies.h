@@ -24,6 +24,7 @@ class FireFlies : public Effect {
     Ground _ground;
     Quad _quad;
     Tube _tube;
+    std::vector<Tube> _tubes;
     AnimCurve<glm::vec3> cameraPoints;
     Milkyway _milkyway;
     unsigned counter;
