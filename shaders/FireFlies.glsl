@@ -143,7 +143,7 @@ void main()
     float r = clamp(.2+1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
 
     float diffuseLight = .9;
-    float ambientLight = .2;
+    float ambientLight = .25;
     //vec3 n = vNormal;
 
     vec3 l = (vec4(Eye, 1.0) - vPosition).xyz;
