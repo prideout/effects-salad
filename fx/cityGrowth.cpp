@@ -247,7 +247,10 @@ void CityGrowth::Init()
         }
 
         // Collapse the main building vertically
-        shape->SetPathPlane(e->Roof.Path, e->Roof.BeginW);
+        if (_config == GROW) {
+            shape->SetPathPlane(e->Roof.Path, e->Roof.BeginW);
+            e->Visible = false;
+        }
 
         // Collapse the side wall vertically
         if (e->Rect.SideWallRoof.Path) {
@@ -261,9 +264,6 @@ void CityGrowth::Init()
             shape->SetPathPlane(e->Rect.SideWall.Path,
                                 e->Rect.SideWall.BeginW);
         }
-
-        // Submerge the building
-        e->Visible = false;
 
         e->CpuTriangles->PullFromScene();
         e->CpuTriangles->PushToGpu(e->GpuTriangles);

@@ -289,6 +289,7 @@ void PezHandleMouse(int x, int y, int action)
     } else if (action == PEZ_UP) {
         if (sequence.size() > 1) {
             _nextShot();
+            SetAudioPosition(DemoContext::GetCurrent()->startTime);
         }
     }
 }
