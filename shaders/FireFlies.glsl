@@ -442,7 +442,7 @@ void main()
     float diffuseLight = 1;
     float ambientLight = .3;
     vec3 n = vNormal;
-    vec3 l = normalize((vec4(-4, 5.0, 4, 1.0)).xyz); // - vPosition).xyz);
+    vec3 l = normalize((vec4(4, 2.0, -4, 1.0)).xyz); // - vPosition).xyz);
     float d = max(0.0, dot(n, l));
     //d = 1.5;
     FragColor = vec4(vOcc * (ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
