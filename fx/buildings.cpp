@@ -197,6 +197,11 @@ Buildings::Update()
 void
 Buildings::Draw()
 {
+    // Don't draw until the tet threads have joined.
+    if (_threads.size()) {
+        return;
+    }
+
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
