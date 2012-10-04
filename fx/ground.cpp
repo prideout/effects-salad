@@ -75,6 +75,9 @@ void Ground::Draw() {
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
 
+    //
+    // RENDER GROUND TERRAIN
+    //
     glUseProgram(progs["FireFlies.Ground"]);
     Camera& cam = GetContext()->mainCam;
     cam.Bind(glm::mat4());
@@ -82,10 +85,15 @@ void Ground::Draw() {
     _ground.Bind();
     glDrawElements(GL_TRIANGLES, _ground.indexCount, GL_UNSIGNED_INT, NULL);
 
-
+    //
+    // RENDER GRASS
+    //
     glUseProgram(progs["FireFlies.Grass"]);
+    
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(GetContext()->elapsedTime)));
+
     cam.Bind(glm::mat4());
     glEnable(GL_BLEND);
     _normals.Draw();
