@@ -47,7 +47,11 @@ typedef std::vector<CityElement> CityElements;
 
 class CityGrowth : public Effect {
 public:
-    CityGrowth();
+    enum Config {
+        GROW,
+        DETAIL,
+    };
+    CityGrowth(Config config);
     virtual ~CityGrowth();
     virtual void Init();
     virtual void Update();
@@ -62,7 +66,7 @@ private:
     sketch::Tessellator* _tess;
     sketch::Playback* _player;
     Vao _terrainVao;
-
+    Config _config;
     enum StateMachine {
         ENTER,
         GROWTH,

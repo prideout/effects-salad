@@ -42,7 +42,7 @@ static const float BeatsPerFlight = 1;
 static const float SecondsPerSubstate = BeatsPerBuilding * SecondsPerBeatInterval;
 static const float SecondsPerFlight = BeatsPerFlight * SecondsPerBeatInterval;
 
-CityGrowth::CityGrowth()
+CityGrowth::CityGrowth(Config config) : _config(config)
 {
 }
 

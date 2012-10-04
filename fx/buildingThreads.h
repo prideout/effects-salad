@@ -1,4 +1,6 @@
+#pragma once
 #include "fx/buildings.h"
+#include "tthread/tinythread.h"
 
 struct GpuParams {
     Blob HullIndices;

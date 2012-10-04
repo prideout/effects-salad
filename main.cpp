@@ -137,7 +137,18 @@ static void _constructScene()
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
-        fullscreen->AddChild(new CityGrowth());
+        fullscreen->AddChild(new CityGrowth(CityGrowth::GROW));
+        ctx->drawables.push_back(fullscreen);
+    }
+
+    {   // City Detail
+        DemoContext* ctx = DemoContext::New("CityDetail");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+        Fullscreen::Mask mask = Fullscreen::VignetteFlag;
+        mask |= Fullscreen::SupersampleFlag;
+        Fullscreen* fullscreen = new Fullscreen(mask);
+        fullscreen->AddChild(new CityGrowth(CityGrowth::DETAIL));
         ctx->drawables.push_back(fullscreen);
     }
 
