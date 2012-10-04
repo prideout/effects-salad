@@ -360,7 +360,7 @@ void main()
     float d = max(0.0, dot(n, l));
     if (d == 0)
         d = max(0.0, dot(-n, l));
-    float att = min(1.0, 1.0 / (dist*dist*dist*.004));
+    float att = min(1.0, 1.0 / (dist*dist*dist*.003));
     FragColor = vec4(vOcc * (ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 0.7);
     //FragColor.rgb = normalize(Eye);
     //FragColor.rgb = n;
