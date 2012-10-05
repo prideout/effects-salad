@@ -23,7 +23,7 @@
 using namespace std;
 using namespace glm;
 
-static const bool Verbose = false;
+static const bool Verbose = true;
 
 static int TerrainSize = 1500;
 static float RelativeCitySize = 0.05f;
@@ -101,10 +101,12 @@ void CityGrowth::Init()
     srand(40);
 
     bool crappyMachine = PezGetConfig().Width < 2560 / 2;
-    if (crappyMachine) {
+    static bool first = true;
+    if (crappyMachine && first) {
         TerrainSize /= 10;
         RelativeCitySize = 1.0f;
         NumBuildings /= 2;
+        first = false;
     }
 
     vector<BuildingConfig> script(&BuildingScript[0], &BuildingScript[0] +
@@ -282,6 +284,18 @@ void CityGrowth::Init()
             shape->PushPaths(
                 e->WindowFrames.Paths,
                 windowThickness);
+        }
+
+        if (e->NumSides > 5) {
+            /*
+            sketch::CoplanarPath* secondRoof;
+            vec2 e = shape->GetPathExtent(roof);
+            float radius = std::max(e.x, e.y) * 0.25f;
+            secondRoof = shape->AddInscribedPolygon(
+                radius,
+                roof,
+                vec2(0, 0));
+            */
         }
 
         // Tessellate the final form of the building before collapsing it
