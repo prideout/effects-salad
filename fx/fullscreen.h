@@ -23,6 +23,7 @@ public:
         MipmapsFlag    = 1 << 6,
         AdditiveFlag   = 1 << 7,
         SupersampleFlag = 1 << 8,
+        AmbientOcclusionFlag = 1 << 9,
     };
 
     typedef unsigned int Mask;

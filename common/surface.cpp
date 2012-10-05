@@ -26,8 +26,10 @@ Surface::Init(ivec2 size,
               GLenum format,
               GLenum type,
               GLenum filter,
-              bool createDepth,
-              Surface* depthPeer) {
+              Mask flags,
+              Surface* depthPeer)
+{
+    bool createDepth = (flags & DepthFlag);
 
     width = size.x;
     height = size.y;
@@ -53,7 +55,7 @@ Surface::Init(ivec2 size,
 
     // share or create depth texture
     if (depthPeer) {
-        pezCheck(!createDepth, "DepthPeer and CreateDepth are mutually exclusive.");
+        createDepth = false;
         pezCheck(depthPeer->depthTexture, "DepthPeer has no depth buffer.  Has it been initialized?");
         depthTexture = depthPeer->depthTexture;
     } else if (createDepth) {
