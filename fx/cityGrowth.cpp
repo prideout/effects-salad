@@ -80,8 +80,8 @@ struct BuildingConfig {
 const BuildingConfig BuildingScript[] = {
     {4, false, 138.931}, // 0
     {4, false, 262.647}, // 1
-    {20, false, 132.725}, // 2
-    {20, true, 128.677}, // 3
+    {20, false, 110}, // 2
+    {20, false, 0}, // 3
     {3, false, 280.763}, // 4
     {5, true, 273.603}, // 5
     {20, false, 95.2052}, // 6
@@ -286,22 +286,34 @@ void CityGrowth::Init()
                 windowThickness);
         }
 
-        if (e->NumSides > 5) {
-            /*
+        if (e->NumSides > 5 && _config == DETAIL) {
             sketch::CoplanarPath* secondRoof;
-            vec2 e = shape->GetPathExtent(roof);
-            float radius = std::max(e.x, e.y) * 0.25f;
+            vec2 ext = shape->GetPathExtent(e->Roof.Path);
+            float radius = std::max(ext.x, ext.y) * 0.25f;
             secondRoof = shape->AddInscribedPolygon(
                 radius,
-                roof,
-                vec2(0, 0));
-            */
+                e->Roof.Path,
+                vec2(0, 0),
+                10);
+            e->SecondaryRoof.Path = secondRoof;
+            e->SecondaryRoof.BeginW = secondRoof->Plane->Eqn.w;
+            shape->PushPath(secondRoof, e->Height/2);
+            e->SecondaryRoof.EndW = secondRoof->Plane->Eqn.w;
+        } else {
+            e->SecondaryRoof.Path = 0;
         }
 
         // Tessellate the final form of the building before collapsing it
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
         e->CpuTriangles->PullFromScene();
+
+        // Collapse the secondary roof
+        if (e->SecondaryRoof.Path) {
+            shape->PushPath(
+                e->SecondaryRoof.Path,
+                -e->Height/2);
+        }
 
         // Collapse the window frames
         FOR_EACH(p, e->WindowFrames.Paths) {
@@ -381,6 +393,10 @@ void CityGrowth::_UpdateDetail(float elapsedTime)
             anim.EndW = frames.EndW[i];
             anims.push_back(anim);
         }
+    } else if (building.SecondaryRoof.Path) {
+        anims.push_back(building.SecondaryRoof);
+    } else {
+        printf("Boring building detected!\n");
     }
 
     if (elapsedTime > SecondsPerBuilding) {
@@ -471,7 +487,7 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
             _stateStartTime = GetContext()->elapsedTime;
             _state = GROWTH;
             if (Verbose) {
-                printf("Building %d\n", _currentBuildingIndex);
+                printf("Building %d\n", (int) _currentBuildingIndex);
             }
         }
         
