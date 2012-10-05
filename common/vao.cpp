@@ -57,9 +57,10 @@ Vao::Vao(int componentCount,
     totalBytesBuffered += sizeof(indices[0]) * indexCount;
 }
 
-Vao::Vao(const Vec3List& verts, const TriList& indices)
+Vao::Vao(const Vec3List& verts, const TriList& indices) : 
+    vertexCount(verts.size()),
+    indexCount(indices.size())
 {
-    GLuint vbo, ibo;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
@@ -82,6 +83,25 @@ Vao::Vao(const Vec3List& verts, const TriList& indices)
     glEnableVertexAttribArray(AttrPosition);
 }
 
+Vao::Vao(const Vec3List& verts) :
+    vertexCount(verts.size()),
+    indexCount(0)
+{
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    // vertices
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts[0]) * verts.size(), &verts[0], GL_STATIC_DRAW);
+    pezCheck(glGetError() == GL_NO_ERROR, "vao-vbo setup failed");
+    totalBytesBuffered += sizeof(verts[0]) * verts.size();
+
+    // setup the "Position" attribute
+    glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(AttrPosition);
+}
+
 void 
 Vao::AddVertexAttribute(GLuint attrib, 
                             int componentCount, 
@@ -94,7 +114,6 @@ Vao::AddVertexAttribute(GLuint attrib,
     }
     glBindVertexArray(vao);
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, 
@@ -122,7 +141,6 @@ Vao::AddVertexAttribute(GLuint attrib,
     }
     glBindVertexArray(vao);
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, 
@@ -149,7 +167,6 @@ Vao::AddVertexAttribute(GLuint attrib,
     }
     glBindVertexArray(vao);
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, 
@@ -171,7 +188,6 @@ Vao::AddIndices(const Blob& data) {
     }
     glBindVertexArray(vao);
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 
@@ -203,7 +219,6 @@ Vao::InitEmpty() {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    GLuint vbo;
     float dummy[4] = {0};
     glEnableVertexAttribArray(0);
     glGenBuffers(1, &vbo);
@@ -223,7 +238,6 @@ Vao::AddInterleaved(VertexAttribMask attribs,
     pezCheck(vao);
     glBindVertexArray(vao);
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, data.size(), &data[0], GL_STATIC_DRAW);
