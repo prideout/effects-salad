@@ -23,9 +23,11 @@
 using namespace std;
 using namespace glm;
 
-static const int TerrainSize = 1500;
+static int TerrainSize = 1500;
+static float RelativeCitySize = 0.05f;
+static size_t NumBuildings = 32;
+
 static const float TerrainScale = 0.5;
-static const size_t CircleCount = 32;
 static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
@@ -85,6 +87,14 @@ void CityGrowth::Init()
 {
     srand(40);
 
+    bool crappyMachine = PezGetConfig().Width < 2560 / 2;
+    if (crappyMachine) {
+        puts("Crappy Machine\n");
+        TerrainSize /= 10;
+        RelativeCitySize = 1.0f;
+        NumBuildings /= 2;
+    }
+
     vector<BuildingConfig> script(&BuildingScript[0], &BuildingScript[0] +
                                   sizeof(BuildingScript) / sizeof(BuildingScript[0]));
 
@@ -100,13 +110,13 @@ void CityGrowth::Init()
     }
 
     // Pack some circles
-    while (_elements.size() < CircleCount) {
+    while (_elements.size() < NumBuildings) {
         CityElement element;
 
         vec2 coord;
         coord.x = (rand() / float(RAND_MAX) - 0.5);
         coord.y = (rand() / float(RAND_MAX) - 0.5);
-        coord *= 0.05f;
+        coord *= RelativeCitySize;
 
         vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
 
