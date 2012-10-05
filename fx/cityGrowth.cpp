@@ -23,6 +23,8 @@
 using namespace std;
 using namespace glm;
 
+static const bool Verbose = false;
+
 static int TerrainSize = 1500;
 static float RelativeCitySize = 0.05f;
 static size_t NumBuildings = 32;
@@ -72,15 +74,26 @@ MyTerrainFunc(vec2 v)
 struct BuildingConfig {
     int NumSides;
     bool Skyscraper;
+    float ViewingAngle;
 };
 
 const BuildingConfig BuildingScript[] = {
-    {4, false},
-    {4, false},
-    {20, false},
-    {20, true},
-    {3, false},
-    {5, true},
+    {4, false, 138.931}, // 0
+    {4, false, 262.647}, // 1
+    {20, false, 132.725}, // 2
+    {20, true, 128.677}, // 3
+    {3, false, 280.763}, // 4
+    {5, true, 273.603}, // 5
+    {20, false, 95.2052}, // 6
+    {4, false, 199.535}, // 7
+    {3, true, 221.113}, // 8
+    {4, false, 306.57}, // 9
+    {5, false, 261.148}, // 10
+    {20, false, 130.528}, // 11
+    {4, false, 0}, // 12 -----
+    {4, false, 231.419}, // 13
+    {20, false, 45}, // 14 ---
+    {20, true, 2.7568}, // 15
 };
 
 void CityGrowth::Init()
@@ -89,7 +102,6 @@ void CityGrowth::Init()
 
     bool crappyMachine = PezGetConfig().Width < 2560 / 2;
     if (crappyMachine) {
-        puts("Crappy Machine\n");
         TerrainSize /= 10;
         RelativeCitySize = 1.0f;
         NumBuildings /= 2;
@@ -148,8 +160,18 @@ void CityGrowth::Init()
         bool skyscraper = (rand() % 6) == 0;
 
         if (_elements.size() < script.size()) {
-            element.NumSides = script[_elements.size()].NumSides;
-            skyscraper = script[_elements.size()].Skyscraper;
+            BuildingConfig cfg = script[_elements.size()];
+            element.NumSides = cfg.NumSides;
+            skyscraper = cfg.Skyscraper;
+            element.ViewingAngle = cfg.ViewingAngle;
+        }
+
+        if (Verbose) {
+            printf("    {%d, %s, %g}, // %d\n",
+                   element.NumSides,
+                   skyscraper ? "true" : "false",
+                   element.ViewingAngle,               
+                   int(_elements.size()));
         }
 
         element.HasWindows = element.NumSides <= 5;
@@ -434,6 +456,9 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
         if (beat) {
             _stateStartTime = GetContext()->elapsedTime;
             _state = GROWTH;
+            if (Verbose) {
+                printf("Building %d\n", _currentBuildingIndex);
+            }
         }
         
     } if (elapsedTime < introDuration) {
