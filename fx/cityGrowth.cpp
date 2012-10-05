@@ -1,8 +1,6 @@
 // TODO LIST
 // ---------
-// windows AND window frames
 // SSAO !!!
-// free CPU memory in UpdateGrowth before transitioning
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
@@ -23,7 +21,7 @@
 using namespace std;
 using namespace glm;
 
-static const bool Verbose = true;
+static const bool Verbose = false;
 
 static int TerrainSize = 1500;
 static float RelativeCitySize = 0.05f;
