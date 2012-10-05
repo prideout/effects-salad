@@ -25,7 +25,7 @@ static const bool Verbose = false;
 
 static int TerrainSize = 1500;
 static float RelativeCitySize = 0.05f;
-static size_t NumBuildings = 32;
+static size_t NumBuildings = 16;
 
 static const float TerrainScale = 0.5;
 static const float MinRadius = 3;
@@ -103,7 +103,6 @@ void CityGrowth::Init()
     if (crappyMachine && first) {
         TerrainSize /= 10;
         RelativeCitySize = 1.0f;
-        NumBuildings /= 2;
         first = false;
     }
 
