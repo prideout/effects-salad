@@ -47,13 +47,18 @@ typedef std::vector<CityElement> CityElements;
 
 class CityGrowth : public Effect {
 public:
-    CityGrowth();
+    enum Config {
+        GROW,
+        DETAIL,
+    };
+    CityGrowth(Config config);
     virtual ~CityGrowth();
     virtual void Init();
     virtual void Update();
     virtual void Draw();
 protected:
-    void _UpdateGrowth(float elapsedTime);
+    void _UpdateGrowth(float elapsedTime); 
+    void _UpdateDetail(float elapsedTime);
     void _UpdateFlight(float elapsedTime);
     bool _Collides(const CityElement& e) const;
     PerspCamera _InitialCamera();
@@ -62,7 +67,7 @@ private:
     sketch::Tessellator* _tess;
     sketch::Playback* _player;
     Vao _terrainVao;
-
+    Config _config;
     enum StateMachine {
         ENTER,
         GROWTH,
@@ -72,7 +77,6 @@ private:
     };
     StateMachine _state;
     float _stateStartTime;
-
     size_t _currentBuildingIndex;
     PerspCamera _camera;
     PerspCamera _previousCamera;

@@ -137,7 +137,18 @@ static void _constructScene()
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
-        fullscreen->AddChild(new CityGrowth());
+        fullscreen->AddChild(new CityGrowth(CityGrowth::GROW));
+        ctx->drawables.push_back(fullscreen);
+    }
+
+    {   // City Detail
+        DemoContext* ctx = DemoContext::New("CityDetail");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+        Fullscreen::Mask mask = Fullscreen::VignetteFlag;
+        mask |= Fullscreen::SupersampleFlag;
+        Fullscreen* fullscreen = new Fullscreen(mask);
+        fullscreen->AddChild(new CityGrowth(CityGrowth::DETAIL));
         ctx->drawables.push_back(fullscreen);
     }
 
@@ -168,13 +179,16 @@ static void _constructScene()
 
     Json::Value script;
     ReadJsonFile("data/script.json", &script);
+    float startTime = 0;
     FOR_EACH(element, script) {
         Json::Value cur = *element;
         if (shotMap.find(cur[0u].asString()) != shotMap.end()) {
             // XXX: can currently only use a context once, because duration is shared :(
             string curShot = cur[0u].asString();
             DemoContext::SetCurrent(shotMap[curShot]);
+            shotMap[curShot]->startTime = startTime;
             shotMap[curShot]->duration = cur[1u].asDouble();
+            startTime += shotMap[curShot]->duration;
             sequence.push_back(shotMap[curShot]);
             if (shot.empty())  {
                 shotMap[curShot]->Init();
@@ -193,6 +207,7 @@ static void _constructScene()
         std::cout << "Click the viewport to jump to next shot.\n";
     }
 
+    float audioOffset = 0;
     if (not shot.empty()) {
         if (shotMap.find(shot) == shotMap.end()) {
             std::cerr << "ERROR: Shot not found '" << shot << "', aborting" << std::endl;
@@ -213,6 +228,7 @@ static void _constructScene()
                   << " KiB" << std::endl;
         byteMark = Vao::totalBytesBuffered;
 
+        audioOffset = shotMap[shot]->startTime;
         sequence.push_back(shotMap[shot]);
     }
 
@@ -223,6 +239,9 @@ static void _constructScene()
 
     DemoContext::SetCurrent(sequence[0]);
     StartAudio();
+    if (audioOffset > 0) {
+        SetAudioPosition(audioOffset);
+    }
 }
 
 void PezInitialize()
@@ -275,6 +294,7 @@ void PezHandleMouse(int x, int y, int action)
     } else if (action == PEZ_UP) {
         if (sequence.size() > 1) {
             _nextShot();
+            SetAudioPosition(DemoContext::GetCurrent()->startTime);
         }
     }
 }

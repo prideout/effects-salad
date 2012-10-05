@@ -52,11 +52,11 @@ void FireFlies::Init()
     // --------------------------------------------------------------------- 
 
     FloatList stars;
-    for (int i = 0; i < 2000; i ++) {
+    for (int i = 0; i < 4000; i ++) {
         // Use spherical coordinates with fixed radius to simulate a sky dome
         float r = 120;
         float theta = 3.14*(rand() / float(RAND_MAX)); 
-        float phi = 2*3.14*(rand() / float(RAND_MAX));
+        float phi = 3.14*(rand() / float(RAND_MAX));
         stars.push_back(r*sin(theta)*cos(phi) - 10);
         stars.push_back(r*sin(theta)*sin(phi));
         stars.push_back(r*cos(theta) + 10);
@@ -170,6 +170,11 @@ void FireFlies::Init()
     // XXX: this is time independent right now
     //      need to make it explicit in time if we're going to keep the camera motion
     cameraPoints = AnimCurve<glm::vec3>(cvs, 0, GetContext()->duration);
+
+
+    // Placeholder for generated curves
+
+
     counter = 0;
 };
 
@@ -177,6 +182,9 @@ void FireFlies::Update() {
     Effect::Update();
     _ground.Update();
     _tube.Update();
+    FOR_EACH(tubeIt, _tubes) {
+        tubeIt->Update();
+    }
     _milkyway.Update();
     _tree.Update();
 };
@@ -191,6 +199,8 @@ void FireFlies::Draw() {
 
     glUseProgram(progs["FireFlies.Flies"]);
 
+    bool fixedCam = false;
+
         //_surface.Bind();
         PerspCamera oldCam = GetContext()->mainCam;
         PerspCamera& cam = GetContext()->mainCam;
@@ -203,10 +213,14 @@ void FireFlies::Draw() {
         cam.eye.y = 1.5;
         cam.eye.z = 8;
         //  cam.center= vec3(3*sin(t),0,3*cos(t)); //cameraPoints[counter];
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
-        float t = GetContext()->elapsedTime;
-        //cam.eye = vec3(-15*sin(t/2), .5*(5+-5*cos(t/2)), -10-5*sin(t/2)); //cameraPoints[counter];
-        //cam.eye = vec3(-9*sin(t/2), .5*(1+-1*cos(t/2)), -9*cos(t/2)); //cameraPoints[counter];
+        
+        if (not fixedCam)
+            cam.eye = cameraPoints.At(GetContext()->elapsedTime); //[counter];
+        else {
+            float t = GetContext()->elapsedTime;
+            cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2)); //cameraPoints[counter];
+            //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2)); //cameraPoints[counter];
+        }
 
         // look where we are walking
         //  cam.center = cameraPoints.After(0); //[counter+1 % cameraPoints.size()];
@@ -215,6 +229,11 @@ void FireFlies::Draw() {
         glUseProgram(progs["FireFlies.Tube"]);
         cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
         _tube.Draw();
+
+        FOR_EACH(tubeIt, _tubes) {
+            tubeIt->Draw();
+        }
+
 
 //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         _tree.Draw();

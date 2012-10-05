@@ -8,15 +8,15 @@
 // Viewport cracks
 
 #include "glm/gtc/type_ptr.hpp"
-#include "fx/buildingThreads.h"
 #include "glm/gtx/rotate_vector.hpp"
-#include "tthread/tinythread.h"
 #include "common/tetUtil.h"
 #include "common/init.h"
 #include "common/programs.h"
 #include "common/camera.h"
 #include "common/demoContext.h"
 #include "tween/CppTweener.h"
+#include "fx/buildings.h"
+#include "fx/buildingThreads.h"
 
 using namespace std;
 using glm::mat4;
@@ -59,13 +59,12 @@ Buildings::Init()
     srand(42);
 
     // Populate the template parameters.  This should perhaps be moved to JSON.
-    vector<ThreadParams> params;
     #include "fx/buildings.inl"
     
     // Kick off the threads that tetify the building templates
-    vector<tthread::thread*> threads;
-    for (size_t i = 0; i < params.size(); ++i) {
-        threads.push_back(new tthread::thread(GenerateBuilding, &params[i]));
+    for (size_t i = 0; i < _threadParams.size(); ++i) {
+        _threads.push_back(new tthread::thread(GenerateBuilding,
+            _threadParams[i]));
     }
 
     // Allocate batches for each template
@@ -138,24 +137,31 @@ Buildings::Init()
     // Misc initialization
     _emptyVao.InitEmpty();
     if (_explode) {
-        printf("Waiting for tet threads to join...\n");
         _cracks->Init();
-    }
-
-    // Wait for the tetrahedralization to finish
-    for (size_t i = 0; i < threads.size(); ++i) {
-        threads[i]->join();
-        if (_explode) {
-            printf("Thread %lu of %lu has completed.\n", i+1, threads.size());
-        }
-        UploadBuilding(params[i]);
-        delete threads[i];
     }
 }
 
 void
 Buildings::Update()
 {
+    // Wait for the tetrahedralization to finish
+    if (_threads.size()) {
+        printf("Waiting for tet threads to join...\n");
+        for (size_t i = 0; i < _threads.size(); ++i) {
+            _threads[i]->join();
+            if (_explode) {
+                printf("Thread %lu of %lu has completed.\n", i+1, _threads.size());
+            }
+            UploadBuilding(*_threadParams[i]);
+            delete _threads[i];
+        }
+        FOR_EACH(p, _threadParams) {
+            delete *p;
+        }
+        _threads.clear();
+        _threadParams.clear();
+    }
+
     const bool Looping = true;
     if (not Looping) {
         GetContext()->duration = std::numeric_limits<float>::infinity();
@@ -191,6 +197,11 @@ Buildings::Update()
 void
 Buildings::Draw()
 {
+    // Don't draw until the tet threads have joined.
+    if (_threads.size()) {
+        return;
+    }
+
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
