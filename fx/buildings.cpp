@@ -295,6 +295,11 @@ CracksEffect::Update()
 void
 CracksEffect::Draw()
 {
+    // Don't draw if the tet threads haven't joined yet.
+    if ( _buildings->_threads.size()) {
+        return;
+    }
+
     Programs& progs = Programs::GetInstance();
     PerspCamera surfaceCam = GetContext()->mainCam;
 

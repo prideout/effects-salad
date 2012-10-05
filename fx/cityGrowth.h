@@ -37,6 +37,7 @@ struct CityElement {
     Vao GpuTriangles;
     float ViewingAngle;
     RectElement Rect;
+    AnimElement SecondaryRoof;
     bool HasWindows;
     AnimArray WindowFrames;
     AnimArray Windows;

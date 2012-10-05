@@ -1,6 +1,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "fx/fullscreen.h"
 #include "common/programs.h"
+#include "common/demoContext.h"
 #include "common/init.h"
 
 using namespace std;
@@ -49,11 +50,15 @@ Fullscreen::Init()
     GLenum format = GL_RGBA;
     GLenum type = GL_UNSIGNED_BYTE;
     GLenum filter = (_mask & MipmapsFlag) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
-    GLenum createDepth = true;
+    Surface::Mask mask = Surface::ColorFlag | Surface::DepthFlag;
+    if (_mask & AmbientOcclusionFlag) {
+        mask = mask | Surface::PositionsFlag;
+        mask = mask | Surface::NormalsFlag;
+    }
     if (_depthPeer) {
-        _surface.Init(size, internalFormat, format, type, filter, false, &(_depthPeer->_surface));
+        _surface.Init(size, internalFormat, format, type, filter, mask, &(_depthPeer->_surface));
     } else {
-        _surface.Init(size, internalFormat, format, type, filter, createDepth);
+        _surface.Init(size, internalFormat, format, type, filter, mask);
     }
 
     pezCheckGL("Fullscreen::Init");
@@ -137,8 +142,8 @@ Fullscreen::Draw()
         glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
     }
 
+    glUniform1f(u("Time"),  GetContext()->elapsedTime);
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
-
     glUniform1i(u("SourceImage"), 0);
     glUniform1i(u("DepthImage"), 1);
 

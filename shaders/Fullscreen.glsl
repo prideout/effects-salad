@@ -16,9 +16,9 @@ uniform vec2 InverseViewport;
 uniform vec4 SolidColor;
 uniform sampler2D SourceImage;
 uniform sampler2D DepthImage;
-
 uniform vec4 ScanLineColor = vec4(0.2);
 uniform float TeleLineFreq = 10;
+uniform float Time = 0;
 
 out vec4 FragColor;
  
@@ -42,6 +42,7 @@ void main()
 
     if (ApplyTeleLines) {
         float a = mod(gl_FragCoord.y, TeleLineFreq) / TeleLineFreq;
+        a += 5*Time;
         c.rgb *= 0.75 + 0.125 * (sin(a * 6.28) + 1.0);
     }
 

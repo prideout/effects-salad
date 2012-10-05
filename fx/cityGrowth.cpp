@@ -1,8 +1,6 @@
 // TODO LIST
 // ---------
-// windows AND window frames
 // SSAO !!!
-// free CPU memory in UpdateGrowth before transitioning
 // tetra integration
 // details per my handwritten notes
 // See also TODO's in buildings.cpp
@@ -23,7 +21,7 @@
 using namespace std;
 using namespace glm;
 
-static const bool Verbose = true;
+static const bool Verbose = false;
 
 static int TerrainSize = 1500;
 static float RelativeCitySize = 0.05f;
@@ -80,8 +78,8 @@ struct BuildingConfig {
 const BuildingConfig BuildingScript[] = {
     {4, false, 138.931}, // 0
     {4, false, 262.647}, // 1
-    {20, false, 132.725}, // 2
-    {20, true, 128.677}, // 3
+    {20, false, 110}, // 2
+    {20, false, 0}, // 3
     {3, false, 280.763}, // 4
     {5, true, 273.603}, // 5
     {20, false, 95.2052}, // 6
@@ -90,7 +88,7 @@ const BuildingConfig BuildingScript[] = {
     {4, false, 306.57}, // 9
     {5, false, 261.148}, // 10
     {20, false, 130.528}, // 11
-    {4, false, 0}, // 12 -----
+    {4, false, 180}, // 12 -----
     {4, false, 231.419}, // 13
     {20, false, 45}, // 14 ---
     {20, true, 2.7568}, // 15
@@ -248,7 +246,7 @@ void CityGrowth::Init()
         shape->PushPath(e->Roof.Path, e->Height/2, &walls);
         e->Roof.EndW = e->Roof.Path->Plane->Eqn.w;
 
-        const float windowThickness = (rand() % 4) == 0 ? 2.0 : 0.2;
+        const float windowThickness = (rand() % 4) == 0 ? 2.0 : 0.1;
 
         if (e->HasWindows) {
             FOR_EACH(w, walls) {
@@ -267,15 +265,27 @@ void CityGrowth::Init()
                 for (int col = 0; col < numCols; ++col) {
                     offset.y = padding.y + cellHeight/2 - wallHeight/2;
                     for (int row = 0; row < numRows; ++row) {
+                        
                         sketch::CoplanarPath* winFrame;
+                        sketch::CoplanarPath* win;
+
                         winFrame = shape->AddInscribedRectangle(
                             cellHeight,
                             cellWidth,
                             cop,
                             orientation * vec2(offset.y, offset.x));
                         e->WindowFrames.Paths.push_back(winFrame);
-                        shape->SetVisible(cop->Holes, false);
                         winFrame->Visible = false;
+
+                        win = shape->AddInscribedRectangle(
+                            cellHeight - 1.0,
+                            cellWidth - 1.0,
+                            winFrame,
+                            vec2(0, 0));
+                        e->Windows.Paths.push_back(win);
+                        win->Visible = false;
+
+                        shape->SetVisible(cop->Holes, false);
                         offset.y += cellHeight + padding.y;
                     }
                     offset.x += cellWidth + padding.x;
@@ -284,24 +294,41 @@ void CityGrowth::Init()
             shape->PushPaths(
                 e->WindowFrames.Paths,
                 windowThickness);
+            shape->PushPaths(
+                e->Windows.Paths,
+                -windowThickness/2);
         }
 
-        if (e->NumSides > 5) {
-            /*
+        float srf = 5.0 + e->Height/2 * rand() / float(RAND_MAX);
+
+        if (e->NumSides > 5 && _config == DETAIL) {
             sketch::CoplanarPath* secondRoof;
-            vec2 e = shape->GetPathExtent(roof);
-            float radius = std::max(e.x, e.y) * 0.25f;
+            vec2 ext = shape->GetPathExtent(e->Roof.Path);
+            float radius = std::max(ext.x, ext.y) * 0.25f;
             secondRoof = shape->AddInscribedPolygon(
                 radius,
-                roof,
-                vec2(0, 0));
-            */
+                e->Roof.Path,
+                vec2(0, 0),
+                10);
+            e->SecondaryRoof.Path = secondRoof;
+            e->SecondaryRoof.BeginW = secondRoof->Plane->Eqn.w;
+            shape->PushPath(secondRoof, srf);
+            e->SecondaryRoof.EndW = secondRoof->Plane->Eqn.w;
+        } else {
+            e->SecondaryRoof.Path = 0;
         }
 
         // Tessellate the final form of the building before collapsing it
         e->CpuShape = shape;
         e->CpuTriangles = new sketch::Tessellator(*shape);
         e->CpuTriangles->PullFromScene();
+
+        // Collapse the secondary roof
+        if (e->SecondaryRoof.Path) {
+            shape->PushPath(
+                e->SecondaryRoof.Path,
+                -srf);
+        }
 
         // Collapse the window frames
         FOR_EACH(p, e->WindowFrames.Paths) {
@@ -314,6 +341,19 @@ void CityGrowth::Init()
         FOR_EACH(p, e->WindowFrames.Paths) {
             sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*p);
             e->WindowFrames.BeginW.push_back(cop->Plane->Eqn.w);
+        }
+
+        // Collapse the windows
+        FOR_EACH(p, e->Windows.Paths) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*p);
+            e->Windows.EndW.push_back(cop->Plane->Eqn.w);
+        }
+        shape->PushPaths(
+            e->Windows.Paths,
+            windowThickness/2);
+        FOR_EACH(p, e->Windows.Paths) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*p);
+            e->Windows.BeginW.push_back(cop->Plane->Eqn.w);
         }
 
         // Collapse the main building vertically
@@ -381,6 +421,19 @@ void CityGrowth::_UpdateDetail(float elapsedTime)
             anim.EndW = frames.EndW[i];
             anims.push_back(anim);
         }
+        AnimArray& windows = building.Windows;
+        for (size_t i = 0; i < windows.Paths.size(); ++i) {
+            AnimElement anim;
+            building.CpuShape->SetVisible(windows.Paths[i], true);
+            anim.Path = dynamic_cast<sketch::CoplanarPath*>(windows.Paths[i]);
+            anim.BeginW = windows.BeginW[i];
+            anim.EndW = windows.EndW[i];
+            anims.push_back(anim);
+        }
+    } else if (building.SecondaryRoof.Path) {
+        anims.push_back(building.SecondaryRoof);
+    } else {
+        printf("Boring building detected!\n");
     }
 
     if (elapsedTime > SecondsPerBuilding) {
@@ -471,7 +524,7 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
             _stateStartTime = GetContext()->elapsedTime;
             _state = GROWTH;
             if (Verbose) {
-                printf("Building %d\n", _currentBuildingIndex);
+                printf("Building %d\n", (int) _currentBuildingIndex);
             }
         }
         

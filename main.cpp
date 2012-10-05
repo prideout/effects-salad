@@ -136,6 +136,7 @@ static void _constructScene()
         shotMap[ctx->name] = ctx;
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
+        mask |= Fullscreen::TeleLinesFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
         fullscreen->AddChild(new CityGrowth(CityGrowth::GROW));
         ctx->drawables.push_back(fullscreen);
@@ -147,6 +148,7 @@ static void _constructScene()
         shotMap[ctx->name] = ctx;
         Fullscreen::Mask mask = Fullscreen::VignetteFlag;
         mask |= Fullscreen::SupersampleFlag;
+        mask |= Fullscreen::AmbientOcclusionFlag;
         Fullscreen* fullscreen = new Fullscreen(mask);
         fullscreen->AddChild(new CityGrowth(CityGrowth::DETAIL));
         ctx->drawables.push_back(fullscreen);
