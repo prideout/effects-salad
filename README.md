@@ -15,7 +15,7 @@ rideout queue
  - ~~split the CityGrow shot in two~~
  - ~~Use the swanky new music API~~
  - ~~add viewing angle to the hand-coded "script" to prevent blocked views~~
- - add building details: inset windows, antenna, roof extensions
+ - ~~add building details: inset windows, antenna, roof extensions~~
  - SSAO
  - unify the two cities in some way
  - laser beams for city explosions
