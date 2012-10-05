@@ -18,6 +18,8 @@ rideout queue
  - ~~add building details: inset windows, antenna, roof extensions~~
  - SSAO
  - unify the two cities in some way
+ - halfway into CityGrow, pull back the camera and start popping buildings once per beat
+ - transform-feedback curl noise for sand
  - laser beams for city explosions
  - credits 
  - make the blank terrain more interesting

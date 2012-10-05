@@ -42,7 +42,7 @@ void main()
 
     if (ApplyTeleLines) {
         float a = mod(gl_FragCoord.y, TeleLineFreq) / TeleLineFreq;
-        a += 5*Time;
+        a -= 5*Time;
         c.rgb *= 0.75 + 0.125 * (sin(a * 6.28) + 1.0);
     }
 

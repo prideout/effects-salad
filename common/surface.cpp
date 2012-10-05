@@ -61,11 +61,9 @@ Surface::Init(ivec2 size,
     } else if (createDepth) {
         glGenTextures(1, &depthTexture);
         glBindTexture(GL_TEXTURE_2D, depthTexture);
-
         GLenum type = GL_FLOAT;
         GLenum internalFormat = GL_DEPTH_COMPONENT24;
         GLenum format = GL_DEPTH_COMPONENT;
-
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -81,6 +79,37 @@ Surface::Init(ivec2 size,
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
     if (depthTexture) {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+    }
+
+    if (flags & NormalsFlag) {
+        glGenTextures(1, &normalsTexture);
+        glBindTexture(GL_TEXTURE_2D, normalsTexture);
+        GLenum type = GL_FLOAT;
+        GLenum internalFormat = GL_RGBA32F;
+        GLenum format = GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        pezCheckGL("Creation of the normals texture for the FBO");
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normalsTexture, 0);
+        pezCheckGL("Attachment of the normals texture for the FBO");
+    }
+
+    if (flags & PositionsFlag) {
+        glGenTextures(1, &positionsTexture);
+        glBindTexture(GL_TEXTURE_2D, positionsTexture);
+        GLenum type = GL_FLOAT;
+        GLenum internalFormat = GL_RGBA32F;
+        GLenum format = GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        pezCheckGL("Creation of the normals texture for the FBO");
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normalsTexture, 0);
+        pezCheckGL("Attachment of the positions texture for the FBO");
     }
 
     // Should we always unilaterally call Verify, or leave it up to the client?
