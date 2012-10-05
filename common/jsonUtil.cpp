@@ -108,6 +108,9 @@ toJson(const char* pStr, ...)
     Json::Value root;
     Json::Reader reader;
     bool success = reader.parse(msg, root);
+    if (!success) {
+        puts(msg);
+    }
     pezCheck(success, "Bad JSON: %s", msg); 
     return root;
 }
@@ -118,12 +121,15 @@ appendJson(Json::Value& root, const char* pStr, ...)
     va_list a;
     va_start(a, pStr);
 
-    static char msg[2048] = {0};
+    static char msg[4096] = {0};
     vsnprintf(msg, countof(msg), pStr, a);
 
     Json::Value node;
     Json::Reader reader;
     bool success = reader.parse(msg, node);
+    if (!success) {
+        puts(msg);
+    }
     pezCheck(success, "Bad JSON: %s", msg); 
     root.append(node);
 }
