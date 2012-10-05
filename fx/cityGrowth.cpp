@@ -23,9 +23,13 @@
 using namespace std;
 using namespace glm;
 
-static const int TerrainSize = 1500;
+static const bool Verbose = true;
+
+static int TerrainSize = 1500;
+static float RelativeCitySize = 0.05f;
+static size_t NumBuildings = 32;
+
 static const float TerrainScale = 0.5;
-static const size_t CircleCount = 32;
 static const float MinRadius = 3;
 static const float MaxRadius = 7;
 
@@ -70,20 +74,40 @@ MyTerrainFunc(vec2 v)
 struct BuildingConfig {
     int NumSides;
     bool Skyscraper;
+    float ViewingAngle;
 };
 
 const BuildingConfig BuildingScript[] = {
-    {4, false},
-    {4, false},
-    {20, false},
-    {20, true},
-    {3, false},
-    {5, true},
+    {4, false, 138.931}, // 0
+    {4, false, 262.647}, // 1
+    {20, false, 132.725}, // 2
+    {20, true, 128.677}, // 3
+    {3, false, 280.763}, // 4
+    {5, true, 273.603}, // 5
+    {20, false, 95.2052}, // 6
+    {4, false, 199.535}, // 7
+    {3, true, 221.113}, // 8
+    {4, false, 306.57}, // 9
+    {5, false, 261.148}, // 10
+    {20, false, 130.528}, // 11
+    {4, false, 0}, // 12 -----
+    {4, false, 231.419}, // 13
+    {20, false, 45}, // 14 ---
+    {20, true, 2.7568}, // 15
 };
 
 void CityGrowth::Init()
 {
     srand(40);
+
+    bool crappyMachine = PezGetConfig().Width < 2560 / 2;
+    static bool first = true;
+    if (crappyMachine && first) {
+        TerrainSize /= 10;
+        RelativeCitySize = 1.0f;
+        NumBuildings /= 2;
+        first = false;
+    }
 
     vector<BuildingConfig> script(&BuildingScript[0], &BuildingScript[0] +
                                   sizeof(BuildingScript) / sizeof(BuildingScript[0]));
@@ -100,13 +124,13 @@ void CityGrowth::Init()
     }
 
     // Pack some circles
-    while (_elements.size() < CircleCount) {
+    while (_elements.size() < NumBuildings) {
         CityElement element;
 
         vec2 coord;
         coord.x = (rand() / float(RAND_MAX) - 0.5);
         coord.y = (rand() / float(RAND_MAX) - 0.5);
-        coord *= 0.05f;
+        coord *= RelativeCitySize;
 
         vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
 
@@ -138,8 +162,18 @@ void CityGrowth::Init()
         bool skyscraper = (rand() % 6) == 0;
 
         if (_elements.size() < script.size()) {
-            element.NumSides = script[_elements.size()].NumSides;
-            skyscraper = script[_elements.size()].Skyscraper;
+            BuildingConfig cfg = script[_elements.size()];
+            element.NumSides = cfg.NumSides;
+            skyscraper = cfg.Skyscraper;
+            element.ViewingAngle = cfg.ViewingAngle;
+        }
+
+        if (Verbose) {
+            printf("    {%d, %s, %g}, // %d\n",
+                   element.NumSides,
+                   skyscraper ? "true" : "false",
+                   element.ViewingAngle,               
+                   int(_elements.size()));
         }
 
         element.HasWindows = element.NumSides <= 5;
@@ -250,6 +284,18 @@ void CityGrowth::Init()
             shape->PushPaths(
                 e->WindowFrames.Paths,
                 windowThickness);
+        }
+
+        if (e->NumSides > 5) {
+            /*
+            sketch::CoplanarPath* secondRoof;
+            vec2 e = shape->GetPathExtent(roof);
+            float radius = std::max(e.x, e.y) * 0.25f;
+            secondRoof = shape->AddInscribedPolygon(
+                radius,
+                roof,
+                vec2(0, 0));
+            */
         }
 
         // Tessellate the final form of the building before collapsing it
@@ -424,6 +470,9 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
         if (beat) {
             _stateStartTime = GetContext()->elapsedTime;
             _state = GROWTH;
+            if (Verbose) {
+                printf("Building %d\n", _currentBuildingIndex);
+            }
         }
         
     } if (elapsedTime < introDuration) {

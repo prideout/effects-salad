@@ -306,7 +306,7 @@ void pezFatalW(const wchar_t* pStr, ...)
 
 void _pezFatal(const char* pStr, va_list a)
 {
-    char msg[1024] = {0};
+    char msg[2048] = {0};
     vsnprintf(msg, countof(msg), pStr, a);
     fputs(msg, stderr);
     fputc('\n', stderr);

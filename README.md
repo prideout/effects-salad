@@ -14,7 +14,7 @@ rideout queue
  - ~~land the windows branch~~
  - ~~split the CityGrow shot in two~~
  - ~~Use the swanky new music API~~
- - add viewing angle to the hand-coded "script" to prevent blocked views
+ - ~~add viewing angle to the hand-coded "script" to prevent blocked views~~
  - add building details: inset windows, antenna, roof extensions
  - SSAO
  - unify the two cities in some way
@@ -28,7 +28,7 @@ cowles queue
  - ~~music API~~
  - ~~finish leaf shading~~
  - ~~finish leaf lighting~~ (done for now, might need to revisit)
- - make grass blow in the wind
+ - ~~make grass blow in the wind~~ (done for now, need to revisit)
  - make leaves fall and float in wind
  - split GrassIntro into 3 shots
  - growth camera work
