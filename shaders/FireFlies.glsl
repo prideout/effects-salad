@@ -143,7 +143,7 @@ void main()
     float r = clamp(.2+1-.017*distance(Eye.xz, vPosition.xz), 0., 1.);
 
     float diffuseLight = .9;
-    float ambientLight = .2;
+    float ambientLight = .25;
     //vec3 n = vNormal;
 
     vec3 l = (vec4(Eye, 1.0) - vPosition).xyz;
@@ -442,7 +442,7 @@ void main()
     float diffuseLight = 1;
     float ambientLight = .3;
     vec3 n = vNormal;
-    vec3 l = normalize((vec4(-4, 5.0, 4, 1.0)).xyz); // - vPosition).xyz);
+    vec3 l = normalize((vec4(4, 2.0, -4, 1.0)).xyz); // - vPosition).xyz);
     float d = max(0.0, dot(n, l));
     //d = 1.5;
     FragColor = vec4(vOcc * (ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
