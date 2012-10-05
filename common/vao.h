@@ -15,6 +15,8 @@ public:
     unsigned vertexCount;
     unsigned indexCount;
     GLuint vao;
+    GLuint vbo;
+    GLuint ibo;
 
     Vao();
 
@@ -36,6 +38,8 @@ public:
 
     Vao(const Vec3List& verts, 
         const TriList& indices);
+
+    Vao(const Vec3List& verts);
 
     void Init();
     void InitEmpty();
