@@ -36,6 +36,12 @@ Camera::Bind(const mat4& model) {
     glUniformMatrix3fv(u("NormalMatrix"), 1, 0, ptr(normalMatrix));
 }
 
+void
+PerspCamera::Bind(const mat4& model) {
+    Camera::Bind(model);
+    glUniform1f(u("DistanceScale"), 1.0f / (far - near));
+}
+
 
 /*
  * PERSPECTIVE CAMERA

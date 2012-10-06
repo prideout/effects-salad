@@ -10,8 +10,14 @@ uniform vec3 Scale = vec3(1);
 
 out vec3 vPosition;
 
+//out vec3 gPosition;
+//out vec4 gColor;
+//out vec3 gFacetNormal;
+
 void main()
 {
+    //gColor = vec4(1,1,1,1);
+    //gPosition = gFacetNormal =
     vPosition = Position.xyz * Scale + Translate;
     gl_Position = Projection * Modelview * vec4(vPosition, 1);
 }
@@ -30,6 +36,7 @@ in vec3 vPosition[3];
 out vec4 gColor;
 out vec3 gFacetNormal;
 out vec3 gPosition;
+out vec4 gePosition;
 
 uniform bool Smooth = false;
 
@@ -49,16 +56,19 @@ void main()
 
     if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[0].x, 0, vPosition[0].z));
     gPosition = vPosition[0];
+    gePosition = Modelview * vec4(vPosition[0], 1);
     gl_Position = Projection * Modelview * vec4(vPosition[0], 1);
     EmitVertex();
 
     if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[1].x, 0, vPosition[1].z));
     gPosition = vPosition[1];
+    gePosition = Modelview * vec4(vPosition[1], 1);
     gl_Position = Projection * Modelview * vec4(vPosition[1], 1);
     EmitVertex();
 
     if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[2].x, 0, vPosition[2].z));
     gPosition = vPosition[2];
+    gePosition = Modelview * vec4(vPosition[2], 1);
     gl_Position = Projection * Modelview * vec4(vPosition[2], 1);
     EmitVertex();
     EndPrimitive();
@@ -66,14 +76,18 @@ void main()
 
 -- Facets.FS
 
+in vec4 gePosition;
 in vec3 gPosition;
 in vec4 gColor;
 in vec3 gFacetNormal;
-out vec4 FragColor;
 
+out vec4 FragColor;
+out vec3 Normal;
+out vec4 Position;
+
+uniform float DistanceScale; // 1 / (Far-Near)
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
-
 uniform vec3 LightPosition = normalize(vec3(0, 1, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 
@@ -97,4 +111,7 @@ void main()
     color *= d;
 
     FragColor = vec4(color, gColor.a);
+    Normal = N;
+    Position.xyz = gePosition.xyz;
+    Position.w = length(gePosition) * DistanceScale;
 }

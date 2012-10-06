@@ -45,12 +45,27 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
     pezCheck(compileSuccess, "Can't compile fshader [%s]:\n%s", fsKey, spew);
     glAttachShader(programHandle, fsHandle);
 
+    glBindFragDataLocation(programHandle, 0, "FragColor");
+    glBindFragDataLocation(programHandle, 1, "Normal");
+    glBindFragDataLocation(programHandle, 2, "Position");
+
     glLinkProgram(programHandle);
     GLint linkSuccess;
     glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
     glGetProgramInfoLog(programHandle, sizeof(spew), 0, spew);
     pezCheck(linkSuccess, "Can't link shaders [fs: %s, vs: %s]:\n%s", fsKey, vsKey, spew);
     glUseProgram(programHandle);
+
+    bool Verbose = false;
+    if (Verbose) {
+        int fragColor = glGetFragDataLocation(programHandle, "FragColor");
+        int normal = glGetFragDataLocation(programHandle, "Normal");
+        int position = glGetFragDataLocation(programHandle, "Position");
+        if (fragColor > -1) printf("%s has a FragColor output at %d.\n", fsKey, fragColor);
+        if (normal > -1) printf("%s has a Normal output at %d.\n", fsKey, normal);
+        if (position > -1) printf("%s has a Position output at %d.\n", fsKey, position);
+    }
+
     return programHandle;
 }
 

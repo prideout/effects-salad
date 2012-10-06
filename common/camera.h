@@ -35,6 +35,7 @@ public:
     PerspCamera();
 
     virtual mat4 GetProjection();
+    virtual void Bind(const mat4& modelMatrix);
 };
 
 

@@ -61,11 +61,13 @@ Fullscreen::Init()
         _surface.Init(size, internalFormat, format, type, filter, mask);
     }
 
-    pezCheckGL("Fullscreen::Init");
+    pezCheckGL("Fullscreen::Init 1");
 
     FOR_EACH(child, _children) {
         (*child)->Init();
     }
+
+    pezCheckGL("Fullscreen::Init 2");
 }
 
 void
@@ -75,6 +77,7 @@ Fullscreen::Update()
     FOR_EACH(child, _children) {
         (*child)->Update();
     }
+    pezCheckGL("Fullscreen::Update");
 }
 
 void
@@ -101,6 +104,16 @@ Fullscreen::Draw()
     GLint previousFb;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFb);
     glBindFramebuffer(GL_FRAMEBUFFER, _surface.fbo);
+
+    if (_mask & AmbientOcclusionFlag) {
+        GLenum buffers[] = {
+            GL_COLOR_ATTACHMENT0, // Color
+            GL_COLOR_ATTACHMENT1, // Normals
+            GL_COLOR_ATTACHMENT2, // Positions
+        };
+        glDrawBuffers(3, &buffers[0]);
+    }
+
     glViewport(0, 0, _surface.width, _surface.height);
     if (_children.size()) {
         glClearColor(clearColor.r, clearColor.g,
@@ -118,6 +131,19 @@ Fullscreen::Draw()
     glBindFramebuffer(GL_FRAMEBUFFER, previousFb);
     glViewport(previousVp[0], previousVp[1], previousVp[2], previousVp[3]);
 
+    // Resetting the not-so-obvious level-of-direction
+    // of fragment output bindings in a not-so-obvious
+    // way.  Ah, OpenGL.  I can't live with you, I can't
+    // live without you.
+    if (_mask & AmbientOcclusionFlag) {
+        GLenum buffers[] = {
+            GL_BACK_LEFT,
+            GL_NONE,
+            GL_NONE,
+        };
+        glDrawBuffers(3, &buffers[0]);
+    }
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _surface.texture);
 
@@ -127,6 +153,14 @@ Fullscreen::Draw()
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, _surface.depthTexture);
+
+    if (_mask & AmbientOcclusionFlag) {
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, _surface.normalsTexture);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, _surface.positionsTexture);
+    }
+
     glActiveTexture(GL_TEXTURE0);
 
     Programs& progs = Programs::GetInstance();
@@ -146,6 +180,8 @@ Fullscreen::Draw()
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
     glUniform1i(u("SourceImage"), 0);
     glUniform1i(u("DepthImage"), 1);
+    glUniform1i(u("NormalsImage"), 2);
+    glUniform1i(u("PositionsImage"), 3);
 
     vec2 inverseViewport = 1.0f /
         vec2(previousVp[2], previousVp[3]);
@@ -163,11 +199,18 @@ Fullscreen::Draw()
     }
 
     glDisable(GL_DEPTH_TEST);
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glEnable(GL_DEPTH_TEST);
-
     glDisable(GL_BLEND);
-
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     pezCheckGL("Fullscreen::Draw");
 }

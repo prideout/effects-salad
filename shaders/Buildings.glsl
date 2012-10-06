@@ -205,28 +205,30 @@ uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
 
-out vec3 vPosition;
+out vec4 vPosition;
 out vec3 vNormal;
 
 void main()
 {
-    vPosition = Position.xyz;
+    vPosition = Modelview * Position;
     vNormal = NormalMatrix * Normal;
     gl_Position = Projection * Modelview * Position;
 }
 
 -- Terrain.FS
 
-in vec3 vPosition;
+in vec4 vPosition;
 in vec3 vNormal;
 
+uniform float DistanceScale; // 1 / (Far-Near)
 uniform mat3 NormalMatrix;
-
 uniform vec3 LightPosition = normalize(vec3(0, 1, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 uniform vec3 Color = vec3(0.627, 0.322, 0.176);
 
 out vec4 FragColor;
+out vec3 Normal;
+out vec4 Position;
 
 void main()
 {
@@ -235,4 +237,7 @@ void main()
     float df = abs(dot(N, L));
     vec3 C = AmbientMaterial + df * Color;
     FragColor = vec4(C, 0.25);
+    Normal = N;
+    Position.xyz = vPosition.xyz;
+    Position.w = length(vPosition) * DistanceScale;
 }

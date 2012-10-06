@@ -125,6 +125,8 @@ void CityGrowth::Init()
     while (_elements.size() < NumBuildings) {
         CityElement element;
 
+        element.Visible = true;
+
         vec2 coord;
         coord.x = (rand() / float(RAND_MAX) - 0.5);
         coord.y = (rand() / float(RAND_MAX) - 0.5);
@@ -483,9 +485,9 @@ PerspCamera CityGrowth::_InitialCamera()
 {
     CityElement& building = _elements[_currentBuildingIndex];
     PerspCamera cam;
-    cam.far = 2000;
+    cam.far = (_config == GROW) ? 2000 : 200;
     cam.up = vec3(0, 1, 0);
-    float viewingDistance = 700;
+    float viewingDistance = (_config == GROW) ? 700 : 50;
     vec3 center = building.Position + vec3(0, 10, 0);
     vec3 gaze = normalize(vec3(0, -1, 1));
     gaze = glm::rotateY(gaze, building.ViewingAngle * 2);
@@ -508,7 +510,7 @@ void CityGrowth::_UpdateFlight(float elapsedTime)
     float flightTime = SecondsPerFlight;
     float introDuration = 0;
 
-    if (_state != FLIGHT) {
+    if (_state != FLIGHT && _config == GROW) {
         flightTime *= 5;
         introDuration = SecondsPerFlight * 4;
     }
@@ -614,6 +616,7 @@ void CityGrowth::Update()
 void CityGrowth::Draw()
 {
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
     Programs& progs = Programs::GetInstance();
 
     // Draw terrain
