@@ -50,7 +50,7 @@ static void _constructScene()
         shotMap[ctx->name] = ctx;
 
         ctx->mainCam.eye.z = 5;
-        ctx->drawables.push_back(new FireFlies());
+        ctx->drawables.push_back(new GrassIntro());
         ctx->drawables.push_back(new FpsOverlay());
     }
 
