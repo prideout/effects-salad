@@ -136,8 +136,6 @@ void GrassIntro::Init()
 
     // Placeholder for generated curves
 
-
-    counter = 0;
 };
 
 void GrassIntro::Update() {
@@ -154,50 +152,53 @@ void GrassIntro::Update() {
 void GrassIntro::Draw() {
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
+    
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    // --------------------------------------------------------------------------------
+    // Camera
+    // --------------------------------------------------------------------------------
     bool fixedCam = false;
 
-        PerspCamera oldCam = GetContext()->mainCam;
-        PerspCamera& cam = GetContext()->mainCam;
-        cam.center= vec3(0,1,-15);
-        cam.center.x = -3;
-        cam.center.y = 0;
-        cam.center.z = 2;
-        cam.eye.x = -9;
-        cam.eye.y = 1.5;
-        cam.eye.z = 8;
-        
-        if (not fixedCam)
-            cam.eye = cameraPoints.At(GetContext()->elapsedTime);
-        else {
-            float t = GetContext()->elapsedTime;
-            cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2));
-            //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2));
-        }
+    PerspCamera& cam = GetContext()->mainCam;
+    cam.center= vec3(0,1,-15);
+    cam.center.x = -3;
+    cam.center.y = 0;
+    cam.center.z = 2;
+    cam.eye.x = -9;
+    cam.eye.y = 1.5;
+    cam.eye.z = 8;
+    
+    if (not fixedCam)
+        cam.eye = cameraPoints.At(GetContext()->elapsedTime);
+    else {
+        float t = GetContext()->elapsedTime;
+        cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2));
+        //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2));
+    }
 
-        // look where we are walking
-        //  cam.center = cameraPoints.After(0);
-        //cam.center = cameraPoints.After(GetContext()->elapsedTime);
+    // look where we are walking
+    //  cam.center = cameraPoints.After(0);
+    //cam.center = cameraPoints.After(GetContext()->elapsedTime);
 
-        glUseProgram(progs["FireFlies.Tube"]);
-        cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
-        _tube.Draw();
+    // --------------------------------------------------------------------------------
+    // Drawable stuff
+    // --------------------------------------------------------------------------------
+    glUseProgram(progs["FireFlies.Tube"]);
+    cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
+    _tube.Draw();
 
-        FOR_EACH(tubeIt, _tubes) {
-            tubeIt->Draw();
-        }
+    FOR_EACH(tubeIt, _tubes) {
+        tubeIt->Draw();
+    }
 
-        _tree.Draw();
-        _fireFlies.Draw();
-        _ground.Draw();
+    _tree.Draw();
+    _fireFlies.Draw();
+    _ground.Draw();
 
     _milkyway.Draw();
 
-    cam = oldCam;
-
-    counter++;
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
 };
