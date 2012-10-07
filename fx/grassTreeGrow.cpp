@@ -1,4 +1,4 @@
-#include "grassIntro.h"
+#include "grassTreeGrow.h"
 #include "common/programs.h"
 #include "common/demoContext.h"
 
@@ -7,10 +7,10 @@
 
 #include <cstdlib>
 
-void GrassIntro::Init() 
+void GrassTreeGrow::Init() 
 {
     Perlin noise(2, .1, 2, 0);
-    name = "GrassIntro";
+    name = "GrassTreeGrow";
     Effect::Init();
     Programs& progs = Programs::GetInstance();
 
@@ -22,6 +22,7 @@ void GrassIntro::Init()
     _quad.Init();
     _ground.Init();
     _milkyway.Init();
+    _tree.Init();
     _fireFlies.Init();
 
 
@@ -80,19 +81,10 @@ void GrassIntro::Init()
 
 
         // new camera
-		-73.889963783203328, 1.9022898114153644, -15.880825318011672,
-		-70.139848876016615, 1.9022898114153644, -14.874696928278611,
-		-62.68034894083236, 1.757119043952587, -8.9160731012576164,
-		-58.020746383103905, 1.6045803485703456, -7.8094230808761287,
-		-53.36114382537545, 1.4520416531881042, -6.7027730604946401,
-		-46.219941113223165, 1.1596638655462193, -7.1143489800664916,
-		-40.00023834032784, 1.1596638655462193, -6.0167543730849786,
-		-33.780535567432516, 1.1596638655462193, -4.9191597661034656,
 		-29.398405178043745, 0.3691749981521088, -3.3890212359114953,
 		-22.081107798166876, 0.3691749981521088, -3.9378185394022491,
-		/*
 		-14.763810418290007, 0.3691749981521088, -4.4866158428930021,
-                -11.369377169338659, 0, -6.8509163042400134,
+		-11.369377169338659, 0, -6.8509163042400134,
 		-4.8752757446979409, 0, -6.9423825214884758,
 		1.6188256799427769, 0, -7.0338487387369382,
 		7.5641298010927152, 0, -3.6495987005438955,
@@ -103,7 +95,6 @@ void GrassIntro::Init()
 		-11.186444734841754, 0, 8.1495433245075333,
 		-13.47310016605325, 0, -0.63121353134468361,
 		-8.3509920001394491, 0, -3.9239973522892759,
-                */
 
         //-9.5176629202812819, 0, 3.6461550396041615
         /*
@@ -139,7 +130,7 @@ void GrassIntro::Init()
 
 };
 
-void GrassIntro::Update() {
+void GrassTreeGrow::Update() {
     Effect::Update();
     _ground.Update();
     _tube.Update();
@@ -147,9 +138,10 @@ void GrassIntro::Update() {
         tubeIt->Update();
     }
     _milkyway.Update();
+    _tree.Update();
 };
 
-void GrassIntro::Draw() {
+void GrassTreeGrow::Draw() {
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
     
@@ -193,6 +185,7 @@ void GrassIntro::Draw() {
         tubeIt->Draw();
     }
 
+    _tree.Draw();
     _fireFlies.Draw();
     _ground.Draw();
 

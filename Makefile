@@ -43,6 +43,7 @@ SHARED := \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/fullscreen.o \
 	$(OBJDIR)/fx/grassIntro.o \
+	$(OBJDIR)/fx/grassTreeGrow.o \
 	$(OBJDIR)/fx/ground.o \
 	$(OBJDIR)/fx/milkyway.o \
 	$(OBJDIR)/fx/portal.o \

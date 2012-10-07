@@ -17,7 +17,7 @@
 #include "fx/tree.h"
 
 
-class GrassIntro : public Effect {
+class GrassTreeGrow : public Effect {
     Surface _surface;
     Ground _ground;
     Quad _quad;
@@ -26,11 +26,12 @@ class GrassIntro : public Effect {
     std::vector<Tube> _tubes;
     AnimCurve<glm::vec3> cameraPoints;
     Milkyway _milkyway;
+    Tree _tree;
 
 public:
 
-    GrassIntro() : Effect() {}
-    virtual ~GrassIntro() {} 
+    GrassTreeGrow() : Effect() {}
+    virtual ~GrassTreeGrow() {} 
    
     virtual void Init();
 
