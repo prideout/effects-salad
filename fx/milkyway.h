@@ -11,6 +11,7 @@
 
 class Milkyway : public Effect {
     Quad _skyQuad;
+    Vao _stars;
 
 public:
 

@@ -11,8 +11,31 @@ void Milkyway::Init() {
     Effect::Init();
 
     Programs& progs = Programs::GetInstance();
-    glUseProgram(progs.Load("Milkyway.Sky", true));
+    progs.Load("Milkyway.Sky", true);
+    progs.Load("FireFlies.Stars", "FireFlies.Stars.FS", "FireFlies.Flies.VS"); 
+
+    // --------------------------------------------------------------------- 
+    // Sky background 
+    // --------------------------------------------------------------------- 
     _skyQuad.Init();
+
+    // --------------------------------------------------------------------- 
+    // Stars 
+    // --------------------------------------------------------------------- 
+
+    FloatList stars;
+    for (int i = 0; i < 4000; i ++) {
+        // Use spherical coordinates with fixed radius to simulate a sky dome
+        float r = 120;
+        float theta = 3.14*(rand() / float(RAND_MAX)); 
+        float phi = 3.14*(rand() / float(RAND_MAX));
+        stars.push_back(r*sin(theta)*cos(phi) - 10);
+        stars.push_back(r*sin(theta)*sin(phi));
+        stars.push_back(r*cos(theta) + 10);
+        stars.push_back(1.0);
+    }
+    _stars = Vao(4, stars); 
+
 }
 
 void Milkyway::Update() {
@@ -23,9 +46,31 @@ void Milkyway::Draw() {
     Programs& progs = Programs::GetInstance();
     Effect::Draw();
 
+    PerspCamera& cam = GetContext()->mainCam;
+
+    // --------------------------------------------------------------------- 
+    // Stars 
+    // --------------------------------------------------------------------- 
+    glUseProgram(progs["FireFlies.Stars"]);
+
+    bool hihat = GetContext()->audio->GetHiHats();
+    bool snare = GetContext()->audio->GetSnares();
+
+    cam.Bind(glm::mat4());
+    if (snare)
+        glPointSize(5.5);
+    else if (hihat)
+        glPointSize(1.5);
+    else
+        glPointSize(.5);
+    _stars.Bind();
+    glDrawArrays(GL_POINTS, 0, _stars.vertexCount);
+
+    // --------------------------------------------------------------------- 
+    // Sky Quad
+    // ---------------------------------------------------------------------     
     glUseProgram(progs["Milkyway.Sky"]);
 
-    PerspCamera cam = GetContext()->mainCam;
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform3f(u("Center"), cam.center.x, cam.center.y, cam.center.z);
 

@@ -19,7 +19,7 @@
 class FireFlies : public Effect {
     FloatList _fliesCpu;
     Vao _fliesGpu;
-    Vao _stars;
+
     Surface _surface;
     Ground _ground;
     Quad _quad;

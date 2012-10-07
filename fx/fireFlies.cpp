@@ -16,7 +16,7 @@ void FireFlies::Init()
     glUseProgram(progs.Load("FireFlies.Flies"));
 
     glUseProgram(progs.Load("FireFlies.Blur"));
-    glUseProgram(progs.Load("FireFlies.Stars", "FireFlies.Stars.FS", "FireFlies.Flies.VS"));
+
     glUseProgram(progs.Load("FireFlies.Tube", "FireFlies.Flies.FS", "FireFlies.Tube.VS"));
     glUniform1i(u("Tex"), 1);
 
@@ -46,23 +46,6 @@ void FireFlies::Init()
     }
     _fliesGpu = Vao(4, _fliesCpu); 
 
-
-    // --------------------------------------------------------------------- 
-    // Stars 
-    // --------------------------------------------------------------------- 
-
-    FloatList stars;
-    for (int i = 0; i < 4000; i ++) {
-        // Use spherical coordinates with fixed radius to simulate a sky dome
-        float r = 120;
-        float theta = 3.14*(rand() / float(RAND_MAX)); 
-        float phi = 3.14*(rand() / float(RAND_MAX));
-        stars.push_back(r*sin(theta)*cos(phi) - 10);
-        stars.push_back(r*sin(theta)*sin(phi));
-        stars.push_back(r*cos(theta) + 10);
-        stars.push_back(1.0);
-    }
-    _stars = Vao(4, stars); 
 
 
     // --------------------------------------------------------------------- 
@@ -246,7 +229,6 @@ void FireFlies::Draw() {
         glClearColor(.0,.0,.9,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         */
-        bool snare = GetContext()->audio->GetSnares();
         bool kick = GetContext()->audio->GetKicks();
         bool hihat = GetContext()->audio->GetHiHats();
 
@@ -260,17 +242,6 @@ void FireFlies::Draw() {
         _fliesGpu.Bind();
         glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount);
 
-
-        glUseProgram(progs["FireFlies.Stars"]);
-        cam.Bind(glm::mat4());
-        if (snare)
-            glPointSize(5.5);
-        else if (hihat)
-            glPointSize(1.5);
-        else
-            glPointSize(.5);
-        _stars.Bind();
-        glDrawArrays(GL_POINTS, 0, _stars.vertexCount);
         //_tube.DrawFrames();
 
         _ground.Draw();
