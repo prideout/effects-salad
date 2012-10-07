@@ -11,7 +11,7 @@ void Ground::Init() {
 
     Programs& progs = Programs::GetInstance();
     
-    glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Flies.VS"));
+    glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Ground.VS"));
     glUseProgram(progs.Load("FireFlies.Grass"));
 
 
