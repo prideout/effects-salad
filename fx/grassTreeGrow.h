@@ -19,7 +19,6 @@
 
 class GrassTreeGrow : public Effect {
     Surface _surface;
-    Ground _ground;
     Quad _quad;
     Tube _tube;
     FireFlies _fireFlies;
@@ -29,6 +28,7 @@ class GrassTreeGrow : public Effect {
     Tree _tree;
 
 public:
+    Ground* _ground;
 
     GrassTreeGrow() : Effect() {}
     virtual ~GrassTreeGrow() {} 

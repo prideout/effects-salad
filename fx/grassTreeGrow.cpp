@@ -20,7 +20,6 @@ void GrassTreeGrow::Init()
 
     _surface.Init();
     _quad.Init();
-    _ground.Init();
     _milkyway.Init();
     _tree.Init();
     _fireFlies.Init();
@@ -132,7 +131,7 @@ void GrassTreeGrow::Init()
 
 void GrassTreeGrow::Update() {
     Effect::Update();
-    _ground.Update();
+    _ground->Update();
     _tube.Update();
     FOR_EACH(tubeIt, _tubes) {
         tubeIt->Update();
@@ -187,7 +186,7 @@ void GrassTreeGrow::Draw() {
 
     _tree.Draw();
     _fireFlies.Draw();
-    _ground.Draw();
+    _ground->Draw();
 
     _milkyway.Draw();
 

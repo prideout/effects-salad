@@ -19,7 +19,7 @@
 
 class GrassIntro : public Effect {
     Surface _surface;
-    Ground _ground;
+    
     Quad _quad;
     Tube _tube;
     FireFlies _fireFlies;
@@ -28,6 +28,10 @@ class GrassIntro : public Effect {
     Milkyway _milkyway;
 
 public:
+    // hold a pointer to ground so the video memory is
+    // shared. This feels so wrong, our scene graph should
+    // allow for this in a better way
+    Ground* _ground;
 
     GrassIntro() : Effect() {}
     virtual ~GrassIntro() {} 

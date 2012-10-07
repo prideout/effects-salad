@@ -44,23 +44,32 @@ static void _constructScene()
     // Build up the shot map, this idea is evolving...
     //
 
+    // Ground/Grass shared by the grass shots, break out this effect
+    // so the memory can be shared
+    Ground* ground = new Ground;
+    ground->Init();
+
     {   // Grass Intro 
         DemoContext* ctx = DemoContext::New("GrassIntro");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 
         ctx->mainCam.eye.z = 5;
-        ctx->drawables.push_back(new GrassIntro());
+        GrassIntro* grass = new GrassIntro;
+        grass->_ground = ground;
+        ctx->drawables.push_back(grass);
         ctx->drawables.push_back(new FpsOverlay());
     }
 
-    {   // Grass Intro 
+    {   // Grass Tree Grow 
         DemoContext* ctx = DemoContext::New("GrassTreeGrow");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
 
         ctx->mainCam.eye.z = 5;
-        ctx->drawables.push_back(new GrassTreeGrow());
+        GrassTreeGrow* grass = new GrassTreeGrow;
+        grass->_ground = ground;
+        ctx->drawables.push_back(grass);
         ctx->drawables.push_back(new FpsOverlay());
     }
 
