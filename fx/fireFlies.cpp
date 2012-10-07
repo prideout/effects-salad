@@ -30,7 +30,9 @@ void FireFlies::Init()
         //_fliesCpu.push_back(noise.Get(x,z));
         _fliesCpu.push_back(y);
         _fliesCpu.push_back(z);
-        _fliesCpu.push_back(1.0);
+
+        // set firefly size multiplier
+        _fliesCpu.push_back(1.5);
     }
     _fliesGpu = Vao(4, _fliesCpu); 
 };
@@ -53,11 +55,21 @@ void FireFlies::Draw() {
     bool hihat = GetContext()->audio->GetHiHats();
 
     if (kick)
+        glUniform1f(u("SizeMult"), 3.0);
+    else
+        glUniform1f(u("SizeMult"), 1.0);
+
+    glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
+
+
+    if (kick)
         glPointSize(5.5);
     else if (hihat)
         glPointSize(3);
     else
         glPointSize(1.5);
+
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
     _fliesGpu.Bind();
     glDrawArrays(GL_POINTS, 0, _fliesGpu.vertexCount);
