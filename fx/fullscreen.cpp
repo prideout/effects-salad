@@ -44,6 +44,10 @@ Fullscreen::Init()
         size *= 2;
     }
 
+    if (_mask & AmbientOcclusionFlag) {
+        _noiseTexture.Init("normalmap.png");
+    }
+
     _emptyVao.InitEmpty();
 
     GLenum internalFormat = GL_RGBA8;
@@ -159,6 +163,8 @@ Fullscreen::Draw()
         glBindTexture(GL_TEXTURE_2D, _surface.normalsTexture);
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, _surface.positionsTexture);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, _noiseTexture.handle);
     }
 
     glActiveTexture(GL_TEXTURE0);
@@ -182,10 +188,12 @@ Fullscreen::Draw()
     glUniform1i(u("DepthImage"), 1);
     glUniform1i(u("NormalsImage"), 2);
     glUniform1i(u("PositionsImage"), 3);
+    glUniform1i(u("NoiseImage"), 4);
 
     vec2 inverseViewport = 1.0f /
         vec2(previousVp[2], previousVp[3]);
     glUniform2fv(u("InverseViewport"), 1, ptr(inverseViewport));
+    glUniform2fv(u("TexelSize"), 1, ptr(inverseViewport));
 
     _emptyVao.Bind();
 
@@ -203,6 +211,8 @@ Fullscreen::Draw()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE2);

@@ -47,4 +47,5 @@ private:
     std::string _customProgram;
     EffectList _children;
     Fullscreen* _depthPeer;
+    Texture2D _noiseTexture;
 };
