@@ -35,16 +35,18 @@ SHARED := \
 	$(OBJDIR)/common/sketchUtil.o \
 	$(OBJDIR)/common/sketchTess.o \
 	$(OBJDIR)/common/sketchPlayback.o \
-	$(OBJDIR)/fx/cityGrowth.o \
 	$(OBJDIR)/fx/gridCity.o \
-	$(OBJDIR)/fx/buildingGrowth.o \
-	$(OBJDIR)/fx/fullscreen.o \
-	$(OBJDIR)/fx/ground.o \
 	$(OBJDIR)/fx/background.o \
 	$(OBJDIR)/fx/buildings.o \
+	$(OBJDIR)/fx/buildingGrowth.o \
 	$(OBJDIR)/fx/buildingThreads.o \
+	$(OBJDIR)/fx/cityGrowth.o \
 	$(OBJDIR)/fx/fireFlies.o \
 	$(OBJDIR)/fx/fpsOverlay.o \
+	$(OBJDIR)/fx/fullscreen.o \
+	$(OBJDIR)/fx/grassIntro.o \
+	$(OBJDIR)/fx/grassTreeGrow.o \
+	$(OBJDIR)/fx/ground.o \
 	$(OBJDIR)/fx/milkyway.o \
 	$(OBJDIR)/fx/portal.o \
 	$(OBJDIR)/fx/quads.o \

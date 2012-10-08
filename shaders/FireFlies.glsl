@@ -116,15 +116,15 @@ void main()
 
 -- Stars.FS
 
-//in vec3 vNormal;
 in vec4 vPosition;
-//in vec2 vUvCoord;
+in float vBrightness;
+
 out vec4 FragColor;
 
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.5, .5, .5, 1.0);
+    FragColor = vBrightness * vec4(.5, .7, .9, 1.0);
 }
 
 -- Grass.FS
@@ -190,7 +190,7 @@ void main()
     */
     vPosition = Position;
     vOcc = float(mod(gl_VertexID, 2));
-    vPosition.xz += mod(gl_VertexID, 2) * vec2(0, WindAmount*snoise(vec2(Time+Position.x, Position.y) / 6.));
+    vPosition.xz += mod(gl_VertexID, 2) * vec2(0, WindAmount*snoise(vec2(Time+Position.x, Position.y) / 9.));
     //vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(0, 5*snoise(vec2(gl_VertexID/1000.0,0.0)) + WindAmount);
     //vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(cos(Time + gl_VertexID * .0000003), 0);
     gl_Position = Projection * Modelview * vPosition;
@@ -273,17 +273,39 @@ float snoise(vec2 v)
 
 -- Flies.FS
 
-//in vec3 vNormal;
 in vec4 vPosition;
-//in vec2 vUvCoord;
+in float vBrightness;
+
 out vec4 FragColor;
+
+uniform vec3 Eye;
 
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vec4(.1, .9, .2, 1.0);
+    float dist = length(Eye - vPosition.xyz);
+    FragColor = (1.0 / (dist*dist*.001)) * vec4(.1, .9, .2, 1.0);
 }
 
+-- Ground.VS
+layout(location = 0) in vec4 Position;
+layout(location = 1) in vec4 Normal;
+//layout(location = 2) in vec2 UvCoord;
+
+out vec4 vPosition;
+out vec3 vNormal;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat4 ViewMatrix;
+uniform mat4 ModelMatrix;
+void main()
+{
+    vPosition = Position;
+    gl_Position = Projection * Modelview * vPosition;
+    vPosition = ModelMatrix * vPosition;
+    vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
+}
 
 -- Flies.VS
 layout(location = 0) in vec4 Position;
@@ -291,26 +313,24 @@ layout(location = 1) in vec4 Normal;
 //layout(location = 2) in vec2 UvCoord;
 
 out vec4 vPosition;
-//out vec2 vUvCoord;
 out vec3 vNormal;
+out float vBrightness;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
-/*
-uniform mat3 NormalMatrix;
-*/
+
+uniform float SizeMult;
+
 void main()
 {
-    /*
-    vPosition = (Modelview * Position).xyz;
-    gl_Position = Projection * Modelview * Position;
-    vNormal = NormalMatrix * Normal;
-    */
-    vPosition = Position;
+    vPosition.xyz = Position.xyz;
+    vPosition.w = 1.0;
     gl_Position = Projection * Modelview * vPosition;
     vPosition = ModelMatrix * vPosition;
+    gl_PointSize = SizeMult * Position.w;
+    vBrightness = .1 + Position.w / 2.2;
     vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
 }
 

@@ -11,7 +11,7 @@ void Ground::Init() {
 
     Programs& progs = Programs::GetInstance();
     
-    glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Flies.VS"));
+    glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Ground.VS"));
     glUseProgram(progs.Load("FireFlies.Grass"));
 
 
@@ -92,7 +92,7 @@ void Ground::Draw() {
     
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
-    glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(GetContext()->elapsedTime)));
+    glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(2*GetContext()->elapsedTime)));
 
     cam.Bind(glm::mat4());
     glEnable(GL_BLEND);
