@@ -87,10 +87,25 @@ void GridCity::Init()
     FOR_EACH(i, _cells) {
         GridCell& cell = *i;
         cell.Visible = true;
-        vec2 p = vec2(cell.Quad.p.x, cell.Quad.p.z);
+
+        vec3 p0 = cell.Quad.p;
+        vec2 p = vec2(p0.x, p0.z);
         vec2 coord = p / float(TerrainSize);
         vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
         cell.Quad.p.y = MyTerrainFunc(domain).y;
+
+        vec3 p1 = cell.Quad.p + cell.Quad.u;
+        p = vec2(p1.x, p1.z);
+        coord = p / float(TerrainSize);
+        domain = (coord + vec2(0.5)) * float(TerrainSize);
+        p1.y = MyTerrainFunc(domain).y;
+        cell.Quad.u = length(cell.Quad.u) * normalize(p1 - cell.Quad.p);
+
+        vec3 p2 = cell.Quad.p + cell.Quad.v;
+        p = vec2(p1.x, p1.z);
+        coord = p / float(TerrainSize);
+        domain = (coord + vec2(0.5)) * float(TerrainSize);
+        cell.Quad.v = length(cell.Quad.v) * normalize(p2 - cell.Quad.p);
     }
 
     // Seed the sketch objects
@@ -118,7 +133,8 @@ void GridCity::_AllocCell(GridCell* cell)
 {
     sketch::Scene* shape = new sketch::Scene;
     cell->Roof = shape->AddQuad(cell->Quad);
-    float flip = cell->Quad.p.y < 0 ? -1.0f : 1.0f;
+    vec3 n = cell->Roof->Plane->GetNormal();
+    float flip = dot(n, vec3(0, 1, 0)) < 0 ? -1 : 1;
     shape->PushPath(cell->Roof, flip * cell->Height);
     cell->CpuShape = shape;
     cell->CpuTriangles = new sketch::Tessellator(*shape);
