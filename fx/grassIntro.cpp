@@ -186,6 +186,7 @@ void GrassIntro::Draw() {
     // --------------------------------------------------------------------------------
     glUseProgram(progs["FireFlies.Tube"]);
     cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
+    glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     _tube.Draw();
 
     FOR_EACH(tubeIt, _tubes) {

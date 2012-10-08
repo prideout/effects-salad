@@ -284,7 +284,7 @@ void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
     float dist = length(Eye - vPosition.xyz);
-    FragColor = (1.0 / (dist*dist*.001)) * vec4(.1, .9, .2, 1.0);
+    FragColor = min(1.0, 1.0 / (dist*dist*.001)) * vec4(.1, .9, .2, 1.0);
 }
 
 -- Ground.VS
