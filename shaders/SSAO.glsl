@@ -19,9 +19,9 @@ uniform sampler2D NoiseImage;
 uniform float Time = 0;
 
 uniform vec2 TexelSize;
-uniform float OccluderBias = 0.15;
+uniform float OccluderBias = 0.1;
 uniform float SamplingRadius = 10.0;
-uniform vec2 Attenuation = vec2(1, 1);
+uniform vec2 Attenuation = vec2(2,2);
 
 out vec4 FragColor;
  
@@ -35,11 +35,17 @@ float SamplePixels (vec3 srcPosition, vec3 srcNormal, vec2 uv)
     // It is simular to diffuse lighting. Objects directly above the fragment cast
     // the hardest shadow and objects closer to the horizon have minimal effect.
     vec3 positionVec = dstPosition - srcPosition;
-    float intensity = max(dot(normalize(positionVec), srcNormal) - OccluderBias, 0.0);
+
+    float bias = OccluderBias;
+    float z = texture(PositionsImage, uv).w;
+    bias += z * 0.5;
+
+    float intensity = max(dot(normalize(positionVec), srcNormal) - bias, 0.0);
 
     // Attenuate the occlusion, similar to how you attenuate a light source.
     // The further the distance between points, the less effect AO has on the fragment.
-    float dist = length(positionVec);
+    float dist;
+    dist = length(positionVec);
     float attenuation = 1.0 / (Attenuation.x + (Attenuation.y * dist));
     
     return intensity * attenuation;
