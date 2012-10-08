@@ -16,9 +16,12 @@ rideout queue
  - ~~Use the swanky new music API~~
  - ~~add viewing angle to the hand-coded "script" to prevent blocked views~~
  - ~~add building details: inset windows, antenna, roof extensions~~
- - SSAO
- - unify the two cities in some way
- - halfway into CityGrow, pull back the camera and start popping buildings once per beat
+ - ~~SSAO~~
+ - Perturb rows in GridCity
+ - Pop in buildings in GridCity from center out (tendrils?) -- use hihats for fast popping!
+ - Detail per the reference image
+ - PUNT unify the two cities in some way
+ - PUNT halfway into CityGrow, pull back the camera and start popping buildings once per beat
  - transform-feedback curl noise for sand
  - laser beams for city explosions
  - credits 
