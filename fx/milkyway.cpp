@@ -24,7 +24,7 @@ void Milkyway::Init() {
     // --------------------------------------------------------------------- 
 
     FloatList stars;
-    for (int i = 0; i < 9000; i ++) {
+    for (int i = 0; i < 19000; i ++) {
         // Use spherical coordinates with fixed radius to simulate a sky dome
         float r = 120;
         float theta = 3.14*(rand() / float(RAND_MAX)); 

@@ -190,7 +190,7 @@ void main()
     */
     vPosition = Position;
     vOcc = float(mod(gl_VertexID, 2));
-    vPosition.xz += mod(gl_VertexID, 2) * vec2(0, WindAmount*snoise(vec2(Time+Position.x, Position.y) / 6.));
+    vPosition.xz += mod(gl_VertexID, 2) * vec2(0, WindAmount*snoise(vec2(Time+Position.x, Position.y) / 9.));
     //vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(0, 5*snoise(vec2(gl_VertexID/1000.0,0.0)) + WindAmount);
     //vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(cos(Time + gl_VertexID * .0000003), 0);
     gl_Position = Projection * Modelview * vPosition;
