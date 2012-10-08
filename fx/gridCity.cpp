@@ -110,19 +110,8 @@ void GridCity::Init()
 void GridCity::_AllocCell(GridCell* cell)
 {
     sketch::Scene* shape = new sketch::Scene;
-    const sketch::Plane* ground = shape->GroundPlane();
- 
-    // TODO prideout add new entry to sketch::Scene to support orientable quads
- 
-    vec2 offset = vec2(cell->Quad.p.x, cell->Quad.p.z);
-    cell->Roof = shape->AddRectangle(
-        length(cell->Quad.u)*2,
-        length(cell->Quad.v)*2,
-        ground->Eqn,
-        offset);
-
+    cell->Roof = shape->AddQuad(cell->Quad);
     shape->PushPath(cell->Roof, cell->Height);
-
     cell->CpuShape = shape;
     cell->CpuTriangles = new sketch::Tessellator(*shape);
 }

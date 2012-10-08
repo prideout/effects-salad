@@ -64,6 +64,16 @@ namespace sketch
         sketch::Plane* Plane;
     };
 
+    // Orientable rectangle in 3-space define by a point and two vectors:
+    // p ... center point
+    // u ... half-width vector
+    // v ... half-height vector
+    struct Quad {
+        glm::vec3 p;
+        glm::vec3 u;
+        glm::vec3 v;
+    };
+
     enum ExtrusionVisibility {
         DEFAULT,
         HIDE,
@@ -82,6 +92,9 @@ namespace sketch
         // This is the most common starting point for a building.
         CoplanarPath*
         AddRectangle(float width, float height, glm::vec4 plane, glm::vec2 offset);
+
+        CoplanarPath*
+        AddQuad(sketch::Quad quad);
 
         CoplanarPath*
         AddPolygon(float radius, glm::vec4 plane, glm::vec2 offset, int numPoints);

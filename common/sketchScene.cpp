@@ -37,6 +37,35 @@ Scene::GroundPlane() const
 }
 
 CoplanarPath*
+Scene::AddQuad(sketch::Quad q)
+{
+    // Compute the plane equation
+    vec3 n = -normalize(cross(q.u, q.v));
+    float w = dot(n, q.p);
+    vec4 eqn = vec4(n, w);
+    const Plane* plane = GetPlane(eqn);
+
+    // Insert the four corners
+    unsigned int a = _AppendPoint(q.p - q.u - q.v);
+    unsigned int b = _AppendPoint(q.p + q.u - q.v);
+    unsigned int c = _AppendPoint(q.p + q.u + q.v);
+    unsigned int d = _AppendPoint(q.p - q.u + q.v);
+
+    // Initialize the path object.
+    CoplanarPath* retval = new CoplanarPath();
+    retval->Visible = true;
+    _topologyHash++;
+    _AppendEdge(retval, a, b);
+    _AppendEdge(retval, b, c);
+    _AppendEdge(retval, c, d);
+    _AppendEdge(retval, d, a);
+    retval->Plane = const_cast<Plane*>(plane);
+    _FinalizePath(retval, _threshold);
+    _paths.push_back(retval);
+    return retval;
+}
+
+CoplanarPath*
 Scene::AddRectangle(float width, float height, vec4 eqn, vec2 offset)
 {
     const Plane* plane = GetPlane(eqn);

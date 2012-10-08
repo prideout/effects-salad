@@ -8,18 +8,8 @@
 #include "common/halfBeat.h"
 #include "glm/glm.hpp"
 
-// Orientable rectangle in 3-space define by a point and two vectors:
-// p ... center point
-// u ... half-width vector
-// v ... half-height vector
-struct GridQuad {
-    glm::vec3 p;
-    glm::vec3 u;
-    glm::vec3 v;
-};
-
 struct GridCell {
-    GridQuad Quad;
+    sketch::Quad Quad;
     float Height;
     sketch::Scene* CpuShape;
     sketch::Tessellator* CpuTriangles;
