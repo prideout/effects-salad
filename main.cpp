@@ -158,7 +158,7 @@ static void _constructScene()
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
         Fullscreen::Mask mask = Fullscreen::AmbientOcclusionFlag;
-        //mask |= Fullscreen::SupersampleFlag;
+        mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen = new Fullscreen("SSAO", mask);
         fullscreen->AddChild(new GridCity());
         ctx->drawables.push_back(fullscreen);

@@ -17,11 +17,16 @@ using namespace glm;
 
 static const int TerrainSize = 150;
 static const float TerrainScale = 0.5;
-static const float MinHeight = 7;
-static const float MaxHeight = 10;
+static const float MinHeight = 5;
+static const float MaxHeight = 15;
 static const int NumRows = 10;
-static const int NumCols = 10;
+static const int NumCols = 32;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
+
+// Params: int octaves, float freq, float amp, int seed
+static Perlin HeightNoise(2, .5, 1, 3);
+
+extern vec3 MyTerrainFunc(vec2 v);
 
 GridCity::GridCity()
 {
@@ -29,35 +34,6 @@ GridCity::GridCity()
 
 GridCity::~GridCity()
 {
-}
-
-extern vec3 MyTerrainFunc(vec2 v);
-
-HalfBeat::HalfBeat()
-{
-    _previousBeatTime = 0;
-    _currentBeatInterval = 0;
-    _downBeat = false;
-    _multiplier = 2.0f;
-}
-
-bool HalfBeat::Update(bool beat, float time)
-{
-    if (beat) {
-        _currentBeatInterval = time - _previousBeatTime;
-        _previousBeatTime = time;
-        _downBeat = false;
-        return true;
-    }
-    if (_downBeat) {
-        return false;
-    }
-    float dt = time - _previousBeatTime;
-    if (dt * _multiplier > _currentBeatInterval) {
-        _downBeat = true;
-        return true;
-    }
-    return false;
 }
 
 vec2 GridCity::_CellSample(int row, int col)
@@ -98,10 +74,11 @@ void GridCity::Init()
             vec2 p = (p1 + p2) / 2.0f;
             vec2 u = CellScale.x * (e - p);
             vec2 v = CellScale.y * (s - p);
+            float h = std::max(0.0f, HeightNoise.Get(p.x,p.y) + 0.5f);
             cell.Quad.p = vec3(p.x, 0, p.y);
             cell.Quad.u = vec3(u.x, 0, u.y);
             cell.Quad.v = vec3(v.x, 0, v.y);
-            cell.Height = MinHeight;
+            cell.Height = MinHeight + h * (MaxHeight - MinHeight);
             _cells.push_back(cell);
         }
     }

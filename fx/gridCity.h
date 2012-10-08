@@ -5,6 +5,7 @@
 #include "common/sketchScene.h"
 #include "common/vao.h"
 #include "common/camera.h"
+#include "common/halfBeat.h"
 #include "glm/glm.hpp"
 
 // Orientable rectangle in 3-space define by a point and two vectors:
@@ -28,15 +29,6 @@ struct GridCell {
  };
 
 typedef std::vector<GridCell> GridCells;
-
-struct HalfBeat {
-    HalfBeat();
-    bool Update(bool beat, float time);
-    float _previousBeatTime;
-    float _currentBeatInterval;
-    bool _downBeat;
-    float _multiplier;
-};
 
 class GridCity : public Effect {
 public:
