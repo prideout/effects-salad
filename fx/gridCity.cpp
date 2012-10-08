@@ -84,12 +84,19 @@ void GridCity::Init()
     }
 
     // "Unfloat" the quads
+    FOR_EACH(i, _cells) {
+        GridCell& cell = *i;
+        cell.Visible = true;
+        vec2 p = vec2(cell.Quad.p.x, cell.Quad.p.z);
+        vec2 coord = p / float(TerrainSize);
+        vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
+        cell.Quad.p.y = MyTerrainFunc(domain).y;
+    }
 
     // Seed the sketch objects
     FOR_EACH(i, _cells) {
         GridCell& cell = *i;
         _AllocCell(&cell);
-        cell.Visible = true;
         cell.CpuTriangles->PullFromScene();
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
         _FreeCell(&cell);
@@ -111,7 +118,8 @@ void GridCity::_AllocCell(GridCell* cell)
 {
     sketch::Scene* shape = new sketch::Scene;
     cell->Roof = shape->AddQuad(cell->Quad);
-    shape->PushPath(cell->Roof, cell->Height);
+    float flip = cell->Quad.p.y < 0 ? -1.0f : 1.0f;
+    shape->PushPath(cell->Roof, flip * cell->Height);
     cell->CpuShape = shape;
     cell->CpuTriangles = new sketch::Tessellator(*shape);
 }

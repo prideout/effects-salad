@@ -40,7 +40,7 @@ CoplanarPath*
 Scene::AddQuad(sketch::Quad q)
 {
     // Compute the plane equation
-    vec3 n = -normalize(cross(q.u, q.v));
+    vec3 n = normalize(cross(q.u, q.v));
     float w = dot(n, q.p);
     vec4 eqn = vec4(n, w);
     const Plane* plane = GetPlane(eqn);
