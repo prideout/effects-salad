@@ -65,6 +65,8 @@
 
 ["CityIntro", 5.0, "FranticCurve", []],
 
+["GridCity", 30.0, "FranticCurve", []],
+
 ["CityExplosion", 10.0, "FranticCurve", []],
 
 ["prideout_credits", 6.0, "NuthinDoin", []]

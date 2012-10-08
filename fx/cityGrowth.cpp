@@ -56,7 +56,7 @@ CityGrowth::~CityGrowth()
     }
 }
 
-Perlin noise(2, .1, 2, 0);
+static Perlin noise(2, .1, 2, 0);
 
 vec3
 MyTerrainFunc(vec2 v)
@@ -390,12 +390,6 @@ void CityGrowth::Init()
     _currentBuildingIndex = 0;
     _state = ENTER;
     _UpdateFlight(0);
-}
-
-static void
-_finalize(sketch::Scene* shape, AnimElement anim)
-{
-    shape->SetPathPlane(anim.Path, anim.EndW);
 }
 
 void CityGrowth::_UpdateDetail(float elapsedTime)

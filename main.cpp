@@ -153,6 +153,17 @@ static void _constructScene()
         ctx->drawables.push_back(fullscreen);
     }
 
+    {   // Grid City
+        DemoContext* ctx = DemoContext::New("GridCity");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+        Fullscreen::Mask mask = Fullscreen::AmbientOcclusionFlag;
+        //mask |= Fullscreen::SupersampleFlag;
+        Fullscreen* fullscreen = new Fullscreen("SSAO", mask);
+        fullscreen->AddChild(new GridCity());
+        ctx->drawables.push_back(fullscreen);
+    }
+
     {   // Test 
         DemoContext* ctx = DemoContext::New("Test");
         DemoContext::SetCurrent(ctx);
