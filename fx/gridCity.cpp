@@ -1,3 +1,8 @@
+// Perturb the *endpoints* in _CellSample
+// Pop 'em in with half beats
+// Ridges on rooves, inset windows
+// Sandstorms
+// Camera work
 
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
@@ -25,6 +30,8 @@ static const vec2 CellScale = vec2(0.9f, 0.7f);
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
+static Perlin PerturbNoiseX(2, .5, 1, 4);
+static Perlin PerturbNoiseY(2, .5, 1, 5);
 
 extern vec3 MyTerrainFunc(vec2 v);
 
@@ -41,6 +48,8 @@ vec2 GridCity::_CellSample(int row, int col)
     float s = TerrainSize;
     float x = float(col) / NumCols;
     float y = float(row) / NumRows;
+    x += PerturbNoiseX.Get(float(row),float(col)) * 0.0;
+    y += PerturbNoiseY.Get(float(row),float(col)) * 0.0;
     return vec2(-s/2 + x*s, -s/2 + y*s);
 }
 
