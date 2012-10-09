@@ -50,7 +50,6 @@ ParticleSystem::Draw()
 
     glDrawArrays(GL_POINTS, 0, _particles.vertexCount);
     pezCheckGL("failed to draw particles");
-
 }
 
 /* virtual */
@@ -138,7 +137,6 @@ ParticleSystem::Update(Particle* part, float age)
     part->pos.y = part->startPos.y - age;
 }
 
-
 void
 ParticleSystem::Reset()
 {
@@ -150,7 +148,6 @@ ParticleSystem::Reset()
         (*pIt)->bornOn = -9999;
     }
 }
-
 
 void
 ParticleSystem::Print() 
