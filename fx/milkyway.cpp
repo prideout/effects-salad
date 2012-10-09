@@ -62,6 +62,8 @@ void Milkyway::Draw() {
     // --------------------------------------------------------------------- 
     glUseProgram(progs["FireFlies.Stars"]);
 
+    glUniform1f(u("Time"), GetContext()->elapsedTime);
+
     bool hihat = GetContext()->audio->GetHiHats();
     bool snare = GetContext()->audio->GetSnares();
 

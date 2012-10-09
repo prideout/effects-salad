@@ -449,15 +449,18 @@ uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 
 uniform float SizeMult;
+uniform float Time;
 
 void main()
 {
     vPosition.xyz = Position.xyz;
+    float flux = .5 + .5*sin(1 +20*sin((Position.x*3+Position.y*7+Position.z*13)) + 1*3.14*Time);
+    flux = .4*flux + .6;
     vPosition.w = 1.0;
     gl_Position = Projection * Modelview * vPosition;
     vPosition = ModelMatrix * vPosition;
     gl_PointSize = SizeMult * Position.w;
-    vBrightness = .1 + Position.w / 2.2;
+    vBrightness = flux * (.1 + Position.w / 2.2);
     vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
 }
 
