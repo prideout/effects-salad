@@ -36,7 +36,7 @@ cowles queue
  - ~~make grass blow in the wind~~ (done for now, need to revisit)
  - ~~make leaves fall and float in wind~~
  - ~~split GrassIntro into 3 shots~~
- - make fireflies blink
+ - ~~make fireflies blink~~
  - growth camera work
  - leaf keep-alive movement
  - move fireflies to music or flocking
