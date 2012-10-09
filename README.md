@@ -17,7 +17,7 @@ rideout queue
  - ~~add viewing angle to the hand-coded "script" to prevent blocked views~~
  - ~~add building details: inset windows, antenna, roof extensions~~
  - ~~SSAO~~
- - Perturb rows in GridCity
+ - ~~Perturb rows in GridCity~~
  - Pop in buildings in GridCity from center out (tendrils?) -- use hihats for fast popping!
  - Detail per the reference image
  - PUNT unify the two cities in some way
