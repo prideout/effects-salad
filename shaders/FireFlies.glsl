@@ -354,7 +354,7 @@ void main()
     float amt = .5* (1.0 + snoise(50*vec2(vPosition.x + vPosition.z +t, .5)));
     float vis = clamp(amt, 0.0, 1.0);
     float dist = length(Eye - vPosition.xyz);
-    float att = min(1.0, 1.0 / (dist*dist*.001));
+    float att = min(1.0, 1.0 / (dist*dist*.0005));
     FragColor = vis * att * vec4(.1, .9, .2, 1.0);
     if (FragColor.g < .5)
         discard;
