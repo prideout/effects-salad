@@ -1,4 +1,4 @@
-// Pop 'em in with half beats
+// Start the buildings radially
 // Ridges on rooves, inset windows
 // Sandstorms
 // Camera work
@@ -30,7 +30,6 @@ static const float PopDuration = 1.0f;
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
-static Perlin PerturbNoiseX(2, .5, 1, 4);
 static Perlin PerturbNoiseY(2, .5, 1, 5);
 
 extern vec3 MyTerrainFunc(vec2 v);
@@ -131,11 +130,21 @@ void GridCity::Init()
     }
 
     // Seed the sketch objects
-    int startBeat = 0;
-    FOR_EACH(i, _cells) {
-        GridCell& cell = *i;
-        _AllocCell(&cell);
-        cell.Anim.StartBeat = startBeat++;
+    {
+        int row = 0;
+        int col = 0;
+        FOR_EACH(i, _cells) {
+            GridCell& cell = *i;
+            _AllocCell(&cell);
+            vec2 v = vec2(cell.Quad.p.x, cell.Quad.p.z);
+            float d = length(v);
+            cell.Anim.StartBeat = (int) d;
+            col++;
+            if (col >= NumCols) {
+                col = 0;
+                row++;
+            }
+        }
     }
 
     // Compile shaders
