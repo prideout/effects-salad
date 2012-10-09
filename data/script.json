@@ -55,9 +55,7 @@
 
 [
 
-["GrassIntro", 17.0, "GrassIntroCurve", [
-    ["Moon Pond Grass", 0,   {"RippleHeight": 3.2, "LunarBrightness": 1.1}],
-    ["Fireflies",       0.1, {"SpriteSize": 1.1}]]],
+["GrassIntro", 17.0, "GrassIntroCurve", []],
 
 ["CityGrow", 30.0, "NuthinDoin", []],
 
@@ -70,6 +68,8 @@
 ["GridCity", 30.0, "FranticCurve", []],
 
 ["CityExplosion", 10.0, "FranticCurve", []],
+
+["GrassTreeBloom", 30.0, "NuthinDoin", []],
 
 ["prideout_credits", 6.0, "NuthinDoin", []]
 
