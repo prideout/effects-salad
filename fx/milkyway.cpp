@@ -57,6 +57,8 @@ void Milkyway::Draw() {
 
     PerspCamera& cam = GetContext()->mainCam;
 
+    glm::mat4 loc;
+
     // --------------------------------------------------------------------- 
     // Stars 
     // --------------------------------------------------------------------- 
@@ -72,7 +74,11 @@ void Milkyway::Draw() {
     else
         glUniform1f(u("SizeMult"), 1.0);
 
-    cam.Bind(glm::mat4());
+    // 
+    // Move stars down just a bit to hide the seam where they stop spawning
+    //
+    loc = glm::translate(glm::mat4(), glm::vec3(0.0f, -.75f, 0.0f));
+    cam.Bind(loc);
     if (snare)
         glPointSize(5.5);
     else if (hihat)
@@ -96,7 +102,6 @@ void Milkyway::Draw() {
     // draw the sky in clip coordinates
     // but the eye and center values of the camera are used
     // to position the sky backdrop
-    glm::mat4 loc;
     vec3 dir = glm::normalize(cam.center - cam.eye);
     float azimuth = -atan2(dir.x, dir.z) / (3.1415); 
     float altitude = atan2(dir.y, dir.z) / (3.1415); 
