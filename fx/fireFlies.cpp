@@ -60,6 +60,7 @@ void FireFlies::Draw() {
         glUniform1f(u("SizeMult"), 1.0);
 
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
+    glUniform1f(u("Time"), GetContext()->elapsedTime);
 
 
     if (kick)
