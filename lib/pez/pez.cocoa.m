@@ -113,8 +113,8 @@ static int _PezDesktopHeight;
 
         m_didInit = YES;
         
-        //[[self window] setLevel: NSFloatingWindowLevel];
-        //[[self window] makeKeyAndOrderFront: self];
+        [[self window] setLevel: NSFloatingWindowLevel];
+        [[self window] makeKeyAndOrderFront: self];
         [[self window] setTitle: [NSString stringWithUTF8String: bdata(windowTitle)]];
     }
 
@@ -215,9 +215,8 @@ int main(int argc, const char *argv[])
 
     NSRect viewBounds = NSMakeRect(0, 0, PezGetConfig().Width, PezGetConfig().Height);
     
-    #if 0
     View* view = [[View alloc] initWithFrame:viewBounds];
-
+    
     NSRect centered = NSMakeRect(NSMidX(screenBounds) - NSMidX(viewBounds),
                                  NSMidY(screenBounds) - NSMidY(viewBounds),
                                  viewBounds.size.width, viewBounds.size.height);
@@ -227,20 +226,10 @@ int main(int argc, const char *argv[])
         styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask
         backing:NSBackingStoreBuffered
         defer:NO];
-    
-    #else
-    NSRect mainDisplayRect = [[NSScreen mainScreen] frame];
-    NSWindow *window= [[NSWindow alloc] initWithContentRect: mainDisplayRect styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:YES];
-    NSRect viewRect = NSMakeRect(0.0, 0.0, mainDisplayRect.size.width, mainDisplayRect.size.height);
-    View* view = [[View alloc] initWithFrame:viewRect];
-    #endif
-
-    [window setLevel:NSMainMenuWindowLevel+1];
 
     [window setContentView:view];
     [window setDelegate:view];
-    //[window makeKeyAndOrderFront:nil];
-    [window makeKeyAndOrderFront:view];
+    [window makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
 
     [view release];
