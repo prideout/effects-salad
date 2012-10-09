@@ -85,6 +85,10 @@ public:
     virtual void Spawn(Particle* part);
     virtual void Update(Particle* part, float age);
 
+    // used to reset particles after a discontinuity in time, say if the shot
+    // restarts
+    void Reset();
+
     static void Test();
 
     // for debugging only

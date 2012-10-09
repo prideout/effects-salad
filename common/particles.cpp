@@ -60,6 +60,14 @@ ParticleSystem::Update()
     float now = GetContext()->elapsedTime;
 
     //
+    // check for discontinuouities
+    //
+    if (now < lastSpawned) {
+        lastSpawned = now;
+        Reset();
+    }
+
+    //
     // Update all the living particles
     //
     for (unsigned i = 0; i < particles.size(); i++) {
@@ -128,6 +136,20 @@ ParticleSystem::Update(Particle* part, float age)
     // living properties
     part->pos.x = part->startPos.x + age;
     part->pos.y = part->startPos.y - age;
+}
+
+
+void
+ParticleSystem::Reset()
+{
+    std::cout << "RESET!\n";
+    FOR_EACH(pIt, particles) {
+        if (not (*pIt)->alive)
+            continue;
+
+        (*pIt)->ttl = 0;
+        (*pIt)->bornOn = -9999;
+    }
 }
 
 
