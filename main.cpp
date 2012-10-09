@@ -315,7 +315,7 @@ PezConfig PezGetConfig()
     config.Height = pezGetDesktopHeight();
     config.Width = pezGetDesktopWidth();
 
-    config.Multisampling = true;
+    config.Multisampling = false;
     config.VerticalSync = true;
     return config;
 }
