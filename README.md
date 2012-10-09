@@ -46,6 +46,8 @@ cowles queue
  - tree bark shading
  - horizontal vine effect / floral flourish
  - credits
+ - linux & mac fullscreen mode switch
+ - statically link SDL & SDL_mixer
 
 
 effects-salad
