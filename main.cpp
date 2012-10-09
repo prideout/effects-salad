@@ -73,6 +73,17 @@ static void _constructScene()
         ctx->drawables.push_back(new FpsOverlay());
     }
 
+    {   // Grass Tree Bloom
+        DemoContext* ctx = DemoContext::New("GrassTreeBloom");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
+        ctx->mainCam.eye.z = 5;
+        GrassTreeGrow* grass = new GrassTreeGrow;
+        grass->_ground = ground;
+        ctx->drawables.push_back(grass);
+        ctx->drawables.push_back(new FpsOverlay());
+    }
 
     {   // City Intro
         DemoContext* ctx = DemoContext::New("CityIntro");
