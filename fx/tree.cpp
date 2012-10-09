@@ -80,7 +80,8 @@ void Tree::Init()
 
         int maxLevel = 6;
         float startTime = 9.0;
-        float growTime = 12.0 - startTime;
+        float growTime = 15.0;
+        //float growTime = 30.0 - startTime;
         if (grown) {
             startTime = -1;
             growTime = 0;
@@ -122,14 +123,14 @@ void Tree::Init()
                 // start time
                 leafData.push_back( startTime
                                 + (.1 - (float(rand()) / float(RAND_MAX))*.1) 
-                                + (growTime / maxLevel) 
+                                + (.1 + growTime / maxLevel) 
                                 * (maxLevel 
                                     - branch->levels 
                                     - ((branch->levels > 0) ? .8 : 0)
                                     + 3*branch->parentPercent)
                                 );
                 // grow time
-                leafData.push_back(3*(growTime / maxLevel) * (branch->levels));
+                leafData.push_back(2*(growTime / maxLevel) * (branch->levels));
                 // color variation
                 leafData.push_back(branch->parentPercent);
 
