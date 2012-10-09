@@ -142,7 +142,6 @@ ParticleSystem::Update(Particle* part, float age)
 void
 ParticleSystem::Reset()
 {
-    std::cout << "RESET!\n";
     FOR_EACH(pIt, particles) {
         if (not (*pIt)->alive)
             continue;

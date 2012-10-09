@@ -97,7 +97,8 @@ void main()
     // adjust the noise scale
     u *= 1;
 
-    FragColor = vec4(.0, .0, .2*snoise(vec2(u, Altitude+vUvCoord.y)), 1.0);
+    FragColor = vec4(.0, .0, .2*snoise(vec2(u, vUvCoord.y)), 1.0);
+    //FragColor = vec4(.0, .0, .2*snoise(vec2(u, Altitude+vUvCoord.y)), 1.0);
 }
 
 -- Sky.GS
