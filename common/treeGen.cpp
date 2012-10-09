@@ -122,7 +122,7 @@ TreeSystem::GrowBranch() {
             child->norm = GetAxis(Lerp(chAngle.x, chAngle.y, float(rand())/RAND_MAX), 
                                   Lerp(0.0f, 2.0f*PI, float(rand())/RAND_MAX));
 
-            child->width = Lerp(curWidth, nextWidth, a);
+            child->width = .8 * Lerp(curWidth, nextWidth, a);
 
             child->level = child->levels = branch->level - 1;
 
