@@ -2,18 +2,67 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "noise/perlin.h"
+
 #include "common/camera.h"
 #include "common/demoContext.h"
 #include "common/programs.h"
 #include "common/typedefs.h"
 
-void Tree::Init() {
+void 
+Tree::Spawn(Particle* part)
+{
+    int idx = (part->id * 74792) % _leafPoints.size();
+    assert(idx < _leafPoints.size());
+    part->pos = _leafPoints[idx];
+
+    //part->pos -= off;
+    
+    part->startPos = part->pos;
+
+    part->ttl = 3.0;
+
+}
+
+void
+Tree::Update(Particle* part, float age)
+{
+    static Perlin noise(2,      /* octaves */ 
+                        .1,     /* freq */
+                        .02,    /* amp */ 
+                        0       /* seed */
+                        );
+
+    glm::vec3 rndOff(
+                    .5 - (float(rand()) / RAND_MAX),
+                    .5 - (float(rand()) / RAND_MAX),
+                    .5 - (float(rand()) / RAND_MAX)
+                );
+
+    float off = noise.Get(part->pos.x, part->pos.y);
+    part->pos.x += 2*off;
+    part->pos.y = off + part->startPos.y - age;
+    part->pos.z += 2*off;
+
+    part->pos += .05f*rndOff;
+
+}
+
+void Tree::Init() 
+{
     name = "Tree";
     Effect::Init();
 
     Programs& progs = Programs::GetInstance();
     progs.Load("FireFlies.Tree", "FireFlies.Tree.FS", "FireFlies.Tube.VS");
     progs.Load("FireFlies.Blossom", "FireFlies.Blossom.FS", "FireFlies.Blossom.VS");
+    progs.Load("FireFlies.FallingLeafsTmp");
+
+    // leaf particle system
+    _leafParticles.numParticles = 1000;
+    _leafParticles.spawnPerSec = 10.0;
+    _leafParticles.controller = this;
+    _leafParticles.Init();
 
     BranchDef* trunk = new BranchDef();
     trunk->isTrunk = true;
@@ -32,6 +81,10 @@ void Tree::Init() {
         int maxLevel = 6;
         float startTime = 9.0;
         float growTime = 12.0 - startTime;
+        if (grown) {
+            startTime = -1;
+            growTime = 0;
+        }
 
         //std::cout << "Branch: " << branch->name << std::endl;;
         if (not branch->isLeaf) {
@@ -64,6 +117,7 @@ void Tree::Init() {
             tube->Init();
         } else {
             for (int leaf_i = 0; leaf_i < leafCount; leaf_i++) {
+                _leafPoints.push_back(branch->cvs[0]);
                 // make a leaf instead
                 // start time
                 leafData.push_back( startTime
@@ -134,14 +188,17 @@ void Tree::Init() {
     _leafNormals.Init(leafNormals);
 }
 
-void Tree::Update() {
+void Tree::Update() 
+{
     Effect::Update();
     FOR_EACH(tube, _branches) {
         (*tube)->Update();
     }
+    _leafParticles.Update();
 }
 
-void Tree::Draw() {
+void Tree::Draw() 
+{
     Effect::Draw();
 
     Programs& progs = Programs::GetInstance();
@@ -165,6 +222,7 @@ void Tree::Draw() {
     glUniform3f(u("MaterialColor"), 0.8, 0.1, 0.1);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
     cam.Bind(xf);
+  
     _leaves.Bind();
     _leafData.Bind(0, "LeafData");
     _leafNormals.Bind(1, "LeafNormals");
@@ -172,8 +230,30 @@ void Tree::Draw() {
     //glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glDrawArrays(GL_TRIANGLES, 0, _leaves.vertexCount);
-    //glEnable(GL_CULL_FACE);
     glDisable(GL_BLEND);
+
+    FOR_EACH(partIt, _leafParticles.particles) {
+        Particle* part = *partIt;
+        if (not part->alive)
+            continue;
+
+        glm::mat4 xfl = glm::translate(xf, part->pos - part->startPos);
+
+        cam.Bind(xfl);
+        int idx = (part->id * 74792) % _leafPoints.size();
+        glDrawArrays(GL_TRIANGLES, idx*6, 6*3);
+    }
+ 
+    //glEnable(GL_CULL_FACE);
+
+    //
+    // Draw leaf particles for debugging
+    //
+    //glUseProgram(progs["FireFlies.FallingLeafsTmp"]);
+    //glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
+    //cam.Bind(xf);
+    //_leafParticles.Draw();
+
 
     //PerspCamera cam = GetContext()->mainCam;
     //cam.Bind(glm::mat4());

@@ -19,6 +19,7 @@ struct Particle {
         ,ttl(0) 
         ,bornOn(0)
         ,alive(false)
+        ,id(0)
     {
     }
 
@@ -28,6 +29,13 @@ struct Particle {
     float ttl;
     float bornOn;
     bool alive;
+    int id;
+};
+
+class ParticleController {
+public:
+    virtual void Spawn(Particle* part) = 0;
+    virtual void Update(Particle* part, float age) = 0;
 };
 
 
@@ -50,10 +58,13 @@ public:
     vector<Particle*> particles;
     vector<size_t> deadList;
 
+    ParticleController* controller;
+
     ParticleSystem() : Drawable()
         ,numParticles(0)
         ,spawnPerSec(0) 
-        ,lastSpawned(0) 
+        ,lastSpawned(0)
+        ,controller(NULL)
     {
     }
     
