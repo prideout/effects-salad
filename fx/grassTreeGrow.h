@@ -28,9 +28,12 @@ class GrassTreeGrow : public Effect {
     Tree _tree;
 
 public:
+
+    bool bloomMode;
+
     Ground* _ground;
 
-    GrassTreeGrow() : Effect() {}
+    GrassTreeGrow() : Effect(), bloomMode(false) {}
     virtual ~GrassTreeGrow() {} 
    
     virtual void Init();

@@ -14,6 +14,7 @@ ParticleSystem::Init()
         Particle* p = new Particle;
         //p->bornOn = now;
         p->alive = false;
+        p->id = i;
         //Spawn(p);
         deadList.push_back(i);
         particles.push_back(p);
@@ -97,14 +98,18 @@ ParticleSystem::Update()
 void
 ParticleSystem::Spawn(Particle* part) 
 {
+    if (controller != NULL) {
+        controller->Spawn(part);
+        return;
+    }
     // alive and bornOn are automatic, since they
     // are unlikely to be interesting to set here
     part->pos.x = -3;
-    part->pos.y =  5;
+    part->pos.y =  2;
     part->pos.z =  4;
 
     part->startPos.x = -3;
-    part->startPos.y =  5;
+    part->startPos.y =  2;
     part->startPos.z =  4;
 
     part->ttl = 3.0;
@@ -114,6 +119,11 @@ ParticleSystem::Spawn(Particle* part)
 void
 ParticleSystem::Update(Particle* part, float age) 
 {
+    if (controller != NULL) {
+        controller->Update(part, age);
+        return;
+    }
+
     // no need to kill particles here, just update their
     // living properties
     part->pos.x = part->startPos.x + age;

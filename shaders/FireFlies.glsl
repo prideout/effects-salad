@@ -114,6 +114,26 @@ void main()
     FragColor = vec4(occFactor*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 }
 
+-- Ground.VS
+layout(location = 0) in vec4 Position;
+layout(location = 1) in vec4 Normal;
+//layout(location = 2) in vec2 UvCoord;
+
+out vec4 vPosition;
+out vec3 vNormal;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat4 ViewMatrix;
+uniform mat4 ModelMatrix;
+void main()
+{
+    vPosition = Position;
+    gl_Position = Projection * Modelview * vPosition;
+    vPosition = ModelMatrix * vPosition;
+    vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
+}
+
 -- Stars.FS
 
 in vec4 vPosition;
@@ -270,6 +290,50 @@ float snoise(vec2 v)
 }
 // --------------------- ( END NOISE LIB CODE ) --------------------------------
 
+-- FallingLeafsTmp.FS
+
+in vec4 vPosition;
+in float vBrightness;
+
+out vec4 FragColor;
+
+uniform vec3 Eye;
+
+void main()
+{
+    //float s = vUvCoord.x + vUvCoord.y;
+    float dist = length(Eye - vPosition.xyz);
+    FragColor = min(1.0, 1.0 / (dist*dist*.001)) * vec4(.8, .2, .2, 1.0);
+}
+
+
+-- FallingLeafsTmp.VS
+layout(location = 0) in vec4 Position;
+layout(location = 1) in vec4 Normal;
+//layout(location = 2) in vec2 UvCoord;
+
+out vec4 vPosition;
+out vec3 vNormal;
+out float vBrightness;
+
+uniform mat4 Projection;
+uniform mat4 Modelview;
+uniform mat4 ViewMatrix;
+uniform mat4 ModelMatrix;
+
+uniform float SizeMult;
+
+void main()
+{
+    vPosition.xyz = Position.xyz;
+    vPosition.w = 1.0;
+    gl_Position = Projection * Modelview * vPosition;
+    vPosition = ModelMatrix * vPosition;
+    gl_PointSize = 2.5; ///SizeMult * Position.w;
+    vBrightness = .1 + Position.w / 2.2;
+    vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
+}
+
 
 -- Flies.FS
 
@@ -287,25 +351,6 @@ void main()
     FragColor = min(1.0, 1.0 / (dist*dist*.001)) * vec4(.1, .9, .2, 1.0);
 }
 
--- Ground.VS
-layout(location = 0) in vec4 Position;
-layout(location = 1) in vec4 Normal;
-//layout(location = 2) in vec2 UvCoord;
-
-out vec4 vPosition;
-out vec3 vNormal;
-
-uniform mat4 Projection;
-uniform mat4 Modelview;
-uniform mat4 ViewMatrix;
-uniform mat4 ModelMatrix;
-void main()
-{
-    vPosition = Position;
-    gl_Position = Projection * Modelview * vPosition;
-    vPosition = ModelMatrix * vPosition;
-    vNormal = mat3(ModelMatrix) * normalize(Normal.xyz);
-}
 
 -- Flies.VS
 layout(location = 0) in vec4 Position;
