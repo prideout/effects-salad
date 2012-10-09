@@ -242,7 +242,8 @@ void Tree::Draw()
 
         cam.Bind(xfl);
         int idx = (part->id * 74792) % _leafPoints.size();
-        glDrawArrays(GL_TRIANGLES, idx*6, 6*3);
+
+        glDrawArrays(GL_TRIANGLES, idx*6, 6);
     }
  
     //glEnable(GL_CULL_FACE);
