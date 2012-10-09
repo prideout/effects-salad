@@ -1,4 +1,3 @@
-// Perturb the *endpoints* in _CellSample
 // Pop 'em in with half beats
 // Ridges on rooves, inset windows
 // Sandstorms
@@ -24,7 +23,7 @@ static const int TerrainSize = 150;
 static const float TerrainScale = 0.5;
 static const float MinHeight = 5;
 static const float MaxHeight = 15;
-static const int NumRows = 10;
+static const int NumRows = 12;
 static const int NumCols = 32;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 
@@ -43,14 +42,22 @@ GridCity::~GridCity()
 {
 }
 
+// Perturb the endpoints of each horizontal line
 vec2 GridCity::_CellSample(int row, int col)
 {
     float s = TerrainSize;
     float x = float(col) / NumCols;
     float y = float(row) / NumRows;
-    x += PerturbNoiseX.Get(float(row),float(col)) * 0.0;
-    y += PerturbNoiseY.Get(float(row),float(col)) * 0.0;
-    return vec2(-s/2 + x*s, -s/2 + y*s);
+    if (col < 1 || col == NumCols-1) {
+        y += PerturbNoiseY.Get(float(row),float(col)) * 0.15;
+        return vec2(-s/2 + x*s, -s/2 + y*s);
+    }
+
+    vec2 a = _CellSample(row, 0);
+    vec2 b = _CellSample(row, NumCols-1);
+    vec2 p = mix(a, b, x);
+
+    return vec2(-s/2 + x*s, p.y);
 }
 
 void GridCity::Init()
