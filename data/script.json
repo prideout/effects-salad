@@ -65,11 +65,11 @@
 
 ["CityDetail", 30.0, "NuthinDoin", []],
 
+["GrassTreeBloom", 30.0, "NuthinDoin", []],
+
 ["CityIntro", 5.0, "FranticCurve", []],
 
 ["CityExplosion", 10.0, "FranticCurve", []],
-
-["GrassTreeBloom", 30.0, "NuthinDoin", []],
 
 ["prideout_credits", 6.0, "NuthinDoin", []]
 
