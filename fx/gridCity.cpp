@@ -26,6 +26,7 @@ static const float MaxHeight = 15;
 static const int NumRows = 12;
 static const int NumCols = 32;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
+static const float PopDuration = 1.0f;
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
@@ -36,10 +37,15 @@ extern vec3 MyTerrainFunc(vec2 v);
 
 GridCity::GridCity()
 {
+    _currentBeat = 0;
 }
 
 GridCity::~GridCity()
 {
+    FOR_EACH(i, _cells) {
+        GridCell& cell = *i;
+        _FreeCell(&cell);
+    }
 }
 
 // Perturb the endpoints of each horizontal line
@@ -99,7 +105,7 @@ void GridCity::Init()
         }
     }
 
-    // "Unfloat" the quads
+    // "Unfloat" the quads and orient them onto the terrain
     FOR_EACH(i, _cells) {
         GridCell& cell = *i;
         cell.Visible = true;
@@ -125,12 +131,11 @@ void GridCity::Init()
     }
 
     // Seed the sketch objects
+    int startBeat = 0;
     FOR_EACH(i, _cells) {
         GridCell& cell = *i;
         _AllocCell(&cell);
-        cell.CpuTriangles->PullFromScene();
-        cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
-        _FreeCell(&cell);
+        cell.Anim.StartBeat = startBeat++;
     }
 
     // Compile shaders
@@ -151,9 +156,18 @@ void GridCity::_AllocCell(GridCell* cell)
     cell->Roof = shape->AddQuad(cell->Quad);
     vec3 n = cell->Roof->Plane->GetNormal();
     float flip = dot(n, vec3(0, 1, 0)) < 0 ? -1 : 1;
+    cell->Anim.BeginW = cell->Roof->Plane->Eqn.w;
     shape->PushPath(cell->Roof, flip * cell->Height);
+    cell->Anim.EndW = cell->Roof->Plane->Eqn.w;
+    cell->Anim.StartTime = 0;
     cell->CpuShape = shape;
     cell->CpuTriangles = new sketch::Tessellator(*shape);
+    cell->CpuTriangles->PullFromScene();
+    cell->CpuTriangles->PushToGpu(cell->GpuTriangles);
+    shape->SetPathPlane(cell->Roof, cell->Anim.BeginW);
+    cell->CpuTriangles->PullFromScene();
+    cell->CpuTriangles->PushToGpu(cell->GpuTriangles);
+    cell->Visible = false;
 }
 
 void GridCity::_FreeCell(GridCell* cell)
@@ -166,10 +180,44 @@ void GridCity::_FreeCell(GridCell* cell)
 
 void GridCity::Update()
 {
-    bool beat = GetContext()->audio->GetKicks() ||
-        GetContext()->audio->GetSnares();
-    bool halfBeat = _beats.Update(beat, 2.0f);
-    if (halfBeat) {
+    float time = GetContext()->elapsedTime;
+    if (GetContext()->audio->GetHiHats()) {
+        _currentBeat++;
+    }
+
+    tween::Elastic tweener;
+    FOR_EACH(i, _cells) {
+        GridCell& cell = *i;
+        if (!cell.CpuTriangles) {
+            continue;
+        }
+        if (cell.Anim.StartTime == 0) {
+            // Check if the building hasn't been born yet:
+            if (cell.Anim.StartBeat > _currentBeat) {
+                cell.Visible = false;
+                continue;
+            }
+            // At this point we're starting a new pop animation
+            cell.Anim.StartTime = time;
+            cell.Visible = true;
+        }
+        if (time > cell.Anim.StartTime + PopDuration) {
+            // At this point we're ending a pop animation
+            cell.CpuShape->SetPathPlane(cell.Roof, cell.Anim.EndW);
+            cell.CpuTriangles->PullFromScene();
+            cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
+            _FreeCell(&cell);
+            continue;
+        }
+        // Update an in-progress animation
+        float w = tweener.easeOut(
+            time - cell.Anim.StartTime,
+            cell.Anim.BeginW,
+            cell.Anim.EndW - cell.Anim.BeginW,
+            PopDuration);
+        cell.CpuShape->SetPathPlane(cell.Roof, w);
+        cell.CpuTriangles->PullFromScene();
+        cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }
 }
 

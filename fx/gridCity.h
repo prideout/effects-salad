@@ -8,12 +8,20 @@
 #include "common/halfBeat.h"
 #include "glm/glm.hpp"
 
+struct GridAnim {
+    float BeginW;
+    float EndW;
+    float StartTime;
+    int StartBeat;
+};
+
 struct GridCell {
     sketch::Quad Quad;
     float Height;
     sketch::Scene* CpuShape;
     sketch::Tessellator* CpuTriangles;
     sketch::CoplanarPath* Roof;
+    GridAnim Anim;
     Vao GpuTriangles;
     bool Visible;
  };
@@ -35,4 +43,5 @@ private:
     GridCells _cells;
     Vao _terrainVao;
     PerspCamera _camera;
+    int _currentBeat;
 };
