@@ -14,7 +14,15 @@ GetAxis(float theta, float phi) {
 
 void
 TreeSystem::GrowAll() { 
-    srand(2);
+    //
+    // Unstable random numbers, yuck. Attempt to make each platform look good
+    // 
+    #if __APPLE__
+        srand(5);
+    #else
+        srand(2);
+    #endif
+
     // could easily multi-thread this if it becomes a bottleneck
     while(queue.size()) {
         GrowBranch();
