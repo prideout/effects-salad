@@ -19,20 +19,36 @@
 using namespace std;
 using namespace glm;
 
-static const int TerrainSize = 150;
+static const int TerrainRes = 300;
+static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
 static const float MinHeight = 5;
 static const float MaxHeight = 15;
-static const int NumRows = 12;
-static const int NumCols = 32;
+static const int NumRows = 24;
+static const int NumCols = 64;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
 static Perlin PerturbNoiseY(2, .5, 1, 5);
+static Perlin TerrainNoise(2, .1, 2, 0);
 
-extern vec3 MyTerrainFunc(vec2 v);
+static vec3
+GridTerrainFunc(vec2 v)
+{
+    float tx = v.x * TerrainScale;
+    float tz = v.y * TerrainScale;
+    float y = TerrainNoise.Get(tx, tz) + 20.0 * TerrainNoise.Get(tx/5.0, tz/5.0);
+    vec3 p = vec3(v.x, y, v.y);
+
+    float s = TerrainArea;
+    p.x *= (s / TerrainRes);
+    p.z *= (s / TerrainRes);
+    p += vec3(-s/2.0, 0, -s/2.0);
+
+    return p;
+}
 
 GridCity::GridCity()
 {
@@ -50,11 +66,11 @@ GridCity::~GridCity()
 // Perturb the endpoints of each horizontal line
 vec2 GridCity::_CellSample(int row, int col)
 {
-    float s = TerrainSize;
+    float s = TerrainArea;
     float x = float(col) / NumCols;
     float y = float(row) / NumRows;
     if (col < 1 || col == NumCols-1) {
-        y += PerturbNoiseY.Get(float(row),float(col)) * 0.15;
+        y += PerturbNoiseY.Get(float(row),float(col)) * 0.05;
         return vec2(-s/2 + x*s, -s/2 + y*s);
     }
 
@@ -72,7 +88,7 @@ void GridCity::Init()
     FloatList normals;
     IndexList indices;
     TerrainUtil::Smooth(
-        TerrainSize, MyTerrainFunc,
+        TerrainRes, GridTerrainFunc,
         &ground, &normals, &indices);
     _terrainVao = Vao(3, ground, indices);
     _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
@@ -111,21 +127,21 @@ void GridCity::Init()
 
         vec3 p0 = cell.Quad.p;
         vec2 p = vec2(p0.x, p0.z);
-        vec2 coord = p / float(TerrainSize);
-        vec2 domain = (coord + vec2(0.5)) * float(TerrainSize);
-        cell.Quad.p.y = MyTerrainFunc(domain).y;
+        vec2 coord = p / float(TerrainArea);
+        vec2 domain = (coord + vec2(0.5)) * float(TerrainArea);
+        cell.Quad.p.y = GridTerrainFunc(domain).y;
 
         vec3 p1 = cell.Quad.p + cell.Quad.u;
         p = vec2(p1.x, p1.z);
-        coord = p / float(TerrainSize);
-        domain = (coord + vec2(0.5)) * float(TerrainSize);
-        p1.y = MyTerrainFunc(domain).y;
+        coord = p / float(TerrainArea);
+        domain = (coord + vec2(0.5)) * float(TerrainArea);
+        p1.y = GridTerrainFunc(domain).y;
         cell.Quad.u = length(cell.Quad.u) * normalize(p1 - cell.Quad.p);
 
         vec3 p2 = cell.Quad.p + cell.Quad.v;
         p = vec2(p1.x, p1.z);
-        coord = p / float(TerrainSize);
-        domain = (coord + vec2(0.5)) * float(TerrainSize);
+        coord = p / float(TerrainArea);
+        domain = (coord + vec2(0.5)) * float(TerrainArea);
         cell.Quad.v = length(cell.Quad.v) * normalize(p2 - cell.Quad.p);
     }
 
@@ -137,7 +153,7 @@ void GridCity::Init()
             GridCell& cell = *i;
             _AllocCell(&cell);
             vec2 v = vec2(cell.Quad.p.x, cell.Quad.p.z);
-            float d = length(v);
+            float d = length(v) / 2.0;
             cell.Anim.StartBeat = (int) d;
             col++;
             if (col >= NumCols) {
@@ -155,8 +171,8 @@ void GridCity::Init()
     // Set up camera
     _camera.far = 1000;
     _camera.up = vec3(0, 1, 0);
-    _camera.center = vec3(0, 0, 0);;
-    _camera.eye = vec3(0, 200, 20);
+    _camera.center = vec3(0, 0, 0);
+    _camera.eye = vec3(0, 300, 20);
 }
 
 void GridCity::_AllocCell(GridCell* cell)

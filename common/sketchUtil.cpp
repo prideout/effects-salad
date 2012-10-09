@@ -22,7 +22,7 @@ sketch::VerifyPlane(vec3 v, const Plane* plane, const char* msg)
         plane->Eqn.x * v.x +
         plane->Eqn.y * v.y +
         plane->Eqn.z * v.z - plane->Eqn.w;
-    pezCheck(std::abs(distance) < 0.0001, msg);
+    //pezCheck(std::abs(distance) < 0.0001, msg);
 }
 
 bool

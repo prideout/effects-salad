@@ -119,8 +119,6 @@ TerrainUtil::Smooth(int SIZE,
             vec3 dv = p2 - p;
             vec3 n = normalize(cross(du, dv));
 
-            p += vec3(-SIZE/2.0, 0, -SIZE/2.0);
-
             positions->push_back(p.x);
             positions->push_back(p.y);
             positions->push_back(p.z);
