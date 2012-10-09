@@ -57,7 +57,12 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         GrassIntro* grass = new GrassIntro;
         grass->_ground = ground;
-        ctx->drawables.push_back(grass);
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
+        fs->clearColor = vec4(0.,0.,0.,1);
+        fs->AddChild(grass);
+
+        ctx->drawables.push_back(fs);
+        //ctx->drawables.push_back(grass);
         ctx->drawables.push_back(new FpsOverlay());
     }
 
@@ -69,7 +74,13 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         GrassTreeGrow* grass = new GrassTreeGrow;
         grass->_ground = ground;
-        ctx->drawables.push_back(grass);
+
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
+        fs->clearColor = vec4(0.,0.,0.,1);
+        fs->AddChild(grass);
+
+        ctx->drawables.push_back(fs);
+        //ctx->drawables.push_back(grass);
         ctx->drawables.push_back(new FpsOverlay());
     }
 
@@ -82,7 +93,12 @@ static void _constructScene()
         GrassTreeGrow* grass = new GrassTreeGrow;
         grass->bloomMode = true;
         grass->_ground = ground;
-        ctx->drawables.push_back(grass);
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
+        fs->clearColor = vec4(0.,0.,0.,1);
+        fs->AddChild(grass);
+
+        ctx->drawables.push_back(fs);
+        //ctx->drawables.push_back(grass);
         ctx->drawables.push_back(new FpsOverlay());
     }
 
