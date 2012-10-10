@@ -23,11 +23,12 @@ static const int TerrainRes = 300;
 static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
 static const float MinHeight = 5;
-static const float MaxHeight = 15;
-static const int NumRows = 24;
-static const int NumCols = 64;
+static const float MaxHeight = 40;
+static const int NumRows = 12; // 24;
+static const int NumCols = 32; // 64;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
+static const float GrowthRate = 0.1f; // lower is faster
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
@@ -40,6 +41,7 @@ GridTerrainFunc(vec2 v)
     float tx = v.x * TerrainScale;
     float tz = v.y * TerrainScale;
     float y = TerrainNoise.Get(tx, tz) + 20.0 * TerrainNoise.Get(tx/5.0, tz/5.0);
+    y *= 0.3;
     vec3 p = vec3(v.x, y, v.y);
 
     float s = TerrainArea;
@@ -112,6 +114,16 @@ void GridCity::Init()
             vec2 u = CellScale.x * (e - p);
             vec2 v = CellScale.y * (s - p);
             float h = std::max(0.0f, HeightNoise.Get(p.x,p.y) + 0.5f);
+
+            // Shrink buildings in the center:
+            float h2 = length(p) * 0.01;
+            h2 = h2*h2;
+            h2 = std::min(h2, 3.0f);
+            h *= h2;
+            if (length(p) < 35) {
+                h = -0.125;
+            }
+
             cell.Quad.p = vec3(p.x, 0, p.y);
             cell.Quad.u = vec3(u.x, 0, u.y);
             cell.Quad.v = vec3(v.x, 0, v.y);
@@ -153,7 +165,7 @@ void GridCity::Init()
             GridCell& cell = *i;
             _AllocCell(&cell);
             vec2 v = vec2(cell.Quad.p.x, cell.Quad.p.z);
-            float d = length(v) / 2.0;
+            float d = length(v) * GrowthRate;
             cell.Anim.StartBeat = (int) d;
             col++;
             if (col >= NumCols) {
@@ -171,8 +183,8 @@ void GridCity::Init()
     // Set up camera
     _camera.far = 1000;
     _camera.up = vec3(0, 1, 0);
-    _camera.center = vec3(0, 0, 0);
-    _camera.eye = vec3(0, 300, 20);
+    _camera.center = vec3(-10, 0, 0);
+    _camera.eye = vec3(-150-10, 350, 350);
 }
 
 void GridCity::_AllocCell(GridCell* cell)
