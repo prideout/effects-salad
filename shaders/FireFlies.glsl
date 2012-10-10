@@ -570,7 +570,34 @@ void main()
     vPosition = ModelMatrix * vPosition;
 }
 
+-- Sig.FS
 
+in vec3 vNormal;
+in vec4 vPosition;
+//in vec2 vUvCoord;
+
+in float vOcc;
+
+out vec4 FragColor;
+
+uniform mat4 Projection;
+uniform mat4 ViewMatrix;
+uniform vec3 MaterialColor;
+uniform vec3 Eye;
+
+void main()
+{
+    //float s = vUvCoord.x + vUvCoord.y;
+    float diffuseLight = 1;
+    float ambientLight = .3;
+    vec3 n = vNormal;
+    vec3 l = normalize(Eye - vPosition.xyz);
+    float d = max(0.0, dot(n, l));
+    //d = 1.5;
+    FragColor = vec4((ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
+    //FragColor = vec4(d,d,d, 1.0);
+    //FragColor = vec4(n, 1.0);
+}
 
 -- Tree.FS
 
@@ -585,6 +612,7 @@ out vec4 FragColor;
 uniform mat4 Projection;
 uniform mat4 ViewMatrix;
 uniform vec3 MaterialColor;
+uniform vec3 Eye;
 
 void main()
 {
@@ -592,12 +620,36 @@ void main()
     float diffuseLight = 1;
     float ambientLight = .3;
     vec3 n = vNormal;
-    vec3 l = normalize((vec4(4, 2.0, -4, 1.0)).xyz); // - vPosition).xyz);
+    vec3 l = normalize(Eye - vPosition.xyz);
+    //vec3 l = normalize((vec4(4, 2.0, -4, 1.0)).xyz); // - vPosition).xyz);
     float d = max(0.0, dot(n, l));
     //d = 1.5;
     FragColor = vec4(vOcc * (ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
+}
+
+-- Tube.FS
+
+in vec4 vPosition;
+in vec3 vNormal;
+in float vOcc;
+
+out vec4 FragColor;
+
+uniform vec3 Eye;
+uniform float Time;
+
+void main()
+{
+    //float s = vUvCoord.x + vUvCoord.y;
+    float t = .01*Time;
+    //float amt = .5* (1.0 + snoise(50*vec2(vPosition.x + vPosition.z +t, .5)));
+    //float vis = clamp(amt, 0.0, 1.0);
+    //float dist = length(Eye - vPosition.xyz);
+    //float att = min(1.0, 1.0 / (dist*dist*.0005));
+    //FragColor = vis * att * vec4(.1, .9, .2, 1.0);
+    FragColor = vec4(.1, .9, .2, 1.0);
 }
 
 -- Tube.VS
