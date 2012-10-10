@@ -15,7 +15,8 @@ void GrassIntro::Init()
     Programs& progs = Programs::GetInstance();
 
     glUseProgram(progs.Load("FireFlies.Blur"));
-    glUseProgram(progs.Load("FireFlies.Tube", "FireFlies.Flies.FS", "FireFlies.Tube.VS"));
+    glUseProgram(progs.Load("FireFlies.Tube", "FireFlies.Tube.FS", "FireFlies.Tube.VS"));
+    progs.Load("FireFlies.Sig", "FireFlies.Sig.FS", "FireFlies.Tube.VS");
     glUniform1i(u("Tex"), 1);
 
     _surface.Init();
@@ -135,7 +136,7 @@ void GrassIntro::Init()
 
 
     // Placeholder for generated curves
-
+    //#include "sigCurve.h"
 };
 
 void GrassIntro::Update() {
@@ -175,6 +176,10 @@ void GrassIntro::Draw() {
         float t = GetContext()->elapsedTime;
         cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2));
         //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2));
+        cam.eye = cameraPoints.At(10);
+        cam.eye.x = 20;
+        cam.eye.z = 0;
+        cam.center = glm::vec3(0.0f);
     }
 
     // look where we are walking
@@ -184,14 +189,16 @@ void GrassIntro::Draw() {
     // --------------------------------------------------------------------------------
     // Drawable stuff
     // --------------------------------------------------------------------------------
-    glUseProgram(progs["FireFlies.Tube"]);
+    glUseProgram(progs["FireFlies.Sig"]);
     cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
+    glUniform3f(u("MaterialColor"), .1, .9, .2);
+    //glUniform3f(u("MaterialColor"), .35, .55, 1.0);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
     _tube.Draw();
 
     FOR_EACH(tubeIt, _tubes) {
-        tubeIt->Draw();
+        //tubeIt->Draw();
     }
 
     _fireFlies.Draw();

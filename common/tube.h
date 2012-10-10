@@ -45,6 +45,7 @@ public:
 
     virtual void Init();
     virtual void Draw();
+    virtual void Draw(float time);
     virtual void Update();
     virtual void DrawFrames();
     

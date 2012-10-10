@@ -89,10 +89,12 @@ void Ground::Draw() {
     // RENDER GRASS
     //
     glUseProgram(progs["FireFlies.Grass"]);
-    
+
+    float time = GetContext()->elapsedTime;
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
-    glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(2*GetContext()->elapsedTime)));
+    glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(2*time)));
+    glUniform1f(u("Vibration"), 0); //.5+.5*sin(time));
 
     cam.Bind(glm::mat4());
     glEnable(GL_BLEND);

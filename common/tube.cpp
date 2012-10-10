@@ -147,7 +147,13 @@ Tube::Update()
 void
 Tube::Draw()
 {
-    if (startTime == 0) startTime = GetContext()->elapsedTime;
+    Draw(GetContext()->elapsedTime);
+}
+
+void
+Tube::Draw(float time)
+{
+    if (startTime == 0) startTime = time;
     glPointSize(6);
     centers.Bind(0, "Centerline");
     frames.Bind(1, "Frames");
@@ -155,7 +161,7 @@ Tube::Draw()
     tube.Bind();
     glUniform1i(u("Slices"), _segCount);
     glUniform1i(u("VertsPerSlice"), sidesPerSlice);
-    glUniform1f(u("Time"), GetContext()->elapsedTime - startTime);
+    glUniform1f(u("Time"), time - startTime);
     glUniform1f(u("TimeToGrow"), timeToGrow);
     glDrawElements(GL_TRIANGLES, _drawCount, GL_UNSIGNED_INT, NULL);
 }

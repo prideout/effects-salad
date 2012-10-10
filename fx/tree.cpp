@@ -200,6 +200,11 @@ void Tree::Update()
 
 void Tree::Draw() 
 {
+    Draw(GetContext()->elapsedTime);
+}
+
+void Tree::Draw(float time) 
+{
     Effect::Draw();
 
     Programs& progs = Programs::GetInstance();
@@ -215,14 +220,14 @@ void Tree::Draw()
     glUniform3f(u("MaterialColor"), 0.3, 0.2, 0.15);
     glUniform1f(u("MinOcc"), 0.0);
     FOR_EACH(tube, _branches) {
-        (*tube)->Draw();
+        (*tube)->Draw(time);
         glUniform1f(u("MinOcc"), 1.0);
     }
 
     glUseProgram(progs["FireFlies.Blossom"]);
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform3f(u("MaterialColor"), 0.8, 0.1, 0.1);
-    glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("Time"), time);
     cam.Bind(xf);
   
     _leaves.Bind();
