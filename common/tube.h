@@ -16,6 +16,7 @@ public:
     int sidesPerSlice;
     int lod;
     float radius;
+    bool uniformWidth;
 
     Tube() : Drawable(), 
         _segCount(0), 
@@ -24,7 +25,8 @@ public:
         timeToGrow(9), 
         sidesPerSlice(8), 
         lod(3),
-        radius(0.2f)
+        radius(0.2f),
+        uniformWidth(false)
     {
     }
 

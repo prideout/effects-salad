@@ -20,6 +20,8 @@ def Main():
             if not switching:
                 print "_tubes.push_back(Tube());"
                 print "_tubes.back().cvs = cvs;"
+                print "_tubes.back().radius = .1;"
+                print "_tubes.back().uniformWidth = true;"
                 print "_tubes.back().Init();"
             switching = True
         line = sys.stdin.readline()
