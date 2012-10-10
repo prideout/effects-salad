@@ -15,7 +15,7 @@ void GrassTreeGrow::Init()
     Programs& progs = Programs::GetInstance();
 
     glUseProgram(progs.Load("FireFlies.Blur"));
-    glUseProgram(progs.Load("FireFlies.Tube", "FireFlies.Flies.FS", "FireFlies.Tube.VS"));
+    glUseProgram(progs.Load("FireFlies.Tube", "FireFlies.Tube.FS", "FireFlies.Tube.VS"));
     glUniform1i(u("Tex"), 1);
 
     // this must be set before Tree::Init

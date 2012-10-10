@@ -60,7 +60,7 @@ void Tree::Init()
 
     // leaf particle system
     _leafParticles.numParticles = 1000;
-    _leafParticles.spawnPerSec = 10.0;
+    _leafParticles.spawnPerSec = 2 * 4 * (140 / 60.0f);
     _leafParticles.controller = this;
     _leafParticles.Init();
 
@@ -216,6 +216,7 @@ void Tree::Draw(float time)
     cam.Bind(xf);
 
     // brown tree color
+    glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform3f(u("MaterialColor"), 0.3, 0.2, 0.15);
     glUniform1f(u("MinOcc"), 0.0);
     FOR_EACH(tube, _branches) {

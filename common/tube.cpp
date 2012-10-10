@@ -45,7 +45,11 @@ Tube::Init()
         pezCheck(i*3+2 < framesTmp.size(), "Out of bounds FRAMES access!");
         pezCheck(i < scalesTmp.size(), "Out of bounds SCALES access!");
 
-        scalesTmp[i] = _Lerp(1., 0., i / float(centerline.size() - 1) ); 
+        if (uniformWidth) { 
+            scalesTmp[i] = 1.0f; 
+        } else {
+            scalesTmp[i] = _Lerp(1.0f, 0.0f, i / float(centerline.size() - 1.0f) ); 
+        }
 
         framesTmp[i*3+0] = normals[i];
         framesTmp[i*3+1] = binormals[i];
