@@ -35,11 +35,20 @@ static Perlin HeightNoise(2, .5, 1, 3);
 static Perlin PerturbNoiseY(2, .5, 1, 5);
 static Perlin TerrainNoise(2, .1, 2, 0);
 
+// Terraces are orthogonal regions within a cell
 struct Terrace {
     vec2 center;
     vec2 size;
     float height;
 };
+
+// Typically we want big terraces to come first
+bool operator<(const Terrace& a, const Terrace& b)
+{
+    float area0 = a.size.x * a.size.y;
+    float area1 = b.size.x * b.size.y;
+    return area0 > area1;
+}
 
 static vec3
 GridTerrainFunc(vec2 v)
@@ -145,32 +154,70 @@ void GridCity::Init()
             int numTerraces = 2 + (rand() % 3);
             int numLowTerraces = rand() % 3;
             float maxWidth = length(u) * 1.5;
-            float minWidth = minWidth * 0.25;
+            float minWidth = maxWidth * 0.25;
             float maxHeight = length(v) * 1.5;
-            float minHeight = minHeight * 0.25;
+            float minHeight = maxHeight * 0.25;
             vector<Terrace> terraces;
             terraces.resize(numTerraces);
+
+            // Assign random width/heights; big terraces come first
+            FOR_EACH(terrace, terraces) {
+                terrace->size.x = minWidth + (maxWidth - minWidth) * float(rand()) / RAND_MAX;
+                terrace->size.y = minHeight + (maxHeight - minHeight) * float(rand()) / RAND_MAX;
+            }
+            std::sort(terraces.begin(), terraces.end());
+
+            // The largest terrace is stamped to (0,0)
+            // Every other terrace is glued to one of its sides
             for (int terraceIndex = 0; terraceIndex < numTerraces; terraceIndex++) {
                 Terrace& terrace = terraces[terraceIndex];
-
-                terrace.size.x = minWidth + (maxWidth - minWidth) * float(rand()) / RAND_MAX;
-                terrace.size.y = minHeight + (maxHeight - minHeight) * float(rand()) / RAND_MAX;
                 terrace.height = highTerraceHeight;
-
                 if (terraceIndex == 0) {
                     terrace.center = vec2(0, 0);
                     continue;
                 }
-
                 if (terraceIndex < numLowTerraces) {
                     terrace.height = lowTerraceHeight;
                 }
 
-                terrace.center = vec2(0,0); // prideout todo
+                // Glue it to one of the sides of the "main" terrace
+                int side = rand() % 4;
+                float offset = float(rand()) / RAND_MAX - 0.5f;
+                Terrace& main = terraces[0];
+                switch (side) {
+                case 0: // Glue to north wall
+                    terrace.center.x = offset*main.size.x;
+                    terrace.center.y = main.size.y/2 + terrace.size.y/2;
+                    break;
+                case 1: // Glue to south wall
+                    terrace.center.x = offset*main.size.x;
+                    terrace.center.y = -main.size.y/2 - terrace.size.y/2;
+                    break;
+                case 2: // Glue to west wall
+                    terrace.center.x = -main.size.x/2 - terrace.size.x/2;
+                    terrace.center.y = offset*main.size.x;
+                    break;
+                case 3: // Glue to east wall
+                    terrace.center.x = main.size.x/2 + terrace.size.x/2;
+                    terrace.center.y = offset*main.size.x;
+                    break;
+                }
+
+                // TODO if it overlaps with an existing terrace, make a second attempt
+                // by doing a terraceIndex--
             }
 
-            // For each terrace, add a quad to 'cells'
-            FOR_EACH(terrace, terraces) {
+            // Translate the entire terrace group to center; reject any terrace
+            // that overflows the cell border.  For each terrace, add a quad
+            // to 'cells'
+
+            // Diagnostics
+            if (false) {
+                FOR_EACH(terrace, terraces) {
+                    float area = terrace->size.x * terrace->size.y;
+                    std::cout << area << ' ' ;
+                }
+                std::cout << std::endl;
             }
 
             // Backwards compat
