@@ -136,7 +136,7 @@ void GrassIntro::Init()
 
 
     // Placeholder for generated curves
-    #include "sigCurve.h"
+    //#include "sigCurve.h"
 };
 
 void GrassIntro::Update() {
