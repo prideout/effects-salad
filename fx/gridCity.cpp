@@ -15,7 +15,9 @@
 #include "common/sketchTess.h"
 #include "glm/gtx/constants.inl"
 #include "tween/CppTweener.h"
+
 #include <algorithm>
+#include <limits>
 
 using namespace std;
 using namespace glm;
@@ -154,9 +156,9 @@ void GridCity::Init()
             float lowTerraceHeight = highTerraceHeight * 0.75;
             int numTerraces = 2 + (rand() % 3);
             int numLowTerraces = rand() % 3;
-            float maxWidth = length(u) * 1.5;
+            float maxWidth = length(u) * 1.0;
             float minWidth = maxWidth * 0.25;
-            float maxHeight = length(v) * 1.5;
+            float maxHeight = length(v) * 1.0;
             float minHeight = maxHeight * 0.25;
             vector<Terrace> terraces;
             terraces.resize(numTerraces);
@@ -208,12 +210,46 @@ void GridCity::Init()
                 // by doing a terraceIndex--
             }
 
+            // Compute the 2D bounding box
+            const float inf = numeric_limits<float>::max();
+            vec2 minCorner = vec2(inf, inf);
+            vec2 maxCorner = vec2(-inf, -inf);
+            FOR_EACH(terrace, terraces) {
+                vec2 extent = terrace->size * 0.5f;
+                minCorner = glm::min(minCorner, terrace->center - extent);
+                maxCorner = glm::max(maxCorner, terrace->center + extent);
+            }
+
             // Translate the entire terrace group to center; reject any terrace
             // that overflows the cell border.  For each terrace, add a quad
             // to 'cells'
+            vec2 maxBound = vec2(length(u), length(v));
+            vec2 minBound(-maxBound);
+            vec2 translation = -mix(minCorner, maxCorner, 0.5f);
+            vector<Terrace>::iterator terrace = terraces.begin();
+            int numRejections = 0;
+            while (terrace != terraces.end()) {
+                terrace->center += translation;
+                vec2 extent = terrace->size * 0.5f;
+                vec2 minCorner = terrace->center - extent;
+                vec2 maxCorner = terrace->center + extent;
+                bool reject = false;
+                if (minCorner.x < minBound.x) reject = true;
+                if (minCorner.y < minBound.y) reject = true;
+                if (maxCorner.x > maxBound.x) reject = true;
+                if (maxCorner.y > maxBound.y) reject = true;
+                if (reject) {
+                    ++numRejections;
+                    terrace = terraces.erase(terrace);
+                } else {
+                    ++terrace;
+                }
+            }
 
             // Diagnostics
-            if (false) {
+            const bool Verbose = false;
+            if (Verbose) {
+                std::cout << terraces.size() << " terraces (" << numRejections << " rejections) ";
                 FOR_EACH(terrace, terraces) {
                     float area = terrace->size.x * terrace->size.y;
                     std::cout << area << ' ' ;
@@ -222,14 +258,27 @@ void GridCity::Init()
             }
 
             // Backwards compat
-            if (true) {
+            const bool VisualizeCell = false;
+            if (VisualizeCell) {
                 cell.Quad.p = vec3(p.x, 0, p.y);
                 cell.Quad.u = vec3(u.x, 0, u.y);
                 cell.Quad.v = vec3(v.x, 0, v.y);
                 cell.Height = MinHeight + h * (MaxHeight - MinHeight);
+                _cells.push_back(cell);
+            } else {
+                vec3 P = vec3(p.x, 0, p.y);
+                vec3 U = normalize(vec3(u.x, 0, u.y));
+                vec3 V = normalize(vec3(v.x, 0, v.y));
+                FOR_EACH(terrace, terraces) {
+                    cell.Quad.p = P +
+                        terrace->center.x * U +
+                        terrace->center.y * V ;
+                    cell.Quad.u = U * terrace->size.x;
+                    cell.Quad.v = V * terrace->size.y;
+                    cell.Height = terrace->height;
+                    _cells.push_back(cell);
+                }
             }
-
-            _cells.push_back(cell);
         }
     }
 
