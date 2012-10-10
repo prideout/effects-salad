@@ -24,6 +24,7 @@ struct GridCell {
     GridAnim Anim;
     Vao GpuTriangles;
     bool Visible;
+    int BuildingId;
  };
 
 typedef std::vector<GridCell> GridCells;

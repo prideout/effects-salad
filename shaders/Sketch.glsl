@@ -40,6 +40,19 @@ out vec4 gePosition;
 
 uniform bool Smooth = false;
 
+const vec3 ByteScale = 1.0 / vec3(255.0);
+const float InverseMaxInt = 1.0 / 4294967295.0;
+uniform int BuildingId;
+
+float randhash(uint seed, float b)
+{
+    uint i=(seed^12345391u)*2654435769u;
+    i^=(i<<6u)^(i>>26u);
+    i*=2654435769u;
+    i+=(i<<5u)^(i>>12u);
+    return float(b * i) * InverseMaxInt;
+}
+
 void main()
 {
     vec3 A = vPosition[2].xyz - vPosition[0].xyz;
@@ -49,10 +62,23 @@ void main()
     bool smoothie = Smooth && !horiz;
     gFacetNormal = NormalMatrix * gFacetNormal;
 
-    gColor = vec4(1, 1, 0.9, 1);
-    if (horiz) {
-      //gColor = vec4(1, 0.4, 0.4, 1);
-    }   
+    //float p = vPosition[0].x + vPosition[0].y + vPosition[0].y;
+    //float n = gFacetNormal.x + gFacetNormal.y + gFacetNormal.z;
+    uint seed = uint(BuildingId);
+    float sel = randhash(seed, 1.0);
+    vec3 col = vec3(255.0) * sel;
+
+    if (sel < 0.25) {
+        col = vec3(243, 210, 129);
+    } else if (sel < 0.5) {
+        col = vec3(243, 206, 164);
+    } else if (sel < 0.75) {
+        col = vec3(161, 110, 45);
+    } else {
+        col = vec3(249, 219, 169);
+    }
+
+    gColor = vec4(ByteScale * col, 1);
 
     if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[0].x, 0, vPosition[0].z));
     gPosition = vPosition[0];
@@ -88,7 +114,7 @@ out vec4 Position;
 uniform float DistanceScale; // 1 / (Far-Near)
 uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
-uniform vec3 LightPosition = normalize(vec3(0, 1, 1));
+uniform vec3 LightPosition = normalize(vec3(-1, 5, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 
 void main()

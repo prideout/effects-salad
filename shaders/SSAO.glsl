@@ -106,7 +106,8 @@ void main()
 
     vec4 c = texture(SourceImage, tc);
 
-    c = mix(c,vec4(1),0.5); // brighten up for pastel-like colors
+    bool bkgd = (c.a == 0);
+    c = mix(c,vec4(1),0.4); // brighten up for pastel-like colors
 
     vec3 n = texture(NormalsImage, tc).rgb;
 
@@ -119,7 +120,7 @@ void main()
     ov = ov*ov*ov;
     FragColor = ov*c;
 
-    if (c.a == 0.5) {
+    if (bkgd) {
         FragColor = vec4(0.627, 0.322, 0.176, 1);
     }
 

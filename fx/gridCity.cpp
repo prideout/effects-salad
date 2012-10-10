@@ -259,6 +259,7 @@ void GridCity::Init()
 
             // Backwards compat
             const bool VisualizeCell = false;
+            cell.BuildingId = (int) _cells.size();
             if (VisualizeCell) {
                 cell.Quad.p = vec3(p.x, 0, p.y);
                 cell.Quad.u = vec3(u.x, 0, u.y);
@@ -429,6 +430,7 @@ void GridCity::Draw()
     glUniform1i(u("Smooth"), 0);
     _camera.Bind(glm::mat4());
     FOR_EACH(cell, _cells) {
+        glUniform1i(u("BuildingId"), cell->BuildingId);
         if (not cell->Visible) {
             continue;
         }
