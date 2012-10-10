@@ -23,6 +23,8 @@ uniform float OccluderBias = 0.1;
 uniform float SamplingRadius = 100.0;
 uniform vec2 Attenuation = vec2(1,1);
 
+uniform bool ApplyVignette = true;
+
 out vec4 FragColor;
  
 // Mostly cribbed from http://devmaster.net/posts/3095/shader-effects-screen-space-ambient-occlusion
@@ -103,12 +105,8 @@ void main()
     vec2 tc = gl_FragCoord.xy * InverseViewport;
 
     vec4 c = texture(SourceImage, tc);
-    if (c.a == 0) {
-        FragColor = vec4(0.627, 0.322, 0.176, 1);
-        return;
-    }
 
-    c = mix(c,vec4(1),0.5);
+    c = mix(c,vec4(1),0.5); // brighten up for pastel-like colors
 
     vec3 n = texture(NormalsImage, tc).rgb;
 
@@ -120,4 +118,13 @@ void main()
     float ov = 1 - ComputeOcclusion(tc, n);
     ov = ov*ov*ov;
     FragColor = ov*c;
+
+    if (c.a == 0.5) {
+        FragColor = vec4(0.627, 0.322, 0.176, 1);
+    }
+
+    if (ApplyVignette) {
+        float d = distance(tc, vec2(0.5));
+        FragColor.rgb *= 1 - 0.75 * d;
+    }
 }
