@@ -22,10 +22,10 @@ using namespace glm;
 static const int TerrainRes = 300;
 static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
-static const float MinHeight = 5;
+static const float MinHeight = 20;
 static const float MaxHeight = 40;
-static const int NumRows = 10;//6;//12; // 24;
-static const int NumCols = 20;//32; // 64;
+static const int NumRows = 10;
+static const int NumCols = 20;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 static const float GrowthRate = 0.05f; // lower is faster
@@ -34,6 +34,12 @@ static const float GrowthRate = 0.05f; // lower is faster
 static Perlin HeightNoise(2, .5, 1, 3);
 static Perlin PerturbNoiseY(2, .5, 1, 5);
 static Perlin TerrainNoise(2, .1, 2, 0);
+
+struct Terrace {
+    vec2 center;
+    vec2 size;
+    float height;
+};
 
 static vec3
 GridTerrainFunc(vec2 v)
@@ -96,7 +102,6 @@ void GridCity::Init()
     _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
 
     // Form the grid
-    _cells.reserve(NumRows * NumCols);
     GridCell cell;
     for (int row = 0; row < NumRows; ++row) {
         for (int col = 0; col < NumCols; ++col) {
@@ -121,13 +126,61 @@ void GridCity::Init()
             h2 = std::min(h2, 3.0f);
             h *= h2;
             if (length(p) < 35) {
-                h = -0.125;
+                h = -0.9;
+            }
+            
+            // We now generate "terraces" which are orthogonal sub-cells
+            // within each coplanar cell that are all adjacent to each other.
+            // For example, here's a cell that's divided into 3 terraces:
+            //
+            //     +-----+-------+
+            //     |     |       |
+            //     |     |----+--+
+            //     |     |    |
+            //     +-----+    |
+            //           +----+
+            //
+            float highTerraceHeight = MinHeight + h * (MaxHeight - MinHeight);
+            float lowTerraceHeight = highTerraceHeight * 0.75;
+            int numTerraces = 2 + (rand() % 3);
+            int numLowTerraces = rand() % 3;
+            float maxWidth = length(u) * 1.5;
+            float minWidth = minWidth * 0.25;
+            float maxHeight = length(v) * 1.5;
+            float minHeight = minHeight * 0.25;
+            vector<Terrace> terraces;
+            terraces.resize(numTerraces);
+            for (int terraceIndex = 0; terraceIndex < numTerraces; terraceIndex++) {
+                Terrace& terrace = terraces[terraceIndex];
+
+                terrace.size.x = minWidth + (maxWidth - minWidth) * float(rand()) / RAND_MAX;
+                terrace.size.y = minHeight + (maxHeight - minHeight) * float(rand()) / RAND_MAX;
+                terrace.height = highTerraceHeight;
+
+                if (terraceIndex == 0) {
+                    terrace.center = vec2(0, 0);
+                    continue;
+                }
+
+                if (terraceIndex < numLowTerraces) {
+                    terrace.height = lowTerraceHeight;
+                }
+
+                terrace.center = vec2(0,0); // prideout todo
             }
 
-            cell.Quad.p = vec3(p.x, 0, p.y);
-            cell.Quad.u = vec3(u.x, 0, u.y);
-            cell.Quad.v = vec3(v.x, 0, v.y);
-            cell.Height = MinHeight + h * (MaxHeight - MinHeight);
+            // For each terrace, add a quad to 'cells'
+            FOR_EACH(terrace, terraces) {
+            }
+
+            // Backwards compat
+            if (true) {
+                cell.Quad.p = vec3(p.x, 0, p.y);
+                cell.Quad.u = vec3(u.x, 0, u.y);
+                cell.Quad.v = vec3(v.x, 0, v.y);
+                cell.Height = MinHeight + h * (MaxHeight - MinHeight);
+            }
+
             _cells.push_back(cell);
         }
     }
