@@ -216,6 +216,25 @@ static void _constructScene()
         ctx->drawables.push_back(fullscreen);
     }
 
+    //
+    // TEMPORARY FIX for double city bug
+    //
+    {   // Grid City
+        DemoContext* ctx = DemoContext::New("GridCity2");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+        Fullscreen::Mask mask = 0;
+        mask |= Fullscreen::AmbientOcclusionFlag;
+        mask |= Fullscreen::SupersampleFlag;
+        Fullscreen* fullscreen;
+        if (bool slow = true)
+            fullscreen = new Fullscreen("SSAO", mask);
+        else
+            fullscreen = new Fullscreen(0);
+        fullscreen->AddChild(new GridCity());
+        ctx->drawables.push_back(fullscreen);
+    }
+
     {   // Test 
         DemoContext* ctx = DemoContext::New("Test");
         DemoContext::SetCurrent(ctx);
