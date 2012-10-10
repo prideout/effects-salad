@@ -208,7 +208,7 @@ static void _constructScene()
         mask |= Fullscreen::AmbientOcclusionFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen;
-        if (bool slow = false)
+        if (bool slow = true)
             fullscreen = new Fullscreen("SSAO", mask);
         else
             fullscreen = new Fullscreen(0);

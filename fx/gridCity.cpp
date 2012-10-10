@@ -24,11 +24,11 @@ static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
 static const float MinHeight = 5;
 static const float MaxHeight = 40;
-static const int NumRows = 12; // 24;
-static const int NumCols = 32; // 64;
+static const int NumRows = 10;//6;//12; // 24;
+static const int NumCols = 20;//32; // 64;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
-static const float GrowthRate = 0.1f; // lower is faster
+static const float GrowthRate = 0.05f; // lower is faster
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);

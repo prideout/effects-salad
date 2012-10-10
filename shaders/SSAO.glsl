@@ -20,8 +20,8 @@ uniform float Time = 0;
 
 uniform vec2 TexelSize;
 uniform float OccluderBias = 0.1;
-uniform float SamplingRadius = 10.0;
-uniform vec2 Attenuation = vec2(2,2);
+uniform float SamplingRadius = 100.0;
+uniform vec2 Attenuation = vec2(1,1);
 
 out vec4 FragColor;
  
@@ -45,7 +45,7 @@ float SamplePixels (vec3 srcPosition, vec3 srcNormal, vec2 uv)
     // Attenuate the occlusion, similar to how you attenuate a light source.
     // The further the distance between points, the less effect AO has on the fragment.
     float dist;
-    dist = length(positionVec);
+    dist = length(positionVec) / SamplingRadius;
     float attenuation = 1.0 / (Attenuation.x + (Attenuation.y * dist));
     
     return intensity * attenuation;
@@ -56,7 +56,7 @@ float ComputeOcclusion(vec2 tc, vec3 srcNormal)
 {
     // Get position and normal vector for this fragment
     vec3 srcPosition = texture(PositionsImage, tc).xyz;
-    vec2 randVec = normalize(texture(NoiseImage, tc).xy * 2.0 - 1.0);
+    vec2 randVec = normalize(texture(NoiseImage, tc*20).xy * 2.0 - 1.0);
     float srcDepth = texture(PositionsImage, tc).w;
     
     // The following variable specifies how many pixels we skip over after each
@@ -103,6 +103,13 @@ void main()
     vec2 tc = gl_FragCoord.xy * InverseViewport;
 
     vec4 c = texture(SourceImage, tc);
+    if (c.a == 0) {
+        FragColor = vec4(0.627, 0.322, 0.176, 1);
+        return;
+    }
+
+    c = mix(c,vec4(1),0.5);
+
     vec3 n = texture(NormalsImage, tc).rgb;
 
     // The geometry has inconsistent normals...
