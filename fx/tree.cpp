@@ -220,7 +220,7 @@ void Tree::Draw(float time)
     glUniform3f(u("MaterialColor"), 0.3, 0.2, 0.15);
     glUniform1f(u("MinOcc"), 0.0);
     FOR_EACH(tube, _branches) {
-        (*tube)->Draw();
+        (*tube)->Draw(time);
         glUniform1f(u("MinOcc"), 1.0);
     }
 
