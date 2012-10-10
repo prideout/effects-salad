@@ -15,6 +15,7 @@
 #include "common/sketchTess.h"
 #include "glm/gtx/constants.inl"
 #include "tween/CppTweener.h"
+#include <algorithm>
 
 using namespace std;
 using namespace glm;
