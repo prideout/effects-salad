@@ -95,6 +95,9 @@ void GrassTreeGrow::Draw() {
     float SPB = .5f * (1.0f / BPS);
     stickyTime = int(time / SPB) * SPB;
 
+    static int hhCount = 0;
+    static float flash = 0;
+
     // --------------------------------------------------------------------------------
     // Camera
     // --------------------------------------------------------------------------------
@@ -123,13 +126,39 @@ void GrassTreeGrow::Draw() {
 
     float underStart = 11.f;
     float underStop = 19.f;
+    float overStop = 24.f;
     if (time > underStart and time < underStop) {
+        if (time > 13.3 and time < 14.5) {
+            flash = 1.f + sinf(time*240);
+        }
+        if (time > 14.5 and GetContext()->audio->GetHiHats()) {
+            hhCount++;
+            fullscreen->_mask |= Fullscreen::ScanLinesFlag;
+        }
+
+        fullscreen->brightness = 1.0 - flash;
+        flash *= .9;
+
         glm::vec3 orig = cam.eye;
         cam.eye = _tree.pos;
-        cam.eye.x += 1.5 + 5.0*glm::smoothstep(underStart, underStop, time);
-        cam.eye.z -= 2.5;
-        cam.eye.y += .5;
-        cam.eye = glm::mix(cam.eye, orig, glm::smoothstep(underStart, underStop, time));
+        cam.eye.x += 3.0 * cos(hhCount*.25 + time / 4);// + 5.0*glm::smoothstep(underStart, underStop, time);
+        cam.eye.y += 0.7; // + (2 + sin(hhCount*.25 + time));
+        cam.eye.z -= 3.0 * sin(hhCount*.25 + time / 4);
+        //cam.eye = glm::mix(cam.eye, orig, glm::smoothstep(underStart, underStop, time));
+    } else if (time > underStop and time < overStop) {
+        fullscreen->brightness = 1.0;
+        fullscreen->_mask |= Fullscreen::ScanLinesFlag;
+        if (
+            (GetContext()->audio->GetSnares() 
+             or GetContext()->audio->GetKicks())) {
+            hhCount++;
+        }
+        cam.eye = _tree.pos;
+        cam.eye.x += 7.0 * cos(hhCount*.25 + time / 4);// + 5.0*glm::smoothstep(underStart, underStop, time);
+        cam.eye.y += 2.7; // + (2 + sin(hhCount*.25 + time));
+        cam.eye.z -= 7.0 * sin(hhCount*.25 + time / 4);
+    } else {
+        fullscreen->brightness = 1.0;
     }
 
     // crazy camera shake

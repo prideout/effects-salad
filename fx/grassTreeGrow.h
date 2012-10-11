@@ -12,6 +12,7 @@
 #include "common/quad.h"
 
 #include "fx/fireFlies.h"
+#include "fx/fullscreen.h"
 #include "fx/ground.h"
 #include "fx/milkyway.h"
 #include "fx/tree.h"
@@ -32,6 +33,7 @@ public:
     bool bloomMode;
 
     Ground* _ground;
+    Fullscreen* fullscreen;
 
     GrassTreeGrow() : Effect(), bloomMode(false) {}
     virtual ~GrassTreeGrow() {} 

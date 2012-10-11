@@ -77,9 +77,12 @@ static void _constructScene()
         GrassTreeGrow* grass = new GrassTreeGrow;
         grass->_ground = ground;
 
-        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag 
+                                        | Fullscreen::BrightnessFlag);
+        fs->solidColor = vec4(1.f);
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
+        grass->fullscreen = fs;
 
         ctx->drawables.push_back(fs);
         //ctx->drawables.push_back(grass);
@@ -98,6 +101,7 @@ static void _constructScene()
         Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
+        grass->fullscreen = fs;
 
         ctx->drawables.push_back(fs);
         //ctx->drawables.push_back(grass);
@@ -216,6 +220,7 @@ static void _constructScene()
             fullscreen = new Fullscreen(0);
         fullscreen->AddChild(new GridCity());
         ctx->drawables.push_back(fullscreen);
+        ctx->drawables.push_back(new FpsOverlay());
     }
 
     //
