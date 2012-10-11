@@ -39,6 +39,8 @@ out float gAltitude;
 out vec4 gePosition;
 out float gIsRoof;
 out vec2 gTexCoord;
+out float gRows;
+out float gCols;
 
 uniform bool Smooth = false;
 
@@ -57,8 +59,19 @@ float randhash(uint seed, float b)
 
 void main()
 {
+    gRows = 9.0;
+    gCols = 9.0;
+
     vec3 U = vPosition[2].xyz - vPosition[0].xyz;
     vec3 V = vPosition[1].xyz - vPosition[0].xyz;
+
+    if (distance(vPosition[2].xyz, vPosition[1].xyz) < 10.0) {
+        gRows = 3.0;
+    }
+    if (distance(vPosition[1].xyz, vPosition[0].xyz) > 50.0) {
+        gCols = 17.0;
+    }
+
     gFacetNormal = normalize(cross(U, V));
     gFacetNormal = NormalMatrix * gFacetNormal;
 
@@ -129,6 +142,9 @@ uniform vec3 LightPosition = normalize(vec3(-1, 5, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
 uniform bool HasWindows = false;
 
+in float gRows;
+in float gCols;
+
 void main()
 {
     if (gColor.a == 0) {
@@ -148,14 +164,16 @@ void main()
     float d = clamp((gAltitude+5)/10, 0, 1);
     color *= d;
 
-    if (HasWindows && gIsRoof == 0) {
-        int h = int(gTexCoord.x * 9.0) % 2;
-        int v = int(gTexCoord.y * 9.0) % 2;
-        color *= 1.0 - (h*v);
-    }
-
     FragColor = vec4(color, gColor.a);
     Normal = N;
     Position.xyz = gePosition.xyz;
-    Position.w = length(gePosition) * DistanceScale;
+
+    if (HasWindows && gIsRoof == 0) {
+        int h = int(gTexCoord.x * gRows) % 2;
+        int v = int(gTexCoord.y * gCols) % 2;
+        Position.xyz -= float(h*v) * 15.0 * gFacetNormal;
+        FragColor.rgb *= 1-float(h*v);
+    }
+
+    Position.w = length(Position.xyz) * DistanceScale;
 }
