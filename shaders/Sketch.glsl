@@ -35,8 +35,10 @@ in vec3 vPosition[3];
 
 out vec4 gColor;
 out vec3 gFacetNormal;
-out vec3 gPosition;
+out float gAltitude;
 out vec4 gePosition;
+out float gIsRoof;
+out vec2 gTexCoord;
 
 uniform bool Smooth = false;
 
@@ -55,11 +57,9 @@ float randhash(uint seed, float b)
 
 void main()
 {
-    vec3 A = vPosition[2].xyz - vPosition[0].xyz;
-    vec3 B = vPosition[1].xyz - vPosition[0].xyz;
-    gFacetNormal = normalize(cross(A, B));
-    bool horiz = abs(gFacetNormal.y) > 0.01;
-    bool smoothie = Smooth && !horiz;
+    vec3 U = vPosition[2].xyz - vPosition[0].xyz;
+    vec3 V = vPosition[1].xyz - vPosition[0].xyz;
+    gFacetNormal = normalize(cross(U, V));
     gFacetNormal = NormalMatrix * gFacetNormal;
 
     //float p = vPosition[0].x + vPosition[0].y + vPosition[0].y;
@@ -78,22 +78,31 @@ void main()
         col = vec3(249, 219, 169);
     }
 
+    gIsRoof = (gl_PrimitiveIDIn <= 1) ? 1 : 0;
+
     gColor = vec4(ByteScale * col, 1);
 
-    if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[0].x, 0, vPosition[0].z));
-    gPosition = vPosition[0];
+    bool odd = (gl_PrimitiveIDIn % 2) == 0;
+
+    vec2 R = vec2(0,0);
+    vec2 G = vec2(0,1);
+    vec2 B = vec2(1,1);
+    vec2 W = vec2(1,0);
+
+    gTexCoord = odd ? R : B;
+    gAltitude = vPosition[0].y;
     gePosition = Modelview * vec4(vPosition[0], 1);
     gl_Position = Projection * Modelview * vec4(vPosition[0], 1);
     EmitVertex();
 
-    if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[1].x, 0, vPosition[1].z));
-    gPosition = vPosition[1];
+    gTexCoord = odd ? G : W;
+    gAltitude = vPosition[1].y;
     gePosition = Modelview * vec4(vPosition[1], 1);
     gl_Position = Projection * Modelview * vec4(vPosition[1], 1);
     EmitVertex();
 
-    if (smoothie) gFacetNormal = NormalMatrix * normalize(vec3(vPosition[2].x, 0, vPosition[2].z));
-    gPosition = vPosition[2];
+    gTexCoord = odd ? B : R;
+    gAltitude = vPosition[2].y;
     gePosition = Modelview * vec4(vPosition[2], 1);
     gl_Position = Projection * Modelview * vec4(vPosition[2], 1);
     EmitVertex();
@@ -103,9 +112,11 @@ void main()
 -- Facets.FS
 
 in vec4 gePosition;
-in vec3 gPosition;
+in float gAltitude;
 in vec4 gColor;
 in vec3 gFacetNormal;
+in vec2 gTexCoord;
+in float gIsRoof;
 
 out vec4 FragColor;
 out vec3 Normal;
@@ -133,8 +144,14 @@ void main()
     vec3 color = AmbientMaterial + df * gColor.rgb;
 
     // Craptastic AO:
-    float d = clamp((gPosition.y+5)/10, 0, 1);
+    float d = clamp((gAltitude+5)/10, 0, 1);
     color *= d;
+
+    if (gIsRoof == 0) {
+        int h = int(gTexCoord.x * 9.0) % 2;
+        int v = int(gTexCoord.y * 9.0) % 2;
+        color *= 1.0 - (h*v);
+    }
 
     FragColor = vec4(color, gColor.a);
     Normal = N;

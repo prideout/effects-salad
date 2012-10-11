@@ -49,6 +49,12 @@ sketch::Tessellator::PullFromScene()
             continue;
         }
 
+        if (rim2d.size() == 4 && coplanar->Holes.empty()) {
+            _tris.push_back(ivec3(indices[0],indices[1], indices[2]));
+            _tris.push_back(ivec3(indices[2],indices[3], indices[0]));
+            continue;
+        }
+
         list<vector<p2t::Point*> > holes;
         vector<p2t::Point*> polyline;
         map<p2t::Point*, unsigned int> pointmap;
