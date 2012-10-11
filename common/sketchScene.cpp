@@ -180,12 +180,14 @@ Scene::AddInscribedRectangle(float width, float height,
 // Create a rectangular hole inside the given path
 CoplanarPath*
 Scene::AddHoleRectangle(float width, float height,
-                        sketch::CoplanarPath* outer, glm::vec2 pathOffset)
+                        sketch::CoplanarPath* outer,
+                        glm::vec2 pathOffset,
+                        glm::mat3 coordSys)
 {
     vec3 outerCenter = _GetCentroid(outer);
     Plane* plane = outer->Plane;
-    vec3 wsRectCenter = outerCenter + plane->GetCoordSys() * vec3(pathOffset.x, 0, pathOffset.y);
-    mat3 inverseCoordSys = inverse(plane->GetCoordSys());
+    vec3 wsRectCenter = outerCenter + coordSys * vec3(pathOffset.x, 0, pathOffset.y);
+    mat3 inverseCoordSys = inverse(coordSys);
     vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
     vec2 offset = vec2(planeOffset.x, planeOffset.z);
 

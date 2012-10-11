@@ -40,6 +40,10 @@ private:
     vec2 _CellSample(int row, int col);
     void _AllocCell(GridCell* cell);
     void _FreeCell(GridCell* cell);
+
+    sketch::PathList
+    _AddWindows(GridCell* cell, sketch::CoplanarPath* wall);
+
     HalfBeat _beats;
     GridCells _cells;
     Vao _terrainVao;
