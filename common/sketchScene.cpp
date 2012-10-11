@@ -177,6 +177,48 @@ Scene::AddInscribedRectangle(float width, float height,
     return inner;
 }
 
+// Create a rectangular hole inside the given path
+CoplanarPath*
+Scene::AddHoleRectangle(float width, float height,
+                        sketch::CoplanarPath* outer, glm::vec2 pathOffset)
+{
+    vec3 outerCenter = _GetCentroid(outer);
+    Plane* plane = outer->Plane;
+    vec3 wsRectCenter = outerCenter + plane->GetCoordSys() * vec3(pathOffset.x, 0, pathOffset.y);
+    mat3 inverseCoordSys = inverse(plane->GetCoordSys());
+    vec3 planeOffset = inverseCoordSys * (wsRectCenter - plane->GetCenterPoint());
+    vec2 offset = vec2(planeOffset.x, planeOffset.z);
+
+    float hw = width / 2;
+    float hh = height / 2;
+    unsigned int a = _AppendPoint(AddOffset(offset + vec2(-hw, -hh), plane));
+    unsigned int b = _AppendPoint(AddOffset(offset + vec2(+hw, -hh), plane));
+    unsigned int c = _AppendPoint(AddOffset(offset + vec2(+hw, +hh), plane));
+    unsigned int d = _AppendPoint(AddOffset(offset + vec2(-hw, +hh), plane));
+
+    CoplanarPath* hole = new CoplanarPath();
+    hole->Visible = true;
+    _topologyHash++;
+
+    _AppendEdge(hole, a, b);
+    _AppendEdge(hole, b, c);
+    _AppendEdge(hole, c, d);
+    _AppendEdge(hole, d, a);
+
+    hole->Plane = outer->Plane;
+    outer->Holes.push_back(hole);
+    _holes.push_back(hole);
+
+    if (_recording) {
+        appendJson(
+            _history,
+            "[ \"AddHoleRectangle\", \"%8.8x\", %f, %f, \"%8.8x\", %s]",
+            hole, width, height, outer, toString(pathOffset) );
+    }
+
+    return hole;
+}
+
 CoplanarPath*
 Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
                           glm::vec2 pathOffset, int numPoints)
