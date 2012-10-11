@@ -36,13 +36,13 @@ static const int NumRows = 5;
 static const int NumCols = 5;
 static const bool VisualizeCell = true;
 static const bool PopBuildings = false;
-static const bool HasWindows = true;
+static const bool HasWindows = false;
 #else
 static const int NumRows = 10;
 static const int NumCols = 20;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
-static const bool HasWindows = false;
+static const bool HasWindows = true;
 #endif
 
 // Params: int octaves, float freq, float amp, int seed
@@ -313,9 +313,10 @@ void GridCity::Init()
         cell.Quad.u = length(cell.Quad.u) * normalize(p1 - cell.Quad.p);
 
         vec3 p2 = cell.Quad.p + cell.Quad.v;
-        p = vec2(p1.x, p1.z);
+        p = vec2(p2.x, p2.z);
         coord = p / float(TerrainArea);
         domain = (coord + vec2(0.5)) * float(TerrainArea);
+        p2.y = GridTerrainFunc(domain).y;
         cell.Quad.v = length(cell.Quad.v) * normalize(p2 - cell.Quad.p);
     }
 
@@ -370,9 +371,26 @@ sketch::PathList GridCity::_AddWindows(
         return windows;
     }
 
-    mat3 coordSys = wall->Plane->GetCoordSys();
+    mat3 coordSys1 = wall->Plane->GetCoordSys();
+    float orientation = (coordSys1 * vec3(1, 0, 0)).y;
+    //cout << "\norientation: " << orientation << std::endl;
+    
+    vec3 u = normalize(vec3(cell->Quad.u));
+    vec3 v = normalize(vec3(cell->Quad.v));
 
-    float orientation = (coordSys * vec3(1, 0, 0)).y;
+    cout << "u, v: " <<
+        to_string(u) << ' ' <<
+        to_string(v) << std::endl;
+    //cout << "old: " << to_string(coordSys1) << std::endl;
+
+    vec3 t = -normalize(cell->Quad.v);
+    vec3 r = normalize(cell->Quad.u);
+    vec3 s = cross(r, t);
+    mat3 coordSys = mat3(s, r, t);
+    //cout << "new: " << to_string(coordSys) << std::endl;
+
+    coordSys = coordSys1;
+
     vec2 offset;
     offset.x = padding.x + cellWidth/2 - wallWidth/2;
     for (int col = 0; col < numCols; ++col) {
