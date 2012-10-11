@@ -55,6 +55,7 @@ void GrassTreeGrow::Init()
     for(size_t i = 0; i < cvCount; i+=3) {
         cvs.push_back(vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
     }
+    cvs[6] = _tree.pos;
     _tube.cvs = cvs;
     _tube.Init();
 
@@ -85,6 +86,8 @@ void GrassTreeGrow::Draw() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    _ground->brightness = 1.0;
+
     static float stickyTime = 0.0f;
     float time = GetContext()->elapsedTime;
 
@@ -108,7 +111,7 @@ void GrassTreeGrow::Draw() {
     
     if (not fixedCam)// and not bloomMode)
     {
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime);
+        cam.eye = cameraPoints.At(time);
         //cam.eye.x += cos(stickyTime);
         //cam.eye.z += sin(stickyTime);
     }
@@ -117,6 +120,20 @@ void GrassTreeGrow::Draw() {
         //cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2));
         //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2));
     }
+
+    float underStart = 11.f;
+    float underStop = 19.f;
+    if (time > underStart and time < underStop) {
+        glm::vec3 orig = cam.eye;
+        cam.eye = _tree.pos;
+        cam.eye.x += 1.5 + 5.0*glm::smoothstep(underStart, underStop, time);
+        cam.eye.z -= 2.5;
+        cam.eye.y += .5;
+        cam.eye = glm::mix(cam.eye, orig, glm::smoothstep(underStart, underStop, time));
+    }
+
+    // crazy camera shake
+    //cam.eye += .5f+.5f*sinf(time) * .3f*glm::vec3(0.0, sin(time*140), 0.);
 
     // look where we are walking
     //  cam.center = cameraPoints.After(0);
