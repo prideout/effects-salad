@@ -17,7 +17,7 @@ uniform vec2 InverseViewport;
 uniform vec4 SolidColor;
 uniform sampler2D SourceImage;
 uniform sampler2D DepthImage;
-uniform vec4 ScanLineColor = vec4(0.2);
+uniform vec4 ScanLineColor = vec4(0.);
 uniform float TeleLineFreq = 10;
 uniform float Time = 0;
 uniform float Brightness = 1.0;
@@ -26,13 +26,6 @@ out vec4 FragColor;
  
 void main()
 {
-    if (ApplyScanLines) {
-        if (mod(gl_FragCoord.y, 2) < 1) {
-           FragColor = ScanLineColor;
-           return;
-        } 
-    }
-
     vec2 tc = gl_FragCoord.xy * InverseViewport;
 
     vec4 c;
@@ -55,6 +48,12 @@ void main()
     
     if (ApplyCopyDepth) {
        gl_FragDepth = texture(DepthImage, tc).x;
+    }
+
+    if (ApplyScanLines) {
+        if (mod(gl_FragCoord.y, 2) < 1) {
+           c = mix(c, ScanLineColor, .5);
+        } 
     }
 
     if (ApplyBrightness) {
