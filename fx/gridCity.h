@@ -6,6 +6,7 @@
 #include "common/vao.h"
 #include "common/camera.h"
 #include "common/halfBeat.h"
+#include "common/tube.h"
 #include "glm/glm.hpp"
 
 struct GridAnim {
@@ -41,9 +42,12 @@ private:
     void _AllocCell(GridCell* cell);
     void _FreeCell(GridCell* cell);
     Vao _CreateCityWall();
+    void _CreateVines();
 
     sketch::PathList
     _AddWindows(GridCell* cell, sketch::CoplanarPath* wall);
+
+    vector<Tube*> _vines;
 
     HalfBeat _beats;
     GridCells _cells;

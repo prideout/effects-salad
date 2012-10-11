@@ -123,6 +123,24 @@ vec2 GridCity::_CellSample(int row, int col)
     return vec2(-s/2 + x*s, p.y);
 }
 
+void GridCity::_CreateVines() 
+{
+    float area = TerrainArea/2 + 2;
+    vec4 bound(-area, -area, area, area);
+
+    Tube* t = new Tube;
+    Vec3List cvs;
+
+    t->cvs.push_back(vec3(bound.z, 1.0, bound.y));
+    t->cvs.push_back(vec3(bound.z, 1.0, bound.w));
+    t->cvs.push_back(vec3(bound.x, 1.0, bound.w));
+    t->cvs.push_back(vec3(bound.x, 1.0, bound.y));
+    t->radius = 10;
+    t->Init();
+    _vines.push_back(t);
+
+}
+
 Vao GridCity::_CreateCityWall()
 {
     sketch::Scene shape;
@@ -169,6 +187,7 @@ Vao GridCity::_CreateCityWall()
 void GridCity::Init()
 {
     _cityWall = _CreateCityWall();
+    _CreateVines();
 
     // Tessellate the ground
     FloatList ground;
@@ -406,6 +425,7 @@ void GridCity::Init()
     Programs& progs = Programs::GetInstance();
     progs.Load("Buildings.Terrain", false);
     progs.Load("Sketch.Facets", true);
+    progs.Load("FireFlies.Sig", "FireFlies.Sig.FS", "FireFlies.Tube.VS");
 
     // Set up camera
     _camera.far = 1000;
@@ -550,6 +570,11 @@ void GridCity::Update()
         cell.CpuTriangles->PullFromScene();
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }
+
+    // update vines
+    FOR_EACH(tubeIt, _vines) {
+        (*tubeIt)->Update();
+    }
 }
 
 void GridCity::Draw()
@@ -589,4 +614,15 @@ void GridCity::Draw()
     glUniform1i(u("HasWindows"), 0);
     _cityWall.Bind();
     glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
+    
+    // Grow vines
+    glUseProgram(progs["FireFlies.Sig"]);
+    _camera.Bind(glm::mat4());
+    glUniform3f(u("Eye"), _camera.eye.x, _camera.eye.y, _camera.eye.z);
+    glUniform3f(u("MaterialColor"), .1, .9, .2);
+    glUniform1f(u("Time"), GetContext()->elapsedTime);
+
+    FOR_EACH(tubeIt, _vines) {
+        (*tubeIt)->Draw();
+    }
 }

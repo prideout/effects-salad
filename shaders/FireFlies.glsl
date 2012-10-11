@@ -623,6 +623,8 @@ in vec4 vPosition;
 in float vOcc;
 
 out vec4 FragColor;
+out vec3 Normal;
+out vec4 Position;
 
 uniform mat4 Projection;
 uniform mat4 ViewMatrix;
@@ -639,6 +641,8 @@ void main()
     float d = max(0.0, dot(n, l));
     //d = 1.5;
     FragColor = vec4((ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
+    Normal = n;
+    Position = ViewMatrix*vPosition;
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
 }
