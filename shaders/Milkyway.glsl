@@ -80,6 +80,7 @@ in vec2 vUvCoord;
 out vec4 FragColor;
 uniform float Azimuth;
 uniform float Altitude;
+uniform float Brightness = 1.0;
 
 void main()
 {
@@ -97,7 +98,7 @@ void main()
     // adjust the noise scale
     u *= 1;
 
-    FragColor = vec4(.0, .0, .2*snoise(vec2(u, vUvCoord.y)), 1.0);
+    FragColor = vec4(Brightness*vec3(.0, .0, .2*snoise(vec2(u, vUvCoord.y))), 1.0);
     //FragColor = vec4(.0, .0, .2*snoise(vec2(u, Altitude+vUvCoord.y)), 1.0);
 }
 
