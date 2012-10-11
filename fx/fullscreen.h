@@ -13,6 +13,12 @@ public:
     glm::vec4 solidColor;
     glm::vec4 clearColor;
 
+    //
+    // Used when the BrightnessFlag is enabled
+    //   0.0 = solid clearColor, 1.0 = fully lit
+    //
+    float brightness;
+
     enum {
         SolidColorFlag = 1 << 0,
         VignetteFlag   = 1 << 1,
@@ -24,6 +30,7 @@ public:
         AdditiveFlag   = 1 << 7,
         SupersampleFlag = 1 << 8,
         AmbientOcclusionFlag = 1 << 9,
+        BrightnessFlag = 1 << 10,
     };
 
     typedef unsigned int Mask;

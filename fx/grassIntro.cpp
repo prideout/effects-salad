@@ -156,6 +156,15 @@ void GrassIntro::Draw() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    float time = GetContext()->elapsedTime;
+    
+    //
+    // Fade in
+    //
+    if (fullscreen) {
+        fullscreen->brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / 10.0f));
+    }
+    
     // --------------------------------------------------------------------------------
     // Camera
     // --------------------------------------------------------------------------------
@@ -171,9 +180,9 @@ void GrassIntro::Draw() {
     cam.eye.z = 8;
     
     if (not fixedCam)
-        cam.eye = cameraPoints.At(GetContext()->elapsedTime);
+        cam.eye = cameraPoints.At(time);
     else {
-        float t = GetContext()->elapsedTime;
+        float t = time; 
         cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2));
         //cam.eye = vec3(-5*sin(t/2), .5*(1+-1*cos(t/2)), -5*cos(t/2));
         cam.eye = cameraPoints.At(10);
@@ -194,7 +203,7 @@ void GrassIntro::Draw() {
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform3f(u("MaterialColor"), .1, .9, .2);
     //glUniform3f(u("MaterialColor"), .35, .55, 1.0);
-    glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("Time"), time);
     _tube.Draw();
 
     FOR_EACH(tubeIt, _tubes) {

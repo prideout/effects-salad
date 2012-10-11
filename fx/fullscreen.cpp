@@ -11,6 +11,7 @@ Fullscreen::Fullscreen(Mask mask, Effect* child) :
     Effect(), _mask(mask), _depthPeer(0)
 {
     clearColor = glm::vec4(0.1, 0.2, 0.4, 1);
+    brightness = 1.0;
     if (child) {
         _children.push_back(child);
     }
@@ -18,8 +19,10 @@ Fullscreen::Fullscreen(Mask mask, Effect* child) :
 
 Fullscreen::Fullscreen(string customProgram, Mask mask) :
     Effect(), _mask(mask), _customProgram(customProgram), _depthPeer(0)
+
 {
     clearColor = glm::vec4(0, 0, 0, 0);
+    brightness = 1.0;
 }
 
 void
@@ -180,10 +183,12 @@ Fullscreen::Draw()
         glUniform1i(u("ApplyScanLines"),  _mask & ScanLinesFlag);
         glUniform1i(u("ApplyTeleLines"),  _mask & TeleLinesFlag);
         glUniform1i(u("ApplyCopyDepth"),  _mask & CopyDepthFlag);
+        glUniform1i(u("ApplyBrightness"), _mask & BrightnessFlag);
     }
 
     glUniform1f(u("Time"),  GetContext()->elapsedTime);
     glUniform4fv(u("SolidColor"), 1, ptr(solidColor));
+    glUniform1f(u("Brightness"), brightness);
     glUniform1i(u("SourceImage"), 0);
     glUniform1i(u("DepthImage"), 1);
     glUniform1i(u("NormalsImage"), 2);

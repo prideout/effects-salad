@@ -12,6 +12,7 @@ uniform bool ApplyScanLines;
 uniform bool ApplyTeleLines;
 uniform bool ApplySolidColor;
 uniform bool ApplyCopyDepth;
+uniform bool ApplyBrightness;
 uniform vec2 InverseViewport;
 uniform vec4 SolidColor;
 uniform sampler2D SourceImage;
@@ -19,6 +20,7 @@ uniform sampler2D DepthImage;
 uniform vec4 ScanLineColor = vec4(0.2);
 uniform float TeleLineFreq = 10;
 uniform float Time = 0;
+uniform float Brightness = 1.0;
 
 out vec4 FragColor;
  
@@ -53,6 +55,10 @@ void main()
     
     if (ApplyCopyDepth) {
        gl_FragDepth = texture(DepthImage, tc).x;
+    }
+
+    if (ApplyBrightness) {
+        c = mix(SolidColor, c, Brightness);
     }
 
     FragColor = c;

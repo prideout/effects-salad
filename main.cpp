@@ -57,9 +57,11 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         GrassIntro* grass = new GrassIntro;
         grass->_ground = ground;
-        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag 
+                                      | Fullscreen::BrightnessFlag);
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
+        grass->fullscreen = fs;
 
         ctx->drawables.push_back(fs);
         //ctx->drawables.push_back(grass);

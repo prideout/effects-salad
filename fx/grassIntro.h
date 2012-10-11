@@ -12,6 +12,7 @@
 #include "common/quad.h"
 
 #include "fx/fireFlies.h"
+#include "fx/fullscreen.h"
 #include "fx/ground.h"
 #include "fx/milkyway.h"
 #include "fx/tree.h"
@@ -32,8 +33,9 @@ public:
     // shared. This feels so wrong, our scene graph should
     // allow for this in a better way
     Ground* _ground;
+    Fullscreen* fullscreen;
 
-    GrassIntro() : Effect() {}
+    GrassIntro() : Effect(), _ground(NULL), fullscreen(NULL) {}
     virtual ~GrassIntro() {} 
    
     virtual void Init();
