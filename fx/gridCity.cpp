@@ -123,8 +123,53 @@ vec2 GridCity::_CellSample(int row, int col)
     return vec2(-s/2 + x*s, p.y);
 }
 
+Vao GridCity::_CreateCityWall()
+{
+    sketch::Scene shape;
+
+    const float wallHeight = -15.0f;
+    const float wallThickness = 2.0f;
+
+    sketch::Quad southWallQuad;
+    southWallQuad.p = vec3(0, 0, TerrainArea/2);
+    southWallQuad.u = vec3(TerrainArea/2+wallThickness, 0, 0);
+    southWallQuad.v = vec3(0, 0, wallThickness);
+    sketch::CoplanarPath* southWallRoof = shape.AddQuad(southWallQuad);
+    shape.PushPath(southWallRoof, wallHeight);
+
+    sketch::Quad northWallQuad;
+    northWallQuad.p = vec3(0, 0, -TerrainArea/2);
+    northWallQuad.u = vec3(TerrainArea/2+wallThickness, 0, 0);
+    northWallQuad.v = vec3(0, 0, wallThickness);
+    sketch::CoplanarPath* northWallRoof = shape.AddQuad(northWallQuad);
+    shape.PushPath(northWallRoof, wallHeight);
+
+    sketch::Quad eastWallQuad;
+    eastWallQuad.p = vec3(TerrainArea/2, 0, 0);
+    eastWallQuad.u = vec3(wallThickness, 0, 0);
+    eastWallQuad.v = vec3(0, 0, TerrainArea/2+wallThickness);
+    sketch::CoplanarPath* eastWallRoof = shape.AddQuad(eastWallQuad);
+    shape.PushPath(eastWallRoof, wallHeight);
+
+    sketch::Quad westWallQuad;
+    westWallQuad.p = vec3(-TerrainArea/2, 0, 0);
+    westWallQuad.u = vec3(wallThickness, 0, 0);
+    westWallQuad.v = vec3(0, 0, TerrainArea/2+wallThickness);
+    sketch::CoplanarPath* westWallRoof = shape.AddQuad(westWallQuad);
+    shape.PushPath(westWallRoof, wallHeight);
+
+    sketch::Tessellator tess(shape);
+    Vao vao;
+    tess.PullFromScene();
+    tess.PushToGpu(vao);
+
+    return vao;
+}
+
 void GridCity::Init()
 {
+    _cityWall = _CreateCityWall();
+
     // Tessellate the ground
     FloatList ground;
     FloatList normals;
@@ -539,4 +584,9 @@ void GridCity::Draw()
         cell->GpuTriangles.Bind();
         glDrawElements(GL_TRIANGLES, cell->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
     }
+
+    // Add city wall
+    glUniform1i(u("HasWindows"), 0);
+    _cityWall.Bind();
+    glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
 }
