@@ -147,7 +147,7 @@ void GrassTreeGrow::Draw() {
         //cam.eye = glm::mix(cam.eye, orig, glm::smoothstep(underStart, underStop, time));
     } else if (time > underStop and time < overStop) {
         fullscreen->brightness = 1.0;
-        fullscreen->_mask |= Fullscreen::ScanLinesFlag;
+        fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
         if (
             (GetContext()->audio->GetSnares() 
              or GetContext()->audio->GetKicks())) {
@@ -159,6 +159,7 @@ void GrassTreeGrow::Draw() {
         cam.eye.z -= 7.0 * sin(hhCount*.25 + time / 4);
     } else {
         fullscreen->brightness = 1.0;
+        fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
     }
 
     // crazy camera shake
