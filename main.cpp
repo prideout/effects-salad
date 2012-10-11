@@ -208,7 +208,7 @@ static void _constructScene()
         shotMap[ctx->name] = ctx;
         Fullscreen::Mask mask = 0;
         mask |= Fullscreen::AmbientOcclusionFlag;
-        mask |= Fullscreen::SupersampleFlag;
+        //mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen;
         if (bool slow = true)
             fullscreen = new Fullscreen("SSAO", mask);
