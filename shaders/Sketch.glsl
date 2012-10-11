@@ -127,6 +127,7 @@ uniform mat4 Modelview;
 uniform mat3 NormalMatrix;
 uniform vec3 LightPosition = normalize(vec3(-1, 5, 1));
 uniform vec3 AmbientMaterial = vec3(0.1, 0.1, 0.1);
+uniform bool HasWindows = false;
 
 void main()
 {
@@ -147,7 +148,7 @@ void main()
     float d = clamp((gAltitude+5)/10, 0, 1);
     color *= d;
 
-    if (gIsRoof == 0) {
+    if (HasWindows && gIsRoof == 0) {
         int h = int(gTexCoord.x * 9.0) % 2;
         int v = int(gTexCoord.y * 9.0) % 2;
         color *= 1.0 - (h*v);

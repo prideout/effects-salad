@@ -73,6 +73,25 @@ GridTerrainFunc(vec2 v)
     return p;
 }
 
+static vec3
+BackgroundTerrainFunc(vec2 v)
+{
+    float tx = 5.0f * v.x * TerrainScale;
+    float tz = 5.0f * v.y * TerrainScale;
+    float y =
+        1.0f * TerrainNoise.Get(tx, tz) +
+        20.0f * TerrainNoise.Get(tx/5.0, tz/5.0);
+    y *= 0.3;
+    vec3 p = vec3(v.x, y, v.y);
+
+    float s = TerrainArea * 5;
+    p.x *= (s / TerrainRes);
+    p.z *= (s / TerrainRes);
+    p += vec3(-s/2.0, 0, -s/2.0);
+
+    return p;
+}
+
 GridCity::GridCity()
 {
     _currentBeat = 0;
@@ -115,6 +134,15 @@ void GridCity::Init()
         &ground, &normals, &indices);
     _terrainVao = Vao(3, ground, indices);
     _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
+
+    ground.clear();
+    normals.clear();
+    indices.clear();
+    TerrainUtil::Smooth(
+        TerrainRes, BackgroundTerrainFunc,
+        &ground, &normals, &indices);
+    _backgroundTerrainVao = Vao(3, ground, indices);
+    _backgroundTerrainVao.AddVertexAttribute(AttrNormal, 3, normals);
 
     // Form the grid
     GridCell cell;
@@ -489,6 +517,10 @@ void GridCity::Draw()
     glEnable(GL_CULL_FACE);
     glUseProgram(progs["Buildings.Terrain"]);
     _camera.Bind(glm::mat4());
+
+    _backgroundTerrainVao.Bind();
+    glDrawElements(GL_TRIANGLES, _backgroundTerrainVao.indexCount, GL_UNSIGNED_INT, 0);
+
     _terrainVao.Bind();
     glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
 
@@ -497,7 +529,7 @@ void GridCity::Draw()
     glUseProgram(progs["Sketch.Facets"]);
     glUniform3f(u("Scale"), 1, 1, 1);
     glUniform3f(u("Translate"), 0, 0, 0);
-    glUniform1i(u("Smooth"), 0);
+    glUniform1i(u("HasWindows"), 1);
     _camera.Bind(glm::mat4());
     FOR_EACH(cell, _cells) {
         glUniform1i(u("BuildingId"), cell->BuildingId);
