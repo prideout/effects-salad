@@ -189,6 +189,9 @@ void GridCity::Init()
     _cityWall = _CreateCityWall();
     _CreateVines();
 
+    _ridges.Shape = new sketch::Scene();
+    _ridges.CpuTriangles = new sketch::Tessellator(*_ridges.Shape);
+
     // Tessellate the ground
     FloatList ground;
     FloatList normals;
@@ -506,14 +509,25 @@ void GridCity::_AllocCell(GridCell* cell)
     sketch::Quad roofQuad = shape->ComputeQuad(cell->Anim.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
-    if (false) {
+
+    if (_ridges.Shape) {
         sketch::Quad northRidgeQuad;
         northRidgeQuad.p = roofQuad.p + roofQuad.u - U * ridgeThickness;
         northRidgeQuad.u = U * ridgeThickness;
         northRidgeQuad.v = roofQuad.v;
         sketch::CoplanarPath* northRidge = 
-            shape->AddQuad(northRidgeQuad);
-        shape->PushPath(northRidge, ridgeHeight); 
+            _ridges.Shape->AddQuad(northRidgeQuad);
+        float beginW = northRidge->Plane->Eqn.w;
+        _ridges.Shape->PushPath(northRidge, ridgeHeight); 
+        float endW = northRidge->Plane->Eqn.w;
+
+        GridAnim anim;
+        anim.Path = northRidge;
+        anim.BeginW = beginW;
+        anim.EndW = endW;
+        anim.StartTime = 0;
+        anim.StartBeat = 0;
+        _ridges.Anims.push_back(anim);
     }
 
     // Finalize the topology
@@ -589,6 +603,10 @@ void GridCity::Update()
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }
 
+    // update building ridges
+    _ridges.CpuTriangles->PullFromScene();
+    _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
+
     // update vines
     FOR_EACH(tubeIt, _vines) {
         (*tubeIt)->Update();
@@ -627,6 +645,11 @@ void GridCity::Draw()
         cell->GpuTriangles.Bind();
         glDrawElements(GL_TRIANGLES, cell->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
     }
+
+    // Draw roof ridges
+    glUniform1i(u("HasWindows"), 0);
+    //_ridges.GpuTriangles.Bind();
+    //glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
 
     // Add city wall
     glUniform1i(u("HasWindows"), 0);

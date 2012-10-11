@@ -64,4 +64,5 @@ private:
     PerspCamera _camera;
     int _currentBeat;
     Vao _cityWall;
+    GridRidges _ridges;
 };
