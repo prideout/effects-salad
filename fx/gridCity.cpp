@@ -27,24 +27,14 @@ static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
 static const float MaxHeight = 40;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
-static const float PopDuration = 1.0f;
-static const float GrowthRate = 0.05f; // lower is faster
-
-#if 0
-static const float MinHeight = 39;
-static const int NumRows = 5;
-static const int NumCols = 5;
-static const bool VisualizeCell = true;
-static const bool PopBuildings = false;
-static const bool HasWindows = true;
-#else
+static const float PopDuration = 3.0f;
+static const float GrowthRate = 0.2f; // lower is faster
 static const float MinHeight = 20;
 static const int NumRows = 10;
 static const int NumCols = 20;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
-static const bool HasWindows = false;
-#endif
+static const bool HasWindows = true;
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
@@ -358,37 +348,37 @@ sketch::PathList GridCity::_AddWindows(
     sketch::Scene* shape = cell->CpuShape;
     sketch::PathList windows;
 
-    sketch::Quad quad = shape->ComputeQuad(wall);
-    vec2 extent = 2.0f * vec2(length(quad.u), length(quad.v));
-    float wallHeight = extent.x;
-    float wallWidth = extent.y;
+    sketch::Quad wallQuad = shape->ComputeQuad(wall);
+    vec2 extent = 2.0f * vec2(length(wallQuad.u), length(wallQuad.v));
+    float wallWidth = extent.x;
+    float wallHeight = extent.y;
 
-    const int numRows = 2;
-    const int numCols = 2;
+    const int numRows = 4;
+    const int numCols = 10;
     const vec2 padding(1, 1);
 
-    float holeHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
     float holeWidth = (wallWidth - (numCols + 1) * padding.x) / float(numCols);
+    float holeHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
 
     if (holeHeight < 1.0 || holeWidth < 1.0) {
         return windows;
     }
+
+    vec3 U = normalize(wallQuad.u);
+    vec3 V = normalize(wallQuad.v);
 
     vec2 offset;
     offset.x = padding.x + holeWidth/2 - wallWidth/2;
     for (int col = 0; col < numCols; ++col) {
         offset.y = padding.y + holeHeight/2 - wallHeight/2;
         for (int row = 0; row < numRows; ++row) {
-            /*
-            Quad holeQuad;
-            holeQuad.p = ...;
-            holeQuad.u = ...;
-            holeQuad.v = ...;
-
+            sketch::Quad holeQuad;
+            holeQuad.p = wallQuad.p + U * offset.x + V * offset.y;
+            holeQuad.u = 0.5f * holeWidth * U;
+            holeQuad.v = 0.5f * holeHeight * V;
             sketch::CoplanarPath* hole = 0;
             hole = shape->AddHoleQuad(holeQuad, wall);
             windows.push_back(hole);
-            */
             offset.y += holeHeight + padding.y;
         }
         offset.x += holeWidth + padding.x;
