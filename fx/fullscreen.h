@@ -46,11 +46,12 @@ public:
     virtual void Update();
     virtual void Draw();
 
+    Mask _mask;
+
 private:
 
     Surface _surface;
     Vao _emptyVao;
-    Mask _mask;
     std::string _customProgram;
     EffectList _children;
     Fullscreen* _depthPeer;
