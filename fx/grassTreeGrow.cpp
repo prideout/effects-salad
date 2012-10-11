@@ -29,8 +29,6 @@ void GrassTreeGrow::Init()
     _fireFlies.Init();
 
 
-
-
     // --------------------------------------------------------------------- 
     // Camera Path
     // --------------------------------------------------------------------- 
@@ -87,6 +85,13 @@ void GrassTreeGrow::Draw() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    static float stickyTime = 0.0f;
+    float time = GetContext()->elapsedTime;
+
+    stickyTime = int(time*10.f) / 10.f;
+    float SPB = .5f * (1.0f / BPS);
+    stickyTime = int(time / SPB) * SPB;
+
     // --------------------------------------------------------------------------------
     // Camera
     // --------------------------------------------------------------------------------
@@ -102,7 +107,11 @@ void GrassTreeGrow::Draw() {
     cam.eye.z = 8;
     
     if (not fixedCam)// and not bloomMode)
+    {
         cam.eye = cameraPoints.At(GetContext()->elapsedTime);
+        //cam.eye.x += cos(stickyTime);
+        //cam.eye.z += sin(stickyTime);
+    }
     else {
         cam.eye = cameraPoints.At(10);
         //cam.eye = vec3(-4*sin(t/2), .5*(5+-5*cos(t/2)), -4*sin(t/2));
@@ -119,14 +128,15 @@ void GrassTreeGrow::Draw() {
     glUseProgram(progs["FireFlies.Tube"]);
     cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
-    glUniform1f(u("Time"), GetContext()->elapsedTime);
+    //glUniform3f(u("HazardCenter"), _tree.pos.x, _tree.pos.y, _tree.pos.z);
+    glUniform1f(u("Time"), time);
     _tube.Draw();
 
     FOR_EACH(tubeIt, _tubes) {
         tubeIt->Draw();
     }
 
-    _tree.Draw();
+    _tree.Draw(time); //15 + 15*sin(time));
     _fireFlies.Draw();
     _ground->Draw();
 

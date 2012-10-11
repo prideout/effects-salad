@@ -194,6 +194,8 @@ out vec4 vPosition;
 //out vec2 vUvCoord;
 out vec3 vNormal;
 out float vOcc;
+uniform vec3 Eye;
+//uniform vec3 HazardCenter;
 
 uniform mat4 Projection;
 uniform mat4 Modelview;
@@ -204,6 +206,7 @@ uniform float WindAmount;
 uniform float Vibration;
 
 float snoise(vec2 v);
+float hazard(vec2 p);
 
 /*
 uniform mat3 NormalMatrix;
@@ -221,8 +224,40 @@ void main()
     vPosition.xz += mod(gl_VertexID, 2) * Vibration*vec2(.05*sin(Time*140), .05*sin(Time*140));
     //vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(0, 5*snoise(vec2(gl_VertexID/1000.0,0.0)) + WindAmount);
     //vPosition.xz += .4* mod(gl_VertexID, 2) * vec2(cos(Time + gl_VertexID * .0000003), 0);
+    //vPosition = vPosition*.6*hazard(.1 * ((HazardCenter.xz - vPosition.xz)));
     gl_Position = Projection * Modelview * vPosition;
     vNormal = normalize(Normal.xyz);
+}
+
+float 
+hazard(vec2 p)
+{
+    //vec2 p = (2.0*gl_FragCoord.xy-resolution)/resolution.y;
+    p = mat2(cos(Time), -sin(Time), sin(Time), cos(Time)) * p;
+    float a = atan(p.x,p.y)/3.141593;
+    float r = length(p);
+
+    // shape
+    float h = abs(a);
+    float d = 1.0; //(13.0*h - 22.0*h*h + 10.0*h*h*h)/(6.0-5.0*h);
+
+    // color
+    float f = step(r,d) * pow(1.0-r/d,0.25);
+
+    bool isCent = r <= .2 || (r > .9 && r < .95);
+    bool isRing = (r > .2 && r < .3)
+               || (r > .9);
+    
+    bool isAng = (a > .2 && a < .5) 
+              || (a > -.5 && a < -.2)
+              || (a < -.85 && a > -1.15) 
+              || (a > .85 && a < 1.15);
+
+    if (   (isAng && !isRing)
+        || (isCent))
+      f = 0.0;
+    return f;
+    //gl_FragColor = vec4(f,f,0.0,1.0);
 }
 
 // --------------------- ( NOISE LIB CODE ) --------------------------------
