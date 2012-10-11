@@ -25,13 +25,26 @@ using namespace glm;
 static const int TerrainRes = 300;
 static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
-static const float MinHeight = 20;
 static const float MaxHeight = 40;
-static const int NumRows = 10;
-static const int NumCols = 20;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 static const float GrowthRate = 0.05f; // lower is faster
+
+#if 0
+static const float MinHeight = 39;
+static const int NumRows = 5;
+static const int NumCols = 5;
+static const bool VisualizeCell = true;
+static const bool PopBuildings = false;
+static const bool HasWindows = true;
+#else
+static const float MinHeight = 20;
+static const int NumRows = 10;
+static const int NumCols = 20;
+static const bool VisualizeCell = false;
+static const bool PopBuildings = true;
+static const bool HasWindows = false;
+#endif
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
@@ -258,7 +271,6 @@ void GridCity::Init()
             }
 
             // Turn on "VisualizeCell" mode for simpler geometry
-            const bool VisualizeCell = false;
             cell.BuildingId = (int) _cells.size();
             if (VisualizeCell) {
                 cell.Quad.p = vec3(p.x, 0, p.y);
@@ -302,9 +314,10 @@ void GridCity::Init()
         cell.Quad.u = length(cell.Quad.u) * normalize(p1 - cell.Quad.p);
 
         vec3 p2 = cell.Quad.p + cell.Quad.v;
-        p = vec2(p1.x, p1.z);
+        p = vec2(p2.x, p2.z);
         coord = p / float(TerrainArea);
         domain = (coord + vec2(0.5)) * float(TerrainArea);
+        p2.y = GridTerrainFunc(domain).y;
         cell.Quad.v = length(cell.Quad.v) * normalize(p2 - cell.Quad.p);
     }
 
@@ -338,6 +351,51 @@ void GridCity::Init()
     _camera.eye = vec3(-150-10, 350, 350);
 }
 
+sketch::PathList GridCity::_AddWindows(
+    GridCell* cell,
+    sketch::CoplanarPath* wall)
+{
+    sketch::Scene* shape = cell->CpuShape;
+    sketch::PathList windows;
+
+    sketch::Quad quad = shape->ComputeQuad(wall);
+    vec2 extent = 2.0f * vec2(length(quad.u), length(quad.v));
+    float wallHeight = extent.x;
+    float wallWidth = extent.y;
+
+    const int numRows = 2;
+    const int numCols = 2;
+    const vec2 padding(1, 1);
+
+    float holeHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
+    float holeWidth = (wallWidth - (numCols + 1) * padding.x) / float(numCols);
+
+    if (holeHeight < 1.0 || holeWidth < 1.0) {
+        return windows;
+    }
+
+    vec2 offset;
+    offset.x = padding.x + holeWidth/2 - wallWidth/2;
+    for (int col = 0; col < numCols; ++col) {
+        offset.y = padding.y + holeHeight/2 - wallHeight/2;
+        for (int row = 0; row < numRows; ++row) {
+            /*
+            Quad holeQuad;
+            holeQuad.p = ...;
+            holeQuad.u = ...;
+            holeQuad.v = ...;
+
+            sketch::CoplanarPath* hole = 0;
+            hole = shape->AddHoleQuad(holeQuad, wall);
+            windows.push_back(hole);
+            */
+            offset.y += holeHeight + padding.y;
+        }
+        offset.x += holeWidth + padding.x;
+    }
+    return windows;
+}
+
 void GridCity::_AllocCell(GridCell* cell)
 {
     sketch::Scene* shape = new sketch::Scene;
@@ -346,23 +404,36 @@ void GridCity::_AllocCell(GridCell* cell)
     float flip = dot(n, vec3(0, 1, 0)) < 0 ? -1 : 1;
     cell->Anim.BeginW = cell->Roof->Plane->Eqn.w;
 
+    // Push up the roof
     sketch::PathList walls;
     shape->PushPath(cell->Roof, flip * cell->Height, &walls);
-
-    // prideout TODO window holes go here
-    // AddHoleRectangle(w, h, wall, vec2(x,y));
 
     cell->Anim.EndW = cell->Roof->Plane->Eqn.w;
     cell->Anim.StartTime = 0;
     cell->CpuShape = shape;
+
+    // Create window holes
+    if (HasWindows) {
+        FOR_EACH(w, walls) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(*w);
+            _AddWindows(cell, cop);
+        }
+    }
+
     cell->CpuTriangles = new sketch::Tessellator(*shape);
     cell->CpuTriangles->PullFromScene();
 
-    shape->SetPathPlane(cell->Roof, cell->Anim.BeginW);
+    if (PopBuildings) {
+        shape->SetPathPlane(cell->Roof, cell->Anim.BeginW);
+    }
 
     cell->CpuTriangles->PullFromScene();
     cell->CpuTriangles->PushToGpu(cell->GpuTriangles);
-    cell->Visible = false;
+    cell->Visible = not PopBuildings;
+
+    if (not PopBuildings) {
+        _FreeCell(cell);
+    }
 }
 
 void GridCity::_FreeCell(GridCell* cell)

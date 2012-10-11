@@ -126,7 +126,13 @@ namespace sketch
 
         // Create a rectangular hole inside the given path
         CoplanarPath*
-        AddHoleRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
+        AddHoleRectangle(float width, float height,
+                         sketch::CoplanarPath* path,
+                         glm::vec2 offset,
+                         glm::mat3 coordSys);
+
+        CoplanarPath*
+        AddHoleQuad(Quad q, sketch::CoplanarPath* path);
 
         CoplanarPath*
         AddInscribedPolygon(float radius, sketch::CoplanarPath* path, glm::vec2 offset, int numPoints);
@@ -141,6 +147,9 @@ namespace sketch
 
         glm::vec2
         GetPathExtent(const CoplanarPath* path) const;
+
+        sketch::Quad
+        ComputeQuad(const CoplanarPath* path) const;
 
         Scene();
         ~Scene();
@@ -199,6 +208,9 @@ namespace sketch
 
         glm::vec3
         _GetCentroid(const Path* path) const;
+
+        glm::vec3
+        _GetMidpoint(const Edge* edge) const;
 
         // Snaps the edges, vertices, and plane equation of the given path with existing objects
         // in the scene.  Updates everybody's adjacency information and shares pointers.
