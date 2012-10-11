@@ -123,22 +123,108 @@ vec2 GridCity::_CellSample(int row, int col)
     return vec2(-s/2 + x*s, p.y);
 }
 
-void GridCity::_CreateVines() 
+float
+GridCity::_GetHeight(vec3 p0)
 {
-    float area = TerrainArea/2 + 2;
-    vec4 bound(-area, -area, area, area);
+    vec2 p = vec2(p0.x, p0.z);
+    vec2 coord = p / float(TerrainArea);
+    vec2 domain = (coord + vec2(0.5)) * float(TerrainArea);
+    return GridTerrainFunc(domain).y;
+}
+
+Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX)
+{
+    float area = TerrainArea/2;
+    vec2 min(-area, -area);
+    vec2 max(area, area);
 
     Tube* t = new Tube;
     Vec3List cvs;
 
-    t->cvs.push_back(vec3(bound.z, 1.0, bound.y));
-    t->cvs.push_back(vec3(bound.z, 1.0, bound.w));
-    t->cvs.push_back(vec3(bound.x, 1.0, bound.w));
-    t->cvs.push_back(vec3(bound.x, 1.0, bound.y));
-    t->radius = 10;
-    t->Init();
-    _vines.push_back(t);
 
+    //
+    // Build up CVs, make sure the total number equals 4 + 3n
+    // or they won't draw correctly (cubic segments)
+    //
+
+    float curveAmp = 20;
+    float curveLenght = 40;
+    float curvePeriod= 10 / 7.0;
+
+    for (int i = 0; i < 4; i++) {
+        if (facingX)
+            t->cvs.push_back(vec3(
+                                glm::mix(min.x, max.x, xmix) + dirFactor*i*curveLenght, 
+                                1.0, 
+                                (curveAmp*sin(i*curvePeriod)) + glm::mix(min.y, max.y, zmix)));
+
+        else
+            t->cvs.push_back(vec3(
+                                (curveAmp*sin(i*curvePeriod)) + glm::mix(min.x, max.x, xmix), 
+                                1.0, 
+                                glm::mix(min.y, max.y, zmix) + dirFactor*i*curveLenght ));
+    }
+    
+    //t->cvs.push_back(vec3(min.x, 1.0, .5*max.y + .5*min.y));
+
+    #if 0
+    for (int i = 0; i < 6; i++) {
+        t->cvs.push_back(vec3(min.x + (40*sin(10*i/6.0f)), 1.0, glm::mix(min.y, max.y, i/6.0f)));
+    }
+    
+    t->cvs.push_back(vec3(min.x, 1.0, max.y - 10));
+    t->cvs.push_back(vec3(min.x, 1.0, max.y ));
+    t->cvs.push_back(vec3(min.x, 1.0, max.y + 10));
+
+    t->cvs.push_back(vec3(max.x , 1.0, max.y));
+
+    t->cvs.push_back(vec3(max.x, 1.0, min.y));
+
+    t->cvs.push_back(vec3(min.x, 1.0, min.y));
+    #endif
+
+    //
+    // These values are consumed by Init, so set them first
+    //
+    t->radius = 2;
+    t->lod =5;
+
+    //
+    // Fix up y values to match terrain
+    //
+    FOR_EACH(cvIt, t->cvs) {
+        cvIt->y = _GetHeight(*cvIt) + t->radius+.5;
+    }
+
+    //
+    // Build sweep, build buffers, etc 
+    // 
+    t->Init();
+    
+    return t;
+}
+
+void GridCity::_CreateVines() 
+{
+    for (float a = 0; a < 1.0; a+= .1) {
+        Tube* t = _CreateVine(.0, a, -1, true);
+        _vines.push_back(t);
+    }
+
+    for (float a = 0; a < 1.0; a+= .1) {
+        Tube* t = _CreateVine(a, 1, 1, false);
+        _vines.push_back(t);
+    }
+
+    for (float a = 0; a < 1.0; a+= .1) {
+        Tube* t = _CreateVine(a, 0, -1, false);
+        _vines.push_back(t);
+    }
+
+    for (float a = 0; a < 1.0; a+= .1) {
+        Tube* t = _CreateVine(1, a, 1, true);
+        _vines.push_back(t);
+    }
 }
 
 Vao GridCity::_CreateCityWall()
@@ -619,7 +705,7 @@ void GridCity::Draw()
     glUseProgram(progs["FireFlies.Sig"]);
     _camera.Bind(glm::mat4());
     glUniform3f(u("Eye"), _camera.eye.x, _camera.eye.y, _camera.eye.z);
-    glUniform3f(u("MaterialColor"), .1, .9, .2);
+    glUniform3f(u("MaterialColor"), .3, .8, .5);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
 
     FOR_EACH(tubeIt, _vines) {
