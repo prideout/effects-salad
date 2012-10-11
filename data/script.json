@@ -57,21 +57,13 @@
 
 ["GrassIntro", 17.0, "GrassIntroCurve", []],
 
-//["CityGrow", 30.0, "NuthinDoin", []],
-
 ["GridCity", 30.0, "FranticCurve", []],
 
 ["GrassTreeGrow", 30.0, "NuthinDoin", []],
 
-//["CityDetail", 30.0, "NuthinDoin", []],
-
 ["GridCity2", 30.0, "FranticCurve", []],
 
 ["GrassTreeBloom", 30.0, "NuthinDoin", []],
-
-//["CityIntro", 5.0, "FranticCurve", []],
-
-//["CityExplosion", 10.0, "FranticCurve", []],
 
 ["prideout_credits", 6.0, "NuthinDoin", []]
 
