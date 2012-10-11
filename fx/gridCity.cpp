@@ -25,19 +25,20 @@ using namespace glm;
 static const int TerrainRes = 300;
 static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
-static const float MinHeight = 20;
 static const float MaxHeight = 40;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 static const float GrowthRate = 0.05f; // lower is faster
 
 #if 0
+static const float MinHeight = 39;
 static const int NumRows = 5;
 static const int NumCols = 5;
 static const bool VisualizeCell = true;
 static const bool PopBuildings = false;
 static const bool HasWindows = true;
 #else
+static const float MinHeight = 20;
 static const int NumRows = 10;
 static const int NumCols = 20;
 static const bool VisualizeCell = false;
@@ -355,58 +356,42 @@ sketch::PathList GridCity::_AddWindows(
     sketch::CoplanarPath* wall)
 {
     sketch::Scene* shape = cell->CpuShape;
-
     sketch::PathList windows;
-    vec2 extent = shape->GetPathExtent(wall);
+
+    sketch::Quad quad = shape->ComputeQuad(wall);
+    vec2 extent = 2.0f * vec2(length(quad.u), length(quad.v));
     float wallHeight = extent.x;
     float wallWidth = extent.y;
 
-    int numRows = 2;//std::max(1, int(wallHeight / 4.0));
-    int numCols = 5;//std::max(1, int(wallWidth / 3.0));
-    vec2 padding(5, 5);
-    float cellHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
-    float cellWidth = (wallWidth - (numCols + 1) * padding.x) / float(numCols);
+    const int numRows = 2;
+    const int numCols = 2;
+    const vec2 padding(1, 1);
 
-    if (cellHeight < 1.0 || cellWidth < 1.0) {
+    float holeHeight = (wallHeight - (numRows + 1) * padding.y) / float(numRows);
+    float holeWidth = (wallWidth - (numCols + 1) * padding.x) / float(numCols);
+
+    if (holeHeight < 1.0 || holeWidth < 1.0) {
         return windows;
     }
 
-    mat3 coordSys1 = wall->Plane->GetCoordSys();
-    float orientation = (coordSys1 * vec3(1, 0, 0)).y;
-    //cout << "\norientation: " << orientation << std::endl;
-    
-    vec3 u = normalize(vec3(cell->Quad.u));
-    vec3 v = normalize(vec3(cell->Quad.v));
-
-    cout << "u, v: " <<
-        to_string(u) << ' ' <<
-        to_string(v) << std::endl;
-    //cout << "old: " << to_string(coordSys1) << std::endl;
-
-    vec3 t = -normalize(cell->Quad.v);
-    vec3 r = normalize(cell->Quad.u);
-    vec3 s = cross(r, t);
-    mat3 coordSys = mat3(s, r, t);
-    //cout << "new: " << to_string(coordSys) << std::endl;
-
-    coordSys = coordSys1;
-
     vec2 offset;
-    offset.x = padding.x + cellWidth/2 - wallWidth/2;
+    offset.x = padding.x + holeWidth/2 - wallWidth/2;
     for (int col = 0; col < numCols; ++col) {
-        offset.y = padding.y + cellHeight/2 - wallHeight/2;
+        offset.y = padding.y + holeHeight/2 - wallHeight/2;
         for (int row = 0; row < numRows; ++row) {
+            /*
+            Quad holeQuad;
+            holeQuad.p = ...;
+            holeQuad.u = ...;
+            holeQuad.v = ...;
+
             sketch::CoplanarPath* hole = 0;
-            hole = shape->AddHoleRectangle(
-                cellHeight,
-                cellWidth,
-                wall,
-                orientation * vec2(offset.y, offset.x),
-                coordSys);
+            hole = shape->AddHoleQuad(holeQuad, wall);
             windows.push_back(hole);
-            offset.y += cellHeight + padding.y;
+            */
+            offset.y += holeHeight + padding.y;
         }
-        offset.x += cellWidth + padding.x;
+        offset.x += holeWidth + padding.x;
     }
     return windows;
 }

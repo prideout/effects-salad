@@ -221,6 +221,31 @@ Scene::AddHoleRectangle(float width, float height,
     return hole;
 }
 
+// Create a rectangular hole inside the given path
+CoplanarPath*
+Scene::AddHoleQuad(Quad q, sketch::CoplanarPath* outer)
+{
+    unsigned int a = _AppendPoint(q.p - q.u - q.v);
+    unsigned int b = _AppendPoint(q.p + q.u - q.v);
+    unsigned int c = _AppendPoint(q.p + q.u + q.v);
+    unsigned int d = _AppendPoint(q.p - q.u + q.v);
+
+    CoplanarPath* hole = new CoplanarPath();
+    hole->Visible = true;
+    _topologyHash++;
+
+    _AppendEdge(hole, a, b);
+    _AppendEdge(hole, b, c);
+    _AppendEdge(hole, c, d);
+    _AppendEdge(hole, d, a);
+
+    hole->Plane = outer->Plane;
+    outer->Holes.push_back(hole);
+    _holes.push_back(hole);
+
+    return hole;
+}
+
 CoplanarPath*
 Scene::AddInscribedPolygon(float radius, sketch::CoplanarPath* outer,
                           glm::vec2 pathOffset, int numPoints)
@@ -642,6 +667,27 @@ Scene::GetPathExtent(const CoplanarPath* path) const
         }
     }
     return maxp - minp;
+}
+
+sketch::Quad
+Scene::ComputeQuad(const CoplanarPath* path) const
+{
+    assert(path->Edges.size() == 4);
+    vec3 p = _GetCentroid(path);
+    vec3 e0 = _GetMidpoint(path->Edges[0]);
+    vec3 e1 = _GetMidpoint(path->Edges[1]);
+    vec3 u = e0 - p;
+    vec3 v = e1 - p;
+    Quad q = {p, u, v};
+    return q;
+}
+
+glm::vec3
+Scene::_GetMidpoint(const Edge* edge) const
+{
+    return mix(_points[edge->Endpoints.x],
+               _points[edge->Endpoints.y],
+               0.5f);
 }
 
 void
