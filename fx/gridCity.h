@@ -40,6 +40,7 @@ private:
     vec2 _CellSample(int row, int col);
     void _AllocCell(GridCell* cell);
     void _FreeCell(GridCell* cell);
+    Vao _CreateCityWall();
 
     sketch::PathList
     _AddWindows(GridCell* cell, sketch::CoplanarPath* wall);
@@ -50,4 +51,5 @@ private:
     Vao _backgroundTerrainVao;
     PerspCamera _camera;
     int _currentBeat;
+    Vao _cityWall;
 };
