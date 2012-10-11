@@ -34,7 +34,7 @@ static const int NumRows = 10;
 static const int NumCols = 20;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
-static const bool HasWindows = true;
+static const bool HasWindows = false;
 
 // Params: int octaves, float freq, float amp, int seed
 static Perlin HeightNoise(2, .5, 1, 3);
@@ -441,6 +441,7 @@ void GridCity::Update()
         _currentBeat++;
     }
 
+    int numAnimating = 0;
     tween::Elastic tweener;
     FOR_EACH(i, _cells) {
         GridCell& cell = *i;
@@ -466,6 +467,7 @@ void GridCity::Update()
             continue;
         }
         // Update an in-progress animation
+        numAnimating++;
         float w = tweener.easeOut(
             time - cell.Anim.StartTime,
             cell.Anim.BeginW,

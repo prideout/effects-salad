@@ -216,6 +216,7 @@ static void _constructScene()
             fullscreen = new Fullscreen(0);
         fullscreen->AddChild(new GridCity());
         ctx->drawables.push_back(fullscreen);
+        ctx->drawables.push_back(new FpsOverlay());
     }
 
     //
