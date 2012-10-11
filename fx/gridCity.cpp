@@ -438,7 +438,7 @@ sketch::PathList GridCity::_AddWindows(
     GridCell* cell,
     sketch::CoplanarPath* wall)
 {
-    sketch::Scene* shape = cell->CpuShape;
+    sketch::Scene* shape = cell->Shape;
     sketch::PathList windows;
 
     sketch::Quad wallQuad = shape->ComputeQuad(wall);
@@ -482,18 +482,15 @@ sketch::PathList GridCity::_AddWindows(
 void GridCity::_AllocCell(GridCell* cell)
 {
     sketch::Scene* shape = new sketch::Scene;
-    cell->Roof = shape->AddQuad(cell->Quad);
-    vec3 n = cell->Roof->Plane->GetNormal();
+    cell->Anim.Path = shape->AddQuad(cell->Quad);
+    vec3 n = cell->Anim.Path->Plane->GetNormal();
     float flip = dot(n, vec3(0, 1, 0)) < 0 ? -1 : 1;
-    cell->Anim.BeginW = cell->Roof->Plane->Eqn.w;
 
     // Push up the roof
     sketch::PathList walls;
-    shape->PushPath(cell->Roof, flip * cell->Height, &walls);
-
-    cell->Anim.EndW = cell->Roof->Plane->Eqn.w;
-    cell->Anim.StartTime = 0;
-    cell->CpuShape = shape;
+    cell->Anim.BeginW = cell->Anim.Path->Plane->Eqn.w;
+    shape->PushPath(cell->Anim.Path, flip * cell->Height, &walls);
+    cell->Anim.EndW = cell->Anim.Path->Plane->Eqn.w;
 
     // Create window holes
     if (HasWindows) {
@@ -503,16 +500,37 @@ void GridCity::_AllocCell(GridCell* cell)
         }
     }
 
+    // Create roof ridges -- we should perhaps do this later
+    const float ridgeHeight = 10.0f;
+    const float ridgeThickness = 2.0f;
+    sketch::Quad roofQuad = shape->ComputeQuad(cell->Anim.Path);
+    vec3 U = normalize(roofQuad.u);
+    vec3 V = normalize(roofQuad.v);
+    if (false) {
+        sketch::Quad northRidgeQuad;
+        northRidgeQuad.p = roofQuad.p + roofQuad.u - U * ridgeThickness;
+        northRidgeQuad.u = U * ridgeThickness;
+        northRidgeQuad.v = roofQuad.v;
+        sketch::CoplanarPath* northRidge = 
+            shape->AddQuad(northRidgeQuad);
+        shape->PushPath(northRidge, ridgeHeight); 
+    }
+
+    // Finalize the topology
     cell->CpuTriangles = new sketch::Tessellator(*shape);
     cell->CpuTriangles->PullFromScene();
 
+    // Push the building back into the ground to allow it to pop up later
     if (PopBuildings) {
-        shape->SetPathPlane(cell->Roof, cell->Anim.BeginW);
+        shape->SetPathPlane(cell->Anim.Path, cell->Anim.BeginW);
     }
 
+    // Misc
+    cell->Anim.StartTime = 0;
+    cell->Shape = shape;
+    cell->Visible = not PopBuildings;
     cell->CpuTriangles->PullFromScene();
     cell->CpuTriangles->PushToGpu(cell->GpuTriangles);
-    cell->Visible = not PopBuildings;
 
     if (not PopBuildings) {
         _FreeCell(cell);
@@ -521,9 +539,9 @@ void GridCity::_AllocCell(GridCell* cell)
 
 void GridCity::_FreeCell(GridCell* cell)
 {
-    delete cell->CpuShape;
+    delete cell->Shape;
     delete cell->CpuTriangles;
-    cell->CpuShape = 0;
+    cell->Shape = 0;
     cell->CpuTriangles = 0;
 }
 
@@ -553,7 +571,7 @@ void GridCity::Update()
         }
         if (time > cell.Anim.StartTime + PopDuration) {
             // At this point we're ending a pop animation
-            cell.CpuShape->SetPathPlane(cell.Roof, cell.Anim.EndW);
+            cell.Shape->SetPathPlane(cell.Anim.Path, cell.Anim.EndW);
             cell.CpuTriangles->PullFromScene();
             cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
             _FreeCell(&cell);
@@ -566,7 +584,7 @@ void GridCity::Update()
             cell.Anim.BeginW,
             cell.Anim.EndW - cell.Anim.BeginW,
             PopDuration);
-        cell.CpuShape->SetPathPlane(cell.Roof, w);
+        cell.Shape->SetPathPlane(cell.Anim.Path, w);
         cell.CpuTriangles->PullFromScene();
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }

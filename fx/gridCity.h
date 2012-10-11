@@ -14,21 +14,29 @@ struct GridAnim {
     float EndW;
     float StartTime;
     int StartBeat;
+    sketch::CoplanarPath* Path;
 };
 
 struct GridCell {
     sketch::Quad Quad;
     float Height;
-    sketch::Scene* CpuShape;
+    sketch::Scene* Shape;
     sketch::Tessellator* CpuTriangles;
-    sketch::CoplanarPath* Roof;
     GridAnim Anim;
     Vao GpuTriangles;
     bool Visible;
     int BuildingId;
- };
+};
 
 typedef std::vector<GridCell> GridCells;
+typedef std::vector<GridAnim> GridAnims;
+
+struct GridRidges {
+    GridAnims Anims;
+    sketch::Scene* Shape;
+    sketch::Tessellator* CpuTriangles;
+    Vao GpuTriangles;
+};
 
 class GridCity : public Effect {
 public:

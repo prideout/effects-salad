@@ -124,6 +124,9 @@ namespace sketch
         CoplanarPath*
         AddInscribedRectangle(float width, float height, sketch::CoplanarPath* path, glm::vec2 offset);
 
+        CoplanarPath*
+        AddInscribedQuad(sketch::Quad q, sketch::CoplanarPath* path);
+
         // Create a rectangular hole inside the given path
         CoplanarPath*
         AddHoleRectangle(float width, float height,

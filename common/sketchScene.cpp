@@ -177,6 +177,28 @@ Scene::AddInscribedRectangle(float width, float height,
     return inner;
 }
 
+CoplanarPath*
+Scene::AddInscribedQuad(sketch::Quad q,
+                        sketch::CoplanarPath* outer)
+{
+    bool previous = _recording;
+    _recording = false;
+    CoplanarPath* inner = AddQuad(q);
+    _recording = previous;
+
+    CoplanarPath* hole = new CoplanarPath();
+    hole->Visible = true;
+    _topologyHash++;
+    FOR_EACH(edge, inner->Edges) {
+        _AppendEdge(hole, *edge);
+    }
+    hole->Plane = inner->Plane;
+    outer->Holes.push_back(hole);
+    _holes.push_back(hole);
+
+    return inner;
+}
+
 // Create a rectangular hole inside the given path
 CoplanarPath*
 Scene::AddHoleRectangle(float width, float height,
