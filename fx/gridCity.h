@@ -7,6 +7,7 @@
 #include "common/camera.h"
 #include "common/halfBeat.h"
 #include "glm/glm.hpp"
+#include "AntTweakBar/AntTweakBar.h"
 
 struct GridAnim {
     float BeginW;
@@ -45,4 +46,7 @@ private:
     Vao _terrainVao;
     PerspCamera _camera;
     int _currentBeat;
+    TwBar* _tweakBar;
+    float _noiseScale;
+    float _colorMix;
 };

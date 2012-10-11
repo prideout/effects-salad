@@ -24,6 +24,9 @@ uniform float SamplingRadius = 100.0;
 uniform vec2 Attenuation = vec2(1,1);
 
 uniform bool ApplyVignette = true;
+uniform float ColorMix = 0.4;
+
+uniform float NoiseScale = 20.0;
 
 out vec4 FragColor;
  
@@ -58,7 +61,7 @@ float ComputeOcclusion(vec2 tc, vec3 srcNormal)
 {
     // Get position and normal vector for this fragment
     vec3 srcPosition = texture(PositionsImage, tc).xyz;
-    vec2 randVec = normalize(texture(NoiseImage, tc*20).xy * 2.0 - 1.0);
+    vec2 randVec = normalize(texture(NoiseImage, tc * NoiseScale).xy * 2.0 - 1.0);
     float srcDepth = texture(PositionsImage, tc).w;
     
     // The following variable specifies how many pixels we skip over after each
@@ -107,7 +110,7 @@ void main()
     vec4 c = texture(SourceImage, tc);
 
     bool bkgd = (c.a == 0);
-    c = mix(c,vec4(1),0.4); // brighten up for pastel-like colors
+    c = mix(c,vec4(1),ColorMix); // brighten up for pastel-like colors
 
     vec3 n = texture(NormalsImage, tc).rgb;
 

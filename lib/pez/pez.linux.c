@@ -17,6 +17,10 @@
 #include <X11/Xutil.h>
 #include <X11/Xmd.h>
 
+#include "AntTweakBar/AntTweakBar.h"
+
+TW_API int TW_CDECL_CALL TwEventX11(void *xevent);
+
 extern int __pez__Argc;
 extern const char** __pez__Argv;
 
@@ -191,6 +195,10 @@ int main(int argc, char** argv)
     pezSwAddPath(qualifiedPath, ".glsl");
     pezSwAddDirective("*", "#version 420");
 
+    // Initialize the tweak bar
+    TwInit(TW_OPENGL_CORE, NULL);
+    TwWindowSize(PezGetConfig().Width, PezGetConfig().Height);
+
     // Perform user-specified intialization
     pezPrintString("OpenGL Version: %s\n", glGetString(GL_VERSION));
     PezInitialize();
@@ -210,10 +218,13 @@ int main(int argc, char** argv)
         if (glGetError() != GL_NO_ERROR)
             pezFatal("OpenGL error.\n");
 
-        if (XPending(context.MainDisplay)) {
+        while(XPending(context.MainDisplay)) {
             XEvent event;
     
             XNextEvent(context.MainDisplay, &event);
+
+            TwEventX11(&event);
+
             switch (event.type)
             {
                 case Expose:

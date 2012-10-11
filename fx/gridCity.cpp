@@ -1,7 +1,3 @@
-// Start the buildings radially
-// Ridges on rooves, inset windows
-// Sandstorms
-// Camera work
 
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
@@ -15,6 +11,7 @@
 #include "common/sketchTess.h"
 #include "glm/gtx/constants.inl"
 #include "tween/CppTweener.h"
+#include "AntTweakBar/AntTweakBar.h"
 
 #include <algorithm>
 #include <limits>
@@ -73,6 +70,7 @@ GridTerrainFunc(vec2 v)
 GridCity::GridCity()
 {
     _currentBeat = 0;
+    _tweakBar = 0;
 }
 
 GridCity::~GridCity()
@@ -103,6 +101,15 @@ vec2 GridCity::_CellSample(int row, int col)
 
 void GridCity::Init()
 {
+    // Create a tweak bar
+    _tweakBar = TwNewBar("GridCity");
+    _noiseScale = 20.0;
+    _colorMix = 0.4;
+    TwAddVarRW(_tweakBar, "NoiseScale", TW_TYPE_FLOAT, &_noiseScale,
+               "min=0 max=50 label='Noise Scale'");
+    TwAddVarRW(_tweakBar, "ColorMix", TW_TYPE_FLOAT, &_colorMix,
+               "min=0 max=1 step=0.01 label='Color Mix'");
+
     // Tessellate the ground
     FloatList ground;
     FloatList normals;
@@ -329,6 +336,7 @@ void GridCity::Init()
     // Compile shaders
     Programs& progs = Programs::GetInstance();
     progs.Load("Buildings.Terrain", false);
+    progs.Load("SSAO", false);
     progs.Load("Sketch.Facets", true);
 
     // Set up camera
@@ -414,6 +422,11 @@ void GridCity::Draw()
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     Programs& progs = Programs::GetInstance();
+
+    // Adjust some uniforms used by other effects
+    glUseProgram(progs["SSAO"]);
+    glUniform1f(u("NoiseScale"), _noiseScale);
+    glUniform1f(u("ColorMix"), _colorMix);
 
     // Draw terrain
     glEnable(GL_CULL_FACE);

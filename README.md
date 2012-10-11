@@ -57,7 +57,9 @@ effects-salad
 
 2) Go to lib/tetgen and run "make tetlib"
 
-3) Setup SDL
+3) Go to lib/AntTweakMake/src and run "mkdir ../lib; make -j4"
+
+4) Setup SDL
 
 
 > **For OSX:**

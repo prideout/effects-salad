@@ -4,6 +4,7 @@
 
 #include "fx/quads.h"
 #include "fx/fpsOverlay.h"
+#include "AntTweakBar/AntTweakBar.h"
 
 DemoContext* DemoContext::_current(NULL);
 float DemoContext::totalTime = 0;
@@ -39,7 +40,7 @@ DemoContext::Render() {
     FOR_EACH(drawable, drawables) {
         (*drawable)->Draw();
     }
-
+    TwDraw();
 }
 
 void 

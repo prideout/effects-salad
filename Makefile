@@ -68,7 +68,7 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	SHARED := $(SHARED) $(OBJDIR)/lib/pez/pez.linux.o
 	CXXFLAGS := $(CXXFLAGS) `sdl-config --cflags`
-	LIBS = -pthread -lX11 -lGL `sdl-config --libs` -lSDL_mixer lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
+	LIBS = -Llib/AntTweakBar/lib -pthread -lAntTweakBar -lX11 -lGL `sdl-config --libs` -lSDL_mixer lib/jsoncpp/libjson_linux-gcc-4.4.6_libmt.a lib/tetgen/libtet.a
 endif
 
 ifeq ($(UNAME), Darwin)
@@ -83,7 +83,7 @@ endif
 all: $(OBJDIR) $(OBJDIR)/make.deps salad tetknot 
 
 salad:  $(OBJDIR)/main.o $(SHARED)
-	$(CXX) $< $(SHARED) -o salad $(LIBS)
+	$(CXX) $< $(SHARED) -o salad $(LIBS) -Wl,-rpath lib/AntTweakBar/lib
 
 tetknot:  $(OBJDIR)/tetknot.o $(SHARED)
 	$(CXX) $< $(SHARED) -o tetknot $(LIBS)

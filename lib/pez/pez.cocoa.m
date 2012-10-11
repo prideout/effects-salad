@@ -8,6 +8,8 @@
 #import <wchar.h>
 #import <stdio.h>
 
+#include "AntTweakBar/AntTweakBar.h"
+
 extern int __pez__Argc;
 extern const char** __pez__Argv;
 
@@ -63,6 +65,9 @@ static int _PezDesktopHeight;
                             initWithAttributes:(NSOpenGLPixelFormatAttribute*) attribs];
 
     self = [self initWithFrame:frame pixelFormat:fmt];
+
+    TwInit(TW_OPENGL_CORE, NULL);
+    TwWindowSize(PezGetConfig().Width, PezGetConfig().Height);
 
     [fmt release];
 
