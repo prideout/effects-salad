@@ -36,13 +36,13 @@ static const int NumRows = 5;
 static const int NumCols = 5;
 static const bool VisualizeCell = true;
 static const bool PopBuildings = false;
-static const bool HasWindows = false;
+static const bool HasWindows = true;
 #else
 static const int NumRows = 10;
 static const int NumCols = 20;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
-static const bool HasWindows = true;
+static const bool HasWindows = false;
 #endif
 
 // Params: int octaves, float freq, float amp, int seed
