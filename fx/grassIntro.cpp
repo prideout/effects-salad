@@ -157,13 +157,23 @@ void GrassIntro::Draw() {
     glEnable(GL_DEPTH_TEST);
 
     float time = GetContext()->elapsedTime;
+
+    float fliesFadeTime = 14.0;
+    float starsFadeTime = 8.0;
+    float grassFadeTime = 5.0;
+    float screenFadeTime = 1.0;
+
+    _fireFlies.brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / fliesFadeTime));
+    _milkyway.brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / starsFadeTime));
+    _ground->brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / grassFadeTime));
     
     //
     // Fade in
     //
     if (fullscreen) {
-        fullscreen->brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / 10.0f));
+        fullscreen->brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / screenFadeTime));
     }
+    
     
     // --------------------------------------------------------------------------------
     // Camera
@@ -212,7 +222,6 @@ void GrassIntro::Draw() {
 
     _fireFlies.Draw();
     _ground->Draw();
-
     _milkyway.Draw();
 
     glDisable(GL_CULL_FACE);

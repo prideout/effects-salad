@@ -11,8 +11,9 @@ class FireFlies : public Effect {
     Vao _fliesGpu;
 
 public:
+    float brightness;
 
-    FireFlies() : Effect() {}
+    FireFlies() : Effect(), brightness(1.0f) {}
     virtual ~FireFlies() {} 
    
     virtual void Init();

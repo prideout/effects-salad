@@ -65,6 +65,7 @@ void Milkyway::Draw() {
     glUseProgram(progs["FireFlies.Stars"]);
 
     glUniform1f(u("Time"), GetContext()->elapsedTime);
+    glUniform1f(u("Brightness"), brightness); 
 
     bool hihat = GetContext()->audio->GetHiHats();
     bool snare = GetContext()->audio->GetSnares();
@@ -96,6 +97,7 @@ void Milkyway::Draw() {
 
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform3f(u("Center"), cam.center.x, cam.center.y, cam.center.z);
+    glUniform1f(u("Brightness"), brightness); 
 
     //cam.center = GetContext()->mainCam.eye;
     //cam.eye = glm::vec3(0,0,0);

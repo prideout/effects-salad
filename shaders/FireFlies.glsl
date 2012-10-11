@@ -80,6 +80,7 @@ float snoise(vec2 v)
 
  // Ground.FS
 uniform mat4 ViewMatrix;
+uniform float Brightness = 1.0;
 
 void main()
 {
@@ -111,7 +112,7 @@ void main()
     //d = 1.5;
     vec3 MaterialColor = vec3(.08, .60, .2);
     float occFactor = .5;
-    FragColor = vec4(occFactor*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
+    FragColor = vec4(Brightness*occFactor*(ambientLight*MaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 }
 
 -- Ground.VS
@@ -139,12 +140,15 @@ void main()
 in vec4 vPosition;
 in float vBrightness;
 
+// unvarying brightness, controlled by the effect
+uniform float Brightness = 1.0;
+
 out vec4 FragColor;
 
 void main()
 {
     //float s = vUvCoord.x + vUvCoord.y;
-    FragColor = vBrightness * vec4(.5, .7, .9, 1.0);
+    FragColor = Brightness * vBrightness * vec4(.5, .7, .9, 1.0);
 }
 
 -- Grass.FS
@@ -156,6 +160,8 @@ in vec4 vPosition;
 in float vOcc;
 //in vec2 vUvCoord;
 out vec4 FragColor;
+
+uniform float Brightness = 1.0;
 
 void main()
 {
@@ -173,7 +179,7 @@ void main()
     float d = 1.0; //max(0.0, dot(n, l));
     vec3 MaterialColor = vec3(.05, .3, vOcc*vOcc*vOcc*.28);
     vec3 AmbMaterialColor = vec3(.05, .3, .3+vOcc*vOcc*vOcc*.48);
-    FragColor = vec4(vOcc*(ambientLight*AmbMaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
+    FragColor = vec4(Brightness*vOcc*(ambientLight*AmbMaterialColor + att*d*diffuseLight*MaterialColor), 1.0);
 
     //FragColor = r*MaterialColor;
 }
@@ -348,6 +354,7 @@ out vec4 FragColor;
 
 uniform vec3 Eye;
 uniform float Time;
+uniform float Brightness = 1.0;
 
 void main()
 {
@@ -357,7 +364,7 @@ void main()
     float vis = clamp(amt, 0.0, 1.0);
     float dist = length(Eye - vPosition.xyz);
     float att = min(1.0, 1.0 / (dist*dist*.0005));
-    FragColor = vis * att * vec4(.1, .9, .2, 1.0);
+    FragColor = Brightness * vis * att * vec4(.1, .9, .2, 1.0);
     if (FragColor.g < .5)
         discard;
 }

@@ -14,7 +14,6 @@ void Ground::Init() {
     glUseProgram(progs.Load("FireFlies.Ground", "FireFlies.Ground.FS", "FireFlies.Ground.VS"));
     glUseProgram(progs.Load("FireFlies.Grass"));
 
-
     FloatList ground;
     IndexList indices;
     const int SIZE = 150;
@@ -95,6 +94,7 @@ void Ground::Draw() {
     glUniform1f(u("Time"), GetContext()->elapsedTime);
     glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(2*time)));
     glUniform1f(u("Vibration"), 0); //.5+.5*sin(time));
+    glUniform1f(u("Brightness"), brightness); 
 
     cam.Bind(glm::mat4());
     glEnable(GL_BLEND);

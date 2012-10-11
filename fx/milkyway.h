@@ -15,7 +15,9 @@ class Milkyway : public Effect {
 
 public:
 
-    Milkyway() : Effect() 
+    float brightness;
+
+    Milkyway() : Effect(), brightness(1.0f) 
     { 
     }
    
