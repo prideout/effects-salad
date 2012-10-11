@@ -161,7 +161,7 @@ void GrassIntro::Draw() {
     float fliesFadeTime = 14.0;
     float starsFadeTime = 8.0;
     float grassFadeTime = 5.0;
-    float screenFadeTime = 1.0;
+    float screenFadeTime = 10.0;
 
     _fireFlies.brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / fliesFadeTime));
     _milkyway.brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, time / starsFadeTime));
