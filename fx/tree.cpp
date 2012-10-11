@@ -95,12 +95,12 @@ void Tree::Init()
             // destructively transfer the CVs to avoid copies
             tube->cvs.swap(branch->cvs);
             tube->radius = branch->width;
-            if (branch->levels > 3) {
-                tube->sidesPerSlice = 7;
+            if (branch->levels > 2) {
+                tube->sidesPerSlice = 8;
                 tube->lod = 2;
             } else {
-                tube->sidesPerSlice = 3;
-                tube->lod = 1;
+                tube->sidesPerSlice = 5;
+                tube->lod = 2;
             }
             tube->startTime = startTime 
                                 + (.25 - (rand() / float(RAND_MAX))*.5) 
@@ -127,7 +127,7 @@ void Tree::Init()
                                 * (maxLevel 
                                     - branch->levels 
                                     - ((branch->levels > 0) ? .8 : 0)
-                                    + 3*branch->parentPercent)
+                                    + 1*branch->parentPercent)
                                 );
                 // grow time
                 leafData.push_back(2*(growTime / maxLevel) * (branch->levels));
