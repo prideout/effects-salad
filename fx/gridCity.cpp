@@ -257,7 +257,7 @@ void GridCity::Init()
                 std::cout << std::endl;
             }
 
-            // Backwards compat
+            // Turn on "VisualizeCell" mode for simpler geometry
             const bool VisualizeCell = false;
             cell.BuildingId = (int) _cells.size();
             if (VisualizeCell) {
@@ -345,14 +345,21 @@ void GridCity::_AllocCell(GridCell* cell)
     vec3 n = cell->Roof->Plane->GetNormal();
     float flip = dot(n, vec3(0, 1, 0)) < 0 ? -1 : 1;
     cell->Anim.BeginW = cell->Roof->Plane->Eqn.w;
-    shape->PushPath(cell->Roof, flip * cell->Height);
+
+    sketch::PathList walls;
+    shape->PushPath(cell->Roof, flip * cell->Height, &walls);
+
+    // prideout TODO window holes go here
+    // AddHoleRectangle(w, h, wall, vec2(x,y));
+
     cell->Anim.EndW = cell->Roof->Plane->Eqn.w;
     cell->Anim.StartTime = 0;
     cell->CpuShape = shape;
     cell->CpuTriangles = new sketch::Tessellator(*shape);
     cell->CpuTriangles->PullFromScene();
-    cell->CpuTriangles->PushToGpu(cell->GpuTriangles);
+
     shape->SetPathPlane(cell->Roof, cell->Anim.BeginW);
+
     cell->CpuTriangles->PullFromScene();
     cell->CpuTriangles->PushToGpu(cell->GpuTriangles);
     cell->Visible = false;
