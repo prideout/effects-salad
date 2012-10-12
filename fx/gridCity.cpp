@@ -928,7 +928,8 @@ void GridCity::Draw()
     glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
 
     // Draw buildings
-    glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     glUseProgram(progs["Sketch.Facets"]);
     glUniform3f(u("Scale"), 1, 1, 1);
     glUniform3f(u("Translate"), 0, 0, 0);
@@ -954,6 +955,9 @@ void GridCity::Draw()
     _cityWall.Bind();
     glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
 #endif
+
+    glCullFace(GL_BACK);
+
     // Grow vines
     glUseProgram(progs["FireFlies.Sig"]);
     _camera.Bind(glm::mat4());
