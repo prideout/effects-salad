@@ -379,7 +379,7 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Fullscreen = true;
+    config.Fullscreen = false;
 
     if (not config.Fullscreen) {
         config.Width = 2560/2;

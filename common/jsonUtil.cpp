@@ -17,6 +17,14 @@ vec2FromJson(const Json::Value& root)
     return vec2(root[0u].asDouble(), root[1u].asDouble());
 }
 
+vec3
+vec3FromJson(const Json::Value& root)
+{
+    return vec3(root[0u].asDouble(),
+                root[1u].asDouble(),
+                root[2u].asDouble());
+}
+
 vec4
 vec4FromJson(const Json::Value& root)
 {

@@ -926,6 +926,16 @@ void GridCity::Update()
                     2.0 * cos(time * 8.0));
             }
         }
+        if (time > 6.0f) {
+            vec3 axis = vec3(0, 1, 0);
+            FOR_EACH(c, _hangingThings) {
+                _centerpieceSketch->RotatePath(
+                    *c,
+                    axis,
+                    _columnCenter,
+                    2.0 * (time - 6.0f));
+            }
+        }
     }
 
     // update camera
@@ -1034,7 +1044,27 @@ void GridCity::_CreateCenterpiece()
     roofEqn.w += 80;
     CoplanarPath* triRoof = _centerpieceSketch->AddPolygon(40, roofEqn, off, 3);
     _centerpieceSketch->PushPath(triRoof, 4);
+    roofEqn.w -= 3;
 
+    int numHangingThings = 32;
+    for (int i = 0; i < numHangingThings; ++i) {
+        Quad hangingThingyQ;
+
+        float theta = 6.28 * i / numHangingThings;
+        off.x = 15.0f * cos(theta);
+        off.y = 15.0f * sin(theta);
+
+        theta = -theta;
+
+        hangingThingyQ.p = vec3(off.x, roofEqn.w, off.y);
+        hangingThingyQ.u = 0.78f * vec3(sin(theta), 0, cos(theta));
+        hangingThingyQ.v = 0.25f * vec3(sin(theta+3.14/2.0), 0, cos(theta+3.14/2.0));
+        CoplanarPath* hangingThingy = _centerpieceSketch->AddQuad(hangingThingyQ);
+        _hangingThings.push_back(hangingThingy);
+    }
+    _centerpieceSketch->PushPaths(_hangingThings, -30);
+    _hangingThings.push_back(triRoof);
+    
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
 
