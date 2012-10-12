@@ -393,6 +393,7 @@ Vao GridCity::_CreateCityWall()
 
 void GridCity::Init()
 {
+    _previousBump = 0;
     _cityWall = _CreateCityWall();
     _CreateVines();
     
@@ -914,26 +915,32 @@ void GridCity::Update()
 
     // update centerpiece
     if (centerpiece && time > 2.0f) {
-        _centerpiecePlayer->Update();
-        _centerpieceTess->PullFromScene();
-        if (time > 4.0f) {
-            vec3 axis = vec3(0, 1, 0);
-            FOR_EACH(c, _columns) {
-                _centerpieceSketch->RotatePath(
-                    *c,
-                    axis,
-                    _columnCenter,
-                    2.0 * cos(time * 8.0));
+
+        bool bump = false;
+        if (time - _previousBump > 0.5) {
+            bump = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
+            if (time > 5.0) {
+                //bump = bump || GetContext()->audio->GetHiHats();
+            }
+            if (bump) {
+                _previousBump = time;
             }
         }
-        if (false && time > 6.0f) {
-            vec3 axis = vec3(0, 1, 0);
-            FOR_EACH(c, _hangingThings) {
-                _centerpieceSketch->RotatePath(
-                    *c,
-                    axis,
-                    _columnCenter,
-                    std::min(5.0, 2.0 * (time - 6.0f)));
+        _centerpiecePlayer->Update(true, bump);
+        _centerpieceTess->PullFromScene();
+
+        if (false && time > 4.0f) {
+            static bool cw = false;
+            if (GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares()) {
+                vec3 axis = vec3(0, 1, 0);
+                FOR_EACH(c, _columns) {
+                    _centerpieceSketch->RotatePath(
+                        *c,
+                        axis,
+                        _columnCenter,
+                        cw ? 15.0f : -15.0f);
+                }
+                cw = !cw;
             }
         }
     }
@@ -1024,6 +1031,9 @@ void GridCity::_CreateCenterpiece()
     CoplanarPath* circleRoof = _centerpieceSketch->AddPolygon(30, groundEqn, off, 96);
     _centerpieceSketch->PushPath(circleRoof, 80);
 
+    CoplanarPath* lowerInset = _centerpieceSketch->AddInscribedPolygon(29, circleRoof, vec2(0,0), 128);
+    _centerpieceSketch->PushPath(lowerInset, -2);
+
     int numColumns = 12;
     vec4 roofEqn = groundEqn; roofEqn.w = 78;
     for (int i = 0; i < numColumns; ++i) {
@@ -1082,11 +1092,8 @@ void GridCity::_CreateCenterpiece()
 
     _centerpieceSketch->PushPaths(bumps, 6.0);
 
-    CoplanarPath* inset = _centerpieceSketch->AddInscribedPolygon(37, triRoof, vec2(0,0), 128);
-    _centerpieceSketch->PushPath(inset, -2);
-
-    inset = _centerpieceSketch->AddInscribedPolygon(29, circleRoof, vec2(0,0), 128);
-    _centerpieceSketch->PushPath(inset, -2);
+    CoplanarPath* topInset = _centerpieceSketch->AddInscribedPolygon(37, triRoof, vec2(0,0), 128);
+    _centerpieceSketch->PushPath(topInset, -2);
 
     int numDents = 30;
     PathList dents;
@@ -1094,10 +1101,17 @@ void GridCity::_CreateCenterpiece()
         float theta = 6.28 * i / numDents;
         off.x = 20.0f * cos(theta);
         off.y = 20.0f * sin(theta);
-        CoplanarPath* dent = _centerpieceSketch->AddInscribedPolygon(1.5f, inset, off, 16);
+        CoplanarPath* dent = _centerpieceSketch->AddInscribedPolygon(1.5f, lowerInset, off, 16);
         dents.push_back(dent);
     }
     _centerpieceSketch->PushPaths(dents, -2);
+
+    _centerpieceSketch->PushPath(lowerInset, -4);
+    for (int i = 0; i < numDents; i++) {
+        sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(dents[i]);
+        _centerpieceSketch->PushPath(cop, 6);
+    }
+    _centerpieceSketch->PushPaths(dents, -6);
   
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
