@@ -188,6 +188,8 @@ Playback::_ExecuteCurrentCommand(float percentage)
             delta = _Tween(delta, percentage);
             _scene->SetPathPlane(cop, _originalPlanes.front() + delta);
         }
+    } else if (cmdName == "ScalePath") { 
+        // TBD
     } else {
         pezFatal("Unknown command: %s", cmdName.c_str());
     }
