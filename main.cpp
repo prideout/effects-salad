@@ -239,7 +239,7 @@ static void _constructScene()
         if (bool slow = true)
             fullscreen = new Fullscreen("SSAO", mask);
         else
-            fullscreen = new Fullscreen(0);
+            fullscreen = new Fullscreen(mask);
         fullscreen->AddChild(new GridCity());
         ctx->drawables.push_back(fullscreen);
         ctx->drawables.push_back(new FpsOverlay());
@@ -367,7 +367,7 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Fullscreen = false;
+    config.Fullscreen = true;
 
     if (not config.Fullscreen) {
         config.Width = 2560/2;
