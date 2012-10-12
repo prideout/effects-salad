@@ -395,6 +395,10 @@ void GridCity::Init()
 {
     _cityWall = _CreateCityWall();
     _CreateVines();
+    
+    if (centerpiece) {
+        _CreateCenterpiece();
+    }
 
     _ridges.Shape = new sketch::Scene();
     _ridges.CpuTriangles = new sketch::Tessellator(*_ridges.Shape);
@@ -911,6 +915,11 @@ void GridCity::Update()
     _camera.eye = glm::rotate(_camera.eye, 
                         (trackBeat and (GetContext()->audio->GetSnares() or GetContext()->audio->GetKicks())) ? 1.0f : .1f, 
                         glm::vec3(0,1,0));
+
+    if (centerpiece && time > 5.0f) {
+        _centerpiecePlayer->Update();
+        _centerpieceTess->PullFromScene();
+    }
 }
 
 void GridCity::Draw()
@@ -919,7 +928,6 @@ void GridCity::Draw()
     glDisable(GL_BLEND);
     Programs& progs = Programs::GetInstance();
 
-#if 1
     // Draw terrain
     glEnable(GL_CULL_FACE);
     glUseProgram(progs["Buildings.Terrain"]);
@@ -928,7 +936,6 @@ void GridCity::Draw()
     glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
 
     // Draw buildings
-    glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glUseProgram(progs["Sketch.Facets"]);
     glUniform3f(u("Scale"), 1, 1, 1);
@@ -947,6 +954,7 @@ void GridCity::Draw()
 
     // Draw roof ridges
     glUniform1i(u("HasWindows"), 0);
+    glUniform1i(u("BuildingId"), 0);
     _ridges.GpuTriangles.Bind();
     glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
 
@@ -954,9 +962,18 @@ void GridCity::Draw()
     glUniform1i(u("HasWindows"), 0);
     _cityWall.Bind();
     glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
-#endif
 
+    // Draw the centerpiece
+    if (centerpiece) {
+        glDisable(GL_CULL_FACE);
+        _centerpieceTess->PushToGpu(_centerpieceVao);
+        _centerpieceVao.Bind();
+        glDrawElements(GL_TRIANGLES, _centerpieceVao.indexCount, GL_UNSIGNED_INT, 0);
+    }
+
+    // Restore culling to normal
     glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
 
     // Grow vines
     glUseProgram(progs["FireFlies.Sig"]);
@@ -969,3 +986,76 @@ void GridCity::Draw()
         (*tubeIt)->Draw();
     }
 }
+
+void GridCity::_CreateCenterpiece()
+{
+    using namespace sketch;
+
+    _centerpieceSketch = new Scene();
+    _historicalSketch = new Scene();
+
+    const Plane* ground = _centerpieceSketch->GroundPlane();
+    glm::vec2 off(0, 0);
+    const float width = 80;
+    const float depth = 40;
+
+    CoplanarPath* rect =
+        _centerpieceSketch->AddRectangle(width, depth, ground->Eqn, off);
+
+    float height = 40;
+    PathList walls;
+    _centerpieceSketch->PushPath(rect, height, &walls);
+    _centerpieceSketch->PushPath(rect, -1, &walls);
+    CoplanarPath* roof = rect;
+    CoplanarPath* wall;
+
+    wall = dynamic_cast<CoplanarPath*>(walls[1]);
+    rect = _centerpieceSketch->AddInscribedRectangle(1.0, 15, wall, vec2(0, 0));
+    _centerpieceSketch->PushPath(rect, -5);
+
+    wall = dynamic_cast<CoplanarPath*>(walls[2]);
+
+    PathList cylinders;
+
+    for (float y = -32.5; y < 32.6; y += 10.0) {
+        CoplanarPath* circle = _centerpieceSketch->AddInscribedPolygon(3.0, wall, vec2(0, y), 48);
+        cylinders.push_back(circle);
+    }
+
+    _centerpieceSketch->PushPaths(cylinders, 30);
+    PathList inners;
+    FOR_EACH(circle, cylinders) {
+        CoplanarPath* outer = dynamic_cast<CoplanarPath*>(*circle);
+        CoplanarPath* inner = _centerpieceSketch->AddInscribedPolygon(1.5, outer, vec2(0, 0), 8);
+        inners.push_back(inner);
+    }
+    _centerpieceSketch->PushPaths(inners, -2);
+    cylinders.clear();
+
+    for (float y = -32.5; y < 32.6; y += 10.0) {
+        CoplanarPath* c1 = _centerpieceSketch->AddInscribedPolygon(3, wall, vec2(-10, y), 48);
+        CoplanarPath* c2 = _centerpieceSketch->AddInscribedPolygon(3, wall, vec2(+10, y), 48);
+        cylinders.push_back(c1);
+        cylinders.push_back(c2);
+    }
+    _centerpieceSketch->PushPaths(cylinders, -1);
+
+    // Pop out an "antenna"
+    CoplanarPath* c1 = _centerpieceSketch->AddInscribedPolygon(
+        15,
+        roof,
+        vec2(0, 0),
+        4);
+    _centerpieceSketch->PushPath(c1, 40);
+
+    const Json::Value& history = _centerpieceSketch->GetHistory();
+    std::swap(_historicalSketch, _centerpieceSketch);
+
+    _centerpieceTess = new Tessellator(*_centerpieceSketch);
+    _centerpiecePlayer = new Playback(history, _centerpieceSketch, _centerpieceTess);
+    _centerpieceSketch->EnableHistory(false);
+    _historicalSketch->EnableHistory(false);
+
+    _centerpieceTess->PullFromScene();
+}
+

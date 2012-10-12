@@ -65,6 +65,7 @@ private:
                         float radius=2, float lenght=20);
     Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=50);
     float _GetHeight(vec3 p0);
+    void _CreateCenterpiece();
 
     sketch::PathList
     _AddWindows(GridCell* cell, sketch::CoplanarPath* wall);
@@ -78,4 +79,10 @@ private:
     int _currentBeat;
     Vao _cityWall;
     GridRidges _ridges;
+
+    Vao _centerpieceVao;
+    sketch::Scene* _centerpieceSketch;
+    sketch::Scene* _historicalSketch;
+    sketch::Tessellator* _centerpieceTess;
+    sketch::Playback* _centerpiecePlayer;
 };
