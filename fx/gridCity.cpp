@@ -40,6 +40,7 @@ static const bool HasWindows = false;
 static Perlin HeightNoise(2, .5, 1, 3);
 static Perlin PerturbNoiseY(2, .5, 1, 5);
 static Perlin TerrainNoise(2, .1, 2, 0);
+static Perlin VineNoise(2, .1, 2, 0);
 
 // Terraces are orthogonal regions within a cell
 struct Terrace {
@@ -151,7 +152,10 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
     float curveLenght = 40;
     float curvePeriod= 10 / 7.0;
 
-    for (int i = 0; i < 4; i++) {
+    //
+    // Using cubic curves means they are easy to sample and spawn new curves
+    //
+    for (int i = 0; i < 4 + (3*4); i++) {
         if (facingX)
             t->cvs.push_back(vec3(
                                 glm::mix(min.x, max.x, xmix) + dirFactor*i*curveLenght, 
@@ -163,31 +167,28 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
                                 (curveAmp*sin(i*curvePeriod)) + glm::mix(min.x, max.x, xmix), 
                                 1.0, 
                                 glm::mix(min.y, max.y, zmix) + dirFactor*i*curveLenght ));
+        vec3& cv = t->cvs.back();
+
+        // force continuity between segments
+        int cvCount = t->cvs.size();
+        if (i > 3 and (i-4) % 3 == 0) {
+            glm::vec3 dir = t->cvs[cvCount - 2] - 
+                            t->cvs[cvCount - 3];
+            cv = t->cvs[cvCount - 2] + dir;
+        }
+
+        if (not facingX) 
+            cv.x += curveAmp*TerrainNoise.Get(cv.x, cv.z);
+        else
+            cv.z += curveAmp*TerrainNoise.Get(cv.x, cv.z);
     }
     
-    //t->cvs.push_back(vec3(min.x, 1.0, .5*max.y + .5*min.y));
-
-    #if 0
-    for (int i = 0; i < 6; i++) {
-        t->cvs.push_back(vec3(min.x + (40*sin(10*i/6.0f)), 1.0, glm::mix(min.y, max.y, i/6.0f)));
-    }
-    
-    t->cvs.push_back(vec3(min.x, 1.0, max.y - 10));
-    t->cvs.push_back(vec3(min.x, 1.0, max.y ));
-    t->cvs.push_back(vec3(min.x, 1.0, max.y + 10));
-
-    t->cvs.push_back(vec3(max.x , 1.0, max.y));
-
-    t->cvs.push_back(vec3(max.x, 1.0, min.y));
-
-    t->cvs.push_back(vec3(min.x, 1.0, min.y));
-    #endif
-
     //
     // These values are consumed by Init, so set them first
     //
     t->radius = 2;
     t->lod =5;
+    t->sidesPerSlice = 5;
 
     //
     // Fix up y values to match terrain
