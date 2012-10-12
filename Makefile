@@ -42,6 +42,7 @@ SHARED := \
 	$(OBJDIR)/fx/buildingGrowth.o \
 	$(OBJDIR)/fx/buildingThreads.o \
 	$(OBJDIR)/fx/cityGrowth.o \
+	$(OBJDIR)/fx/credits.o \
 	$(OBJDIR)/fx/fireFlies.o \
 	$(OBJDIR)/fx/fpsOverlay.o \
 	$(OBJDIR)/fx/fullscreen.o \
@@ -81,7 +82,7 @@ ifeq ($(UNAME), Darwin)
 endif
 
 
-all: $(OBJDIR) $(OBJDIR)/make.deps salad tetknot 
+all: $(OBJDIR) $(OBJDIR)/make.deps salad tetknot
 
 salad:  $(OBJDIR)/main.o $(SHARED)
 	$(CXX) $< $(SHARED) -o salad $(LIBS)
