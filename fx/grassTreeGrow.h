@@ -25,6 +25,7 @@ class GrassTreeGrow : public Effect {
     FireFlies _fireFlies;
     std::vector<Tube> _tubes;
     AnimCurve<glm::vec3> cameraPoints;
+    AnimCurve<glm::vec3> introCameraPoints;
     Milkyway _milkyway;
     Tree _tree;
 
