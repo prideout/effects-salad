@@ -197,7 +197,7 @@ Tube* GridCity::_CreateCenterVine(float xmix, float zmix, float radius, float le
     t->radius = radius;
     t->lod = 5;
     t->sidesPerSlice = 5;
-    //t->startTime = 2.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
+    t->startTime = 10.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
     t->timeToGrow = 15.0f + TerrainNoise.Get(cv.x, cv.z)*15.0f;
 
     //
