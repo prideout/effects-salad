@@ -31,6 +31,7 @@ public:
         SupersampleFlag = 1 << 8,
         AmbientOcclusionFlag = 1 << 9,
         BrightnessFlag = 1 << 10,
+        UndersampleFlag = 1 << 11,
     };
 
     typedef unsigned int Mask;

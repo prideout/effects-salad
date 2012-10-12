@@ -30,8 +30,8 @@ static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 static const float GrowthRate = 0.1f; // lower is faster
 static const float MinHeight = 20;
-static const int NumRows = 5;
-static const int NumCols = 10;
+static const int NumRows = 10;
+static const int NumCols = 20;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
 static const bool HasWindows = false;
@@ -593,8 +593,8 @@ void GridCity::_AllocCell(GridCell* cell)
     }
 
     // Add detail to rooftops
-    const float ridgeHeight = 2.0f;
-    const float ridgeThickness = 1.0f;
+    const float ridgeHeight = 1.0f;
+    const float ridgeThickness = 0.5f;
     sketch::Quad roofQuad = shape->ComputeQuad(cell->Roof.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
