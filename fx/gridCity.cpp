@@ -485,7 +485,7 @@ void GridCity::Init()
     }
 
     // Test the terrain sampling function
-    if (true) {
+    if (false) {
         for (float x = -500; x < 500; x += 5.0) {
             printf("%f\n", 1000-(x+500));
             for (float z = -500; z < 500; z += 15.0) {
