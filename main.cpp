@@ -108,6 +108,29 @@ static void _constructScene()
         ctx->drawables.push_back(new FpsOverlay());
     }
 
+    {   // Credits
+        DemoContext* ctx = DemoContext::New("Credits");
+        DemoContext::SetCurrent(ctx);
+        shotMap[ctx->name] = ctx;
+
+        ctx->mainCam.eye.z = 5;
+        Credits* credits = new Credits;
+        //grass->_ground = ground;
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag 
+                                      | Fullscreen::ScanLinesFlag
+                                      | Fullscreen::BrightnessFlag);
+        vec4 hotPink(1.000, 0.078, 0.576, 1);
+        fs->clearColor = vec4(hotPink);
+        fs->AddChild(credits);
+        credits->fullscreen = fs;
+
+        ctx->drawables.push_back(fs);
+        //ctx->drawables.push_back(grass);
+        ctx->drawables.push_back(new FpsOverlay());
+    }
+
+
+
     {   // City Intro
         DemoContext* ctx = DemoContext::New("CityIntro");
         DemoContext::SetCurrent(ctx);
@@ -233,7 +256,7 @@ static void _constructScene()
         mask |= Fullscreen::AmbientOcclusionFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen;
-        if (bool slow = true)
+        if (bool slow = false)
             fullscreen = new Fullscreen("SSAO", mask);
         else
             fullscreen = new Fullscreen(0);

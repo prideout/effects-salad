@@ -10,3 +10,4 @@
 #include "buildingGrowth.h"
 #include "cityGrowth.h"
 #include "gridCity.h"
+#include "credits.h"
