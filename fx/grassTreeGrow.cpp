@@ -189,7 +189,7 @@ void GrassTreeGrow::Draw() {
             fullscreen->_mask |= Fullscreen::ScanLinesFlag;
         }
 
-        fullscreen->brightness = 1.0 - flash;
+        fullscreen->brightness = 1.0;// - flash;
         flash *= .9;
 
         glm::vec3 orig = cam.eye;
@@ -224,7 +224,7 @@ void GrassTreeGrow::Draw() {
             hhCount += .1f;
         }
         flash = .5*sin(hhCount+time*240);
-        fullscreen->brightness = 1.0 - flash;
+        fullscreen->brightness = 1.0;// - flash;
         flash *= .9;
         cam.eye = _tree.pos;
         cam.eye.x += 7.0 * cos(hhCount*.25 + time / 4);// + 5.0*glm::smoothstep(underStart, underStop, time);

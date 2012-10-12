@@ -14,6 +14,7 @@
 #include "jsoncpp/json.h"
 
 
+bool FINAL = true;
 int byteMark = 0;
 unsigned shotIndex;
 std::vector<DemoContext*> sequence;
@@ -66,7 +67,8 @@ static void _constructScene()
 
         ctx->drawables.push_back(fs);
         //ctx->drawables.push_back(grass);
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
     {   // Grass Tree Grow 
@@ -84,12 +86,9 @@ static void _constructScene()
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
         grass->fullscreen = fs;
-        #if 0
         ctx->drawables.push_back(fs);
-        #else
-        ctx->drawables.push_back(grass);
-        #endif
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
     {   // Grass Tree Bloom
@@ -111,7 +110,8 @@ static void _constructScene()
         #else
         ctx->drawables.push_back(grass);
         #endif
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
     {   // Credits
@@ -132,7 +132,8 @@ static void _constructScene()
 
         ctx->drawables.push_back(fs);
         //ctx->drawables.push_back(grass);
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
 
@@ -150,12 +151,13 @@ static void _constructScene()
         Fullscreen* fullscreen1 = new Fullscreen(Fullscreen::VignetteFlag);
         fullscreen1->clearColor = vec4(0.1,0.9,1,1);
         Buildings* buildings = new Buildings(false);
-        FpsOverlay* fps = new FpsOverlay();
+            FpsOverlay* fps = new FpsOverlay();
 
         // Now, insert the effects into our poor man's "scene graph":
         ctx->drawables.push_back(fullscreen1);
         fullscreen1->AddChild(buildings);
-        ctx->drawables.push_back(fps);
+        if (not FINAL)
+            ctx->drawables.push_back(fps);
     }
 
 
@@ -183,7 +185,8 @@ static void _constructScene()
           fullscreen1->AddChild(buildings);
         ctx->drawables.push_back(fullscreen2);
           fullscreen2->AddChild(buildings->Cracks());
-        ctx->drawables.push_back(fps);
+        if (not FINAL)
+            ctx->drawables.push_back(fps);
     }
 
     {   // prideout credits
@@ -209,7 +212,8 @@ static void _constructScene()
         fullscreen->AddChild(new BuildingGrowth());
 
         ctx->drawables.push_back(fullscreen);
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
     {   // City Grow
@@ -249,7 +253,8 @@ static void _constructScene()
             fullscreen = new Fullscreen(mask);
         fullscreen->AddChild(new GridCity());
         ctx->drawables.push_back(fullscreen);
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
     //
@@ -298,7 +303,8 @@ static void _constructScene()
         
         // ordering is important here... need to fix this
         DemoContext::SetCurrent(ctx);
-        ctx->drawables.push_back(new FpsOverlay());
+        if (not FINAL)
+            ctx->drawables.push_back(new FpsOverlay());
     }
 
     Json::Value script;
