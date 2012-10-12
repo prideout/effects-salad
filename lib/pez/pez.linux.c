@@ -62,6 +62,17 @@ int main(int argc, char** argv)
     _PezDesktopWidth = XWidthOfScreen(pScreen);
     _PezDesktopHeight = XHeightOfScreen(pScreen);
 
+    // XXX: Gross hack for demo tomorrow
+    if (_PezDesktopWidth > 2800) {
+        _PezDesktopWidth = _PezDesktopWidth / 2;
+    }
+    /*
+    printf("X11 INFO:\n");
+    printf("    ScreenIndex: %d\n", screenIndex);
+    printf("    Width: %d\n", _PezDesktopWidth);
+    printf("    Height: %d\n", _PezDesktopHeight);
+    */
+
     Window root = RootWindow(context.MainDisplay, screenIndex);
 
     int fbcount;
@@ -117,8 +128,8 @@ int main(int argc, char** argv)
     int height = PezGetConfig().Height;
 
     if (PezGetConfig().Fullscreen) {
-        width = XWidthOfScreen(pScreen);
-        height = XHeightOfScreen(pScreen);
+        width = _PezDesktopWidth;
+        height = _PezDesktopHeight;
     }
     context.MainWindow = XCreateWindow(
         context.MainDisplay,
@@ -148,8 +159,8 @@ int main(int argc, char** argv)
 
     int centerWindow = !PezGetConfig().Fullscreen;
     if (centerWindow) {
-        int left = XWidthOfScreen(pScreen)/2 - PezGetConfig().Width/2;
-        int top = XHeightOfScreen(pScreen)/2 - PezGetConfig().Height/2;
+        int left = _PezDesktopWidth/2 - PezGetConfig().Width/2;
+        int top = _PezDesktopHeight/2 - PezGetConfig().Height/2;
         XMoveWindow(context.MainDisplay, context.MainWindow, left, top);
     }
 
