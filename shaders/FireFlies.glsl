@@ -634,6 +634,7 @@ uniform mat4 Modelview;
 uniform vec3 MaterialColor;
 uniform vec3 Eye;
 uniform float DistanceScale;
+uniform float Alpha = 1.0;
 
 void main()
 {
@@ -644,7 +645,7 @@ void main()
     vec3 l = normalize(Eye - vPosition.xyz);
     float d = max(0.0, dot(n, l));
     //d = 1.5;
-    FragColor = vec4((ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
+    FragColor = vec4((ambientLight*MaterialColor + d*diffuseLight*MaterialColor), Alpha);
     Normal = normalize(mat3(Modelview) * vObjNormal);
     Position.xyz = (Modelview*vObjPosition).xyz;
     Position.w = length(Position.xyz) * DistanceScale;
