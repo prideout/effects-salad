@@ -122,15 +122,92 @@ GridCity::_GetHeight(vec3 p0)
     return GridTerrainFunc(domain).y;
 }
 
-Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX, float radius, float lenght)
+Tube* GridCity::_CreateCenterVine(float xmix, float zmix, float radius, float length)
 {
+    Tube* t = new Tube;
+    Vec3List cvs;
+
+    //
+    // Build up CVs, make sure the total number equals 4 + 3n
+    // or they won't draw correctly (cubic segments)
+    //
+
+    float curveAmp = 5;
+    float curveLenght = length;
+    float curvePeriod= 1; //10 / 7.0;
+
+    float noise = TerrainNoise.Get(radius*2000*length+xmix, 2000*radius/length+zmix);
+    float angle = (noise) * 2*3.1415f;
+    //std::cout << (.5f + .5f*TerrainNoise.Get(2000*length+xmix, 2000*radius+zmix)) << std::endl;
+
+    vec2 normal(cos(angle), sin(angle));
+
     float area = TerrainArea/2 - 2;
     vec2 min(-area, -area);
     vec2 max(area, area);
 
+    //
+    // Using cubic curves means they are easy to sample and spawn new curves
+    //
+    for (int i = 0; i < 4 + (3*4); i++) {
+        t->cvs.push_back(vec3(
+                            (normal.x * (i/4.0f) * curveLenght) + (curveAmp*sinf(noise*100+i*curvePeriod)), 
+                            1.0f, 
+                            (normal.y * (i/4.0f) * curveLenght) + (curveAmp*sinf(noise*100+i*curvePeriod))
+                             ));
+
+        vec3& cv = t->cvs.back();
+
+
+
+
+        // add some noise to the movement
+        #if 0
+        if (not facingX) 
+            cv.x += curveAmp*TerrainNoise.Get(cv.x, cv.z);
+        else
+            cv.z += curveAmp*TerrainNoise.Get(cv.x, cv.z);
+        #endif 
+
+        // Fix up y value to match terrain
+        cv.y = _GetHeight(cv) + t->radius*2;
+
+        // force continuity between segments
+        // this correction must be last, after applying the noise
+        int cvCount = t->cvs.size();
+        if (i > 3 and (i-4) % 3 == 0) {
+            glm::vec3 dir = t->cvs[cvCount - 2] - 
+                            t->cvs[cvCount - 3];
+            cv = t->cvs[cvCount - 2] + dir;
+        }
+
+        if (i >= 0)
+            cv.y += 20;
+    }
+    
+    //
+    // These values are consumed by Init, so set them first
+    //
+    vec3& cv = t->cvs.front();
+    t->radius = radius;
+    t->lod = 5;
+    t->sidesPerSlice = 5;
+    //t->startTime = 2.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
+    t->timeToGrow = 15.0f + TerrainNoise.Get(cv.x, cv.z)*15.0f;
+
+    //
+    // Build sweep, build buffers, etc 
+    // 
+    t->Init();
+    
+    return t;
+}
+
+
+Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX, float radius, float length)
+{
     Tube* t = new Tube;
     Vec3List cvs;
-
 
     //
     // Build up CVs, make sure the total number equals 4 + 3n
@@ -138,8 +215,13 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
     //
 
     float curveAmp = 10;
-    float curveLenght = lenght;
+    float curveLenght = length;
     float curvePeriod= 1; //10 / 7.0;
+
+    float area = TerrainArea/2 - 2;
+    vec2 min(-area, -area);
+    vec2 max(area, area);
+
 
     //
     // Using cubic curves means they are easy to sample and spawn new curves
@@ -158,6 +240,9 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
                                 glm::mix(min.y, max.y, zmix) + dirFactor*i*curveLenght ));
         vec3& cv = t->cvs.back();
 
+
+
+
         // add some noise to the movement
         if (not facingX) 
             cv.x += curveAmp*TerrainNoise.Get(cv.x, cv.z);
@@ -165,7 +250,7 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
             cv.z += curveAmp*TerrainNoise.Get(cv.x, cv.z);
 
         // Fix up y value to match terrain
-        cv.y = _GetHeight(cv) + t->radius+.5;
+        cv.y = _GetHeight(cv) + t->radius*2;
 
         // force continuity between segments
         // this correction must be last, after applying the noise
@@ -176,16 +261,20 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
             cv = t->cvs[cvCount - 2] + dir;
         }
 
-        if (i == 0)
-            cv.y = 0;
+        //if (i >= 0)
+        //    cv.y += 20;
+
     }
     
     //
     // These values are consumed by Init, so set them first
     //
+    vec3& cv = t->cvs.front();
     t->radius = radius;
     t->lod = 5;
     t->sidesPerSlice = 5;
+    //t->startTime = 2.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
+    t->timeToGrow = 15.0f + TerrainNoise.Get(cv.x, cv.z)*15.0f;
 
     //
     // Build sweep, build buffers, etc 
@@ -198,29 +287,55 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
 void GridCity::_CreateVines() 
 {
     float inc = .05;
+    bool edges = false;
+    if (edges) {
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateVine(.0, a, -1, true, radius);
+            _vines.push_back(t);
+        }
 
-    for (float a = 0; a < 1.0; a+= inc) {
-        float radius = 2 + .5*TerrainNoise.Get(a, 0);
-        Tube* t = _CreateVine(.0, a, -1, true, radius);
-        _vines.push_back(t);
-    }
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateVine(a, 1, 1, false, radius);
+            _vines.push_back(t);
+        }
 
-    for (float a = 0; a < 1.0; a+= inc) {
-        float radius = 2 + .5*TerrainNoise.Get(a, 0);
-        Tube* t = _CreateVine(a, 1, 1, false, radius);
-        _vines.push_back(t);
-    }
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateVine(a, 0, -1, false, radius);
+            _vines.push_back(t);
+        }
 
-    for (float a = 0; a < 1.0; a+= inc) {
-        float radius = 2 + .5*TerrainNoise.Get(a, 0);
-        Tube* t = _CreateVine(a, 0, -1, false, radius);
-        _vines.push_back(t);
-    }
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateVine(1, a, 1, true, radius);
+            _vines.push_back(t);
+        }
+    } else {
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateCenterVine(.0, a, radius);
+            _vines.push_back(t);
+        }
 
-    for (float a = 0; a < 1.0; a+= inc) {
-        float radius = 2 + .5*TerrainNoise.Get(a, 0);
-        Tube* t = _CreateVine(1, a, 1, true, radius);
-        _vines.push_back(t);
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateCenterVine(a, 1, radius);
+            _vines.push_back(t);
+        }
+
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateCenterVine(a, 0, radius);
+            _vines.push_back(t);
+        }
+
+        for (float a = 0; a < 1.0; a+= inc) {
+            float radius = 2 + .5*TerrainNoise.Get(a, 0);
+            Tube* t = _CreateCenterVine(1, a, radius);
+            _vines.push_back(t);
+        }
     }
 }
 
@@ -738,6 +853,7 @@ void GridCity::Draw()
     glDisable(GL_BLEND);
     Programs& progs = Programs::GetInstance();
 
+#if 1
     // Draw terrain
     glEnable(GL_CULL_FACE);
     glUseProgram(progs["Buildings.Terrain"]);
@@ -771,7 +887,7 @@ void GridCity::Draw()
     glUniform1i(u("HasWindows"), 0);
     _cityWall.Bind();
     glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
-
+#endif
     // Grow vines
     glUseProgram(progs["FireFlies.Sig"]);
     _camera.Bind(glm::mat4());
