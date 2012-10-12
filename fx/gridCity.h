@@ -54,7 +54,7 @@ private:
     void _CreateVines();
     Tube* _CreateVine(float xmix, float zmix, float dirFactor, bool facingX,
                         float radius=2, float lenght=10);
-    Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=50);
+    Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=100);
     float _GetHeight(vec3 p0);
 
     sketch::PathList

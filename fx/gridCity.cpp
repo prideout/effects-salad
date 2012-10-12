@@ -141,6 +141,7 @@ Tube* GridCity::_CreateCenterVine(float xmix, float zmix, float radius, float le
     //std::cout << (.5f + .5f*TerrainNoise.Get(2000*length+xmix, 2000*radius+zmix)) << std::endl;
 
     vec2 normal(cos(angle), sin(angle));
+    vec2 center(cos(noise*20), sin(noise*20));
 
     float area = TerrainArea/2 - 2;
     vec2 min(-area, -area);
@@ -149,17 +150,17 @@ Tube* GridCity::_CreateCenterVine(float xmix, float zmix, float radius, float le
     //
     // Using cubic curves means they are easy to sample and spawn new curves
     //
-    for (int i = 0; i < 4 + (3*4); i++) {
+    float numCvs = 4 + (3*10);
+    for (int i = 0; i < numCvs; i++) {
         t->cvs.push_back(vec3(
-                            (normal.x * (i/4.0f) * curveLenght) + (curveAmp*sinf(noise*100+i*curvePeriod)), 
-                            1.0f, 
-                            (normal.y * (i/4.0f) * curveLenght) + (curveAmp*sinf(noise*100+i*curvePeriod))
-                             ));
+            center.x+(normal.x * (i/4.0) * curveLenght) +
+                                (curveAmp*sinf(noise*100+i*curvePeriod)), 
+            1.0f, 
+            center.y+(normal.y * (i/4.0) * curveLenght) +
+                                (curveAmp*sinf(noise*100+i*curvePeriod))
+             ));
 
         vec3& cv = t->cvs.back();
-
-
-
 
         // add some noise to the movement
         #if 0
@@ -273,8 +274,8 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
     t->radius = radius;
     t->lod = 5;
     t->sidesPerSlice = 5;
-    //t->startTime = 2.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
-    t->timeToGrow = 15.0f + TerrainNoise.Get(cv.x, cv.z)*15.0f;
+    t->startTime = 10.0f + TerrainNoise.Get(cv.x, cv.z)*5.0f;
+    t->timeToGrow = 20.0f + TerrainNoise.Get(cv.x, cv.z)*10.0f;
 
     //
     // Build sweep, build buffers, etc 
@@ -286,9 +287,10 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
 
 void GridCity::_CreateVines() 
 {
-    float inc = .05;
-    bool edges = false;
+    bool edges = true;
+    bool centers = true;
     if (edges) {
+        float inc = .05;
         for (float a = 0; a < 1.0; a+= inc) {
             float radius = 2 + .5*TerrainNoise.Get(a, 0);
             Tube* t = _CreateVine(.0, a, -1, true, radius);
@@ -312,7 +314,9 @@ void GridCity::_CreateVines()
             Tube* t = _CreateVine(1, a, 1, true, radius);
             _vines.push_back(t);
         }
-    } else {
+    } 
+    if (centers) {
+        float inc = .05;
         for (float a = 0; a < 1.0; a+= inc) {
             float radius = 2 + .5*TerrainNoise.Get(a, 0);
             Tube* t = _CreateCenterVine(.0, a, radius);
