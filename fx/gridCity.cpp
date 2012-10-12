@@ -1025,7 +1025,7 @@ void GridCity::_CreateCenterpiece()
     _centerpieceSketch->PushPath(circleRoof, 80);
 
     int numColumns = 12;
-    vec4 roofEqn = groundEqn; roofEqn.w = 80;
+    vec4 roofEqn = groundEqn; roofEqn.w = 78;
     for (int i = 0; i < numColumns; ++i) {
         float theta = 6.28 * i / numColumns;
         off.x = 10.0f * cos(theta);
@@ -1035,6 +1035,7 @@ void GridCity::_CreateCenterpiece()
     }
     _columnCenter = vec3(0, roofEqn.w, 0);
     _centerpieceSketch->PushPaths(_columns, 30);
+    roofEqn.w = 80;
 
     off = vec2(0, 0);
     CoplanarPath* circle2Roof = _centerpieceSketch->AddPolygon(7, roofEqn, off, 5);
@@ -1068,6 +1069,7 @@ void GridCity::_CreateCenterpiece()
         CoplanarPath* bump = _centerpieceSketch->AddPolygon(1, r, off, 16);
         bumps.push_back(bump);
     }
+    _centerpieceSketch->PushPaths(_hangingThings, -20);
 
     for (int i = 0; i < numHangingThings; ++i) {
         float theta = 6.28 * i / numHangingThings;
@@ -1078,20 +1080,24 @@ void GridCity::_CreateCenterpiece()
         bumps.push_back(bump);
     }
 
-    _centerpieceSketch->PushPaths(_hangingThings, -20);
     _centerpieceSketch->PushPaths(bumps, 6.0);
 
     CoplanarPath* inset = _centerpieceSketch->AddInscribedPolygon(37, triRoof, vec2(0,0), 128);
     _centerpieceSketch->PushPath(inset, -2);
 
-    // TODO Replace the following with AddInscribedPolygon(5) and push it in 
-/*
-    Quad q;
-    q.p = vec3(0, circleRoof->Plane->Eqn.w, 0);
-    q.u = vec3(10, 0, 0);
-    q.v = vec3(0, 0, 20);
-    _centerpieceSketch->AddHoleQuad(q, circleRoof);
-*/
+    inset = _centerpieceSketch->AddInscribedPolygon(29, circleRoof, vec2(0,0), 128);
+    _centerpieceSketch->PushPath(inset, -2);
+
+    int numDents = 30;
+    PathList dents;
+    for (int i = 0; i < numDents; i++) {
+        float theta = 6.28 * i / numDents;
+        off.x = 20.0f * cos(theta);
+        off.y = 20.0f * sin(theta);
+        CoplanarPath* dent = _centerpieceSketch->AddInscribedPolygon(1.5f, inset, off, 16);
+        dents.push_back(dent);
+    }
+    _centerpieceSketch->PushPaths(dents, -2);
   
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
