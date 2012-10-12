@@ -933,7 +933,7 @@ void GridCity::Update()
                     *c,
                     axis,
                     _columnCenter,
-                    2.0 * (time - 6.0f));
+                    std::min(5.0, 2.0 * (time - 6.0f));
             }
         }
     }
@@ -1043,7 +1043,8 @@ void GridCity::_CreateCenterpiece()
     off = vec2(0, 0);
     roofEqn.w += 80;
     CoplanarPath* triRoof = _centerpieceSketch->AddPolygon(40, roofEqn, off, 3);
-    _centerpieceSketch->PushPath(triRoof, 4);
+    PathList triWalls;
+    _centerpieceSketch->PushPath(triRoof, 4, &triWalls);
     roofEqn.w -= 3;
 
     int numHangingThings = 32;
@@ -1064,6 +1065,9 @@ void GridCity::_CreateCenterpiece()
     }
     _centerpieceSketch->PushPaths(_hangingThings, -30);
     _hangingThings.push_back(triRoof);
+    FOR_EACH(t, triWalls) {
+        _hangingThings.push_back(*t);
+    }
     
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
