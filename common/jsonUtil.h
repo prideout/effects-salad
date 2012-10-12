@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 
 glm::vec4 vec4FromJson(const Json::Value&);
+glm::vec3 vec3FromJson(const Json::Value&);
 glm::vec2 vec2FromJson(const Json::Value&);
 
 const char* toString(Vec3List v);

@@ -94,6 +94,14 @@ Playback::_ExecuteCurrentCommand(float percentage)
         vec2 offset = vec2FromJson(cmd[5u]);
         CoplanarPath* path = _scene->AddRectangle(width, height, eqn, offset);
         _handles[handle] = path;
+    } else if (cmdName == "AddQuad") {
+        string handle = cmd[1u].asString();
+        Quad q;
+        q.p = vec3FromJson(cmd[2u]);
+        q.u = vec3FromJson(cmd[3u]);
+        q.v = vec3FromJson(cmd[4u]);
+        CoplanarPath* path = _scene->AddQuad(q);
+        _handles[handle] = path;
     } else if (cmdName == "AddPolygon") { 
         string handle = cmd[1u].asString();
         float radius = cmd[2u].asDouble();

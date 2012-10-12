@@ -63,6 +63,17 @@ Scene::AddQuad(sketch::Quad q)
     retval->Plane = const_cast<Plane*>(plane);
     _FinalizePath(retval, _threshold);
     _paths.push_back(retval);
+
+    if (_recording) {
+        string p = toString(q.p);
+        string u = toString(q.u);
+        string v = toString(q.v);
+        appendJson(
+            _history,
+            "[ \"AddQuad\", \"%8.8x\", %s, %s, %s]",
+            retval, p.c_str(), u.c_str(), v.c_str() );
+    }
+
     return retval;
 }
 
