@@ -618,6 +618,8 @@ void main()
 
 in vec3 vNormal;
 in vec4 vPosition;
+in vec4 vObjPosition;
+in vec3 vObjNormal;
 //in vec2 vUvCoord;
 
 in float vOcc;
@@ -628,8 +630,10 @@ out vec4 Position;
 
 uniform mat4 Projection;
 uniform mat4 ViewMatrix;
+uniform mat4 Modelview;
 uniform vec3 MaterialColor;
 uniform vec3 Eye;
+uniform float DistanceScale;
 
 void main()
 {
@@ -641,8 +645,9 @@ void main()
     float d = max(0.0, dot(n, l));
     //d = 1.5;
     FragColor = vec4((ambientLight*MaterialColor + d*diffuseLight*MaterialColor), 1.0);
-    Normal = n;
-    Position = ViewMatrix*vPosition;
+    Normal = normalize(mat3(Modelview) * vObjNormal);
+    Position.xyz = (Modelview*vObjPosition).xyz;
+    Position.w = length(Position.xyz) * DistanceScale;
     //FragColor = vec4(d,d,d, 1.0);
     //FragColor = vec4(n, 1.0);
 }
@@ -778,6 +783,8 @@ layout(location = 0) in vec3 Position;
 layout(location = 1) in vec3 Normal;
 
 out vec4 vPosition;
+out vec4 vObjPosition;
+out vec3 vObjNormal;
 out vec3 vNormal;
 
 out float vOcc;
@@ -835,15 +842,18 @@ void main()
                            texelFetch(Frames, (id-1)*3+2).rgb);
         vPosition.xyz = mix(basis2*vPosition.xyz, basis*vPosition.xyz, pct);
         vPosition.xyz += mix(texelFetch(Centerline, id-1).rgb, texelFetch(Centerline, id).rgb, pct);
-        vNormal = mat3(ModelMatrix) * mix(basis2*Normal, basis*Normal, pct);
+        vObjNormal = mix(basis2*Normal, basis*Normal, pct);
+        vNormal = mat3(ModelMatrix) * vObjNormal;
     } else {
         vPosition.xyz = basis*vPosition.xyz;
         vPosition.xyz += texelFetch(Centerline, id).rgb;
-        vNormal = mat3(ModelMatrix) * basis*Normal;
+        vObjNormal = basis*Normal;
+        vNormal = mat3(ModelMatrix) * vObjNormal;
     }
 
+    vObjPosition = vPosition;
+
     gl_Position = Projection * Modelview * vPosition;
-    //vNormal = mat3(Modelview) * vNormal;
     vPosition = ModelMatrix * vPosition;
     vNormal = normalize(vNormal);
 }
