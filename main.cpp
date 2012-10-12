@@ -212,6 +212,7 @@ static void _constructScene()
         shotMap[ctx->name] = ctx;
         Fullscreen::Mask mask = 0;
         mask |= Fullscreen::AmbientOcclusionFlag;
+        mask |= Fullscreen::UndersampleFlag;
         Fullscreen* fullscreen;
         if (bool slow = true)
             fullscreen = new Fullscreen("SSAO", mask);
@@ -344,7 +345,7 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Fullscreen = false;
+    config.Fullscreen = true;
 
     if (not config.Fullscreen) {
         config.Width = 2560/2;
