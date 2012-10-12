@@ -46,6 +46,7 @@ public:
     bool outerVines;
     bool trackBeat;
     bool diveCamera;
+    bool centerpiece;
 
     GridCity();
     virtual ~GridCity();
@@ -62,7 +63,7 @@ private:
     void _CreateVines();
     Tube* _CreateVine(float xmix, float zmix, float dirFactor, bool facingX,
                         float radius=2, float lenght=20);
-    Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=100);
+    Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=50);
     float _GetHeight(vec3 p0);
 
     sketch::PathList

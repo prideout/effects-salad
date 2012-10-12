@@ -261,7 +261,6 @@ static void _constructScene()
         shotMap[ctx->name] = ctx;
         Fullscreen::Mask mask = 0;
         mask |= Fullscreen::AmbientOcclusionFlag;
-        mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen;
         bool slow = true;
         if (slow)
@@ -271,7 +270,8 @@ static void _constructScene()
         GridCity* city = new GridCity();
         city->trackBeat = false;
         city->diveCamera = true;
-        city->centerVines = false;
+        city->centerVines = true;
+        city->centerpiece = true;
         fullscreen->AddChild(city);
         ctx->drawables.push_back(fullscreen);
     }
