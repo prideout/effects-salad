@@ -170,20 +170,13 @@ Fullscreen::Draw()
 
     if (_mask & AmbientOcclusionFlag) {
         glActiveTexture(GL_TEXTURE2);
-
         glBindTexture(GL_TEXTURE_2D, _surface.normalsTexture);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_LOD, 4);
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, _surface.positionsTexture);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_LOD, 4);
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, _noiseTexture.handle);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_LOD, 4);
     }
 
     glActiveTexture(GL_TEXTURE0);
