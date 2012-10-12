@@ -130,7 +130,7 @@ GridCity::_GetHeight(vec3 p0)
     vec2 p = vec2(p0.x, p0.z);
     vec2 coord = p / float(TerrainArea);
     vec2 domain = (coord + vec2(0.5)) * float(TerrainArea);
-    return GridTerrainFunc(domain).y;
+    return BackgroundTerrainFunc(domain).y;
 }
 
 Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX)
@@ -275,6 +275,9 @@ void GridCity::Init()
 {
     _cityWall = _CreateCityWall();
     _CreateVines();
+
+    _ridges.Shape = new sketch::Scene();
+    _ridges.CpuTriangles = new sketch::Tessellator(*_ridges.Shape);
 
     // Tessellate the ground
     FloatList ground;
@@ -588,19 +591,35 @@ void GridCity::_AllocCell(GridCell* cell)
     }
 
     // Create roof ridges -- we should perhaps do this later
-    const float ridgeHeight = 10.0f;
-    const float ridgeThickness = 2.0f;
+    const float ridgeHeight = 2.0f;
+    const float ridgeThickness = 1.0f;
     sketch::Quad roofQuad = shape->ComputeQuad(cell->Anim.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
-    if (false) {
+
+    if (_ridges.Shape) {
         sketch::Quad northRidgeQuad;
         northRidgeQuad.p = roofQuad.p + roofQuad.u - U * ridgeThickness;
         northRidgeQuad.u = U * ridgeThickness;
         northRidgeQuad.v = roofQuad.v;
         sketch::CoplanarPath* northRidge = 
-            shape->AddQuad(northRidgeQuad);
-        shape->PushPath(northRidge, ridgeHeight); 
+            _ridges.Shape->AddQuad(northRidgeQuad);
+        float beginW = northRidge->Plane->Eqn.w;
+        _ridges.Shape->PushPath(northRidge, ridgeHeight);
+        float endW = northRidge->Plane->Eqn.w;
+
+        // Hide the ridge
+        _ridges.Shape->SetPathPlane(northRidge, beginW);
+        northRidge->Visible = false;
+
+        // Push it onto our animation list
+        GridAnim anim;
+        anim.Path = northRidge;
+        anim.BeginW = beginW;
+        anim.EndW = endW;
+        anim.StartTime = 0;
+        anim.StartBeat = 0;
+        _ridges.Anims.push_back(anim);
     }
 
     // Finalize the topology
@@ -714,6 +733,13 @@ void GridCity::Draw()
         cell->GpuTriangles.Bind();
         glDrawElements(GL_TRIANGLES, cell->GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
     }
+
+    // Draw roof ridges
+    glUniform1i(u("HasWindows"), 0);
+    _ridges.CpuTriangles->PullFromScene();
+    _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
+    _ridges.GpuTriangles.Bind();
+    glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
 
     // Add city wall
     glUniform1i(u("HasWindows"), 0);
