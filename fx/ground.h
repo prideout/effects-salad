@@ -16,8 +16,9 @@ class Ground : public Effect {
 public:
 
     float brightness;
+    float vibration;
 
-    Ground() : Effect(), brightness(1.0f) 
+    Ground() : Effect(), brightness(1.0f), vibration(0.0f)
     { 
     }
    

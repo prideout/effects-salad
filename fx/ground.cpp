@@ -93,7 +93,7 @@ void Ground::Draw() {
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
     glUniform1f(u("WindAmount"), .25 + .25*(1 + sin(2*time)));
-    glUniform1f(u("Vibration"), 0); //.5+.5*sin(time));
+    glUniform1f(u("Vibration"), vibration); 
     glUniform1f(u("Brightness"), brightness); 
 
     cam.Bind(glm::mat4());
