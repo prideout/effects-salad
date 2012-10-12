@@ -85,4 +85,6 @@ private:
     sketch::Scene* _historicalSketch;
     sketch::Tessellator* _centerpieceTess;
     sketch::Playback* _centerpiecePlayer;
+    sketch::PathList _columns;
+    vec3 _columnCenter;
 };

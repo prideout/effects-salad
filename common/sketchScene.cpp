@@ -5,6 +5,7 @@
 #include "pez/pez.h"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/constants.inl"
+#include "glm/gtx/rotate_vector.hpp"
 
 #include <algorithm>
 #include <set>
@@ -826,4 +827,19 @@ Scene::_GetCentroid(const Path* path) const
         center += *p;
     }
     return center / float(vlist.size());
+}
+
+void
+Scene::RotatePath(sketch::Path* path, vec3 axis, vec3 center, float theta)
+{
+    set<int> points;
+    FOR_EACH(e, path->Edges) {
+        uvec2 xy = (*e)->Endpoints;
+        points.insert(xy.x);
+        points.insert(xy.y);
+    }
+    FOR_EACH(p, points) {
+        vec3 x = _points[*p];
+        _points[*p] = glm::rotate(x, theta, axis);
+    }
 }

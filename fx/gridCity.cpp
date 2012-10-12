@@ -912,14 +912,26 @@ void GridCity::Update()
     _ridges.CpuTriangles->PullFromScene();
     _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
 
+    // update centerpiece
+    if (centerpiece && time > 2.0f) {
+        _centerpiecePlayer->Update();
+        _centerpieceTess->PullFromScene();
+        if (time > 4.0f) {
+            vec3 axis = vec3(0, 1, 0);
+            FOR_EACH(c, _columns) {
+                _centerpieceSketch->RotatePath(
+                    *c,
+                    axis,
+                    _columnCenter,
+                    2.0 * cos(time * 8.0));
+            }
+        }
+    }
+
+    // update camera
     _camera.eye = glm::rotate(_camera.eye, 
                         (trackBeat and (GetContext()->audio->GetSnares() or GetContext()->audio->GetKicks())) ? 1.0f : .1f, 
                         glm::vec3(0,1,0));
-
-    if (centerpiece && time > 5.0f) {
-        _centerpiecePlayer->Update();
-        _centerpieceTess->PullFromScene();
-    }
 }
 
 void GridCity::Draw()
@@ -996,57 +1008,32 @@ void GridCity::_CreateCenterpiece()
 
     const Plane* ground = _centerpieceSketch->GroundPlane();
     glm::vec2 off(0, 0);
-    const float width = 80;
-    const float depth = 40;
 
-    CoplanarPath* rect =
-        _centerpieceSketch->AddRectangle(width, depth, ground->Eqn, off);
+    vec4 groundEqn = ground->Eqn;
 
-    float height = 40;
-    PathList walls;
-    _centerpieceSketch->PushPath(rect, height, &walls);
-    _centerpieceSketch->PushPath(rect, -1, &walls);
-    CoplanarPath* roof = rect;
-    CoplanarPath* wall;
+    CoplanarPath* circleRoof = _centerpieceSketch->AddPolygon(30, groundEqn, off, 96);
+    _centerpieceSketch->PushPath(circleRoof, 80);
 
-    wall = dynamic_cast<CoplanarPath*>(walls[1]);
-    rect = _centerpieceSketch->AddInscribedRectangle(1.0, 15, wall, vec2(0, 0));
-    _centerpieceSketch->PushPath(rect, -5);
-
-    wall = dynamic_cast<CoplanarPath*>(walls[2]);
-
-    PathList cylinders;
-
-    for (float y = -32.5; y < 32.6; y += 10.0) {
-        CoplanarPath* circle = _centerpieceSketch->AddInscribedPolygon(3.0, wall, vec2(0, y), 48);
-        cylinders.push_back(circle);
+    int numColumns = 12;
+    vec4 roofEqn = groundEqn; roofEqn.w = 80;
+    for (int i = 0; i < numColumns; ++i) {
+        float theta = 6.28 * i / numColumns;
+        off.x = 10.0f * cos(theta);
+        off.y = 10.0f * sin(theta);
+        CoplanarPath* column = _centerpieceSketch->AddPolygon(2, roofEqn, off, 32);
+        _columns.push_back(column);
     }
+    _columnCenter = vec3(0, roofEqn.w, 0);
+    _centerpieceSketch->PushPaths(_columns, 30);
 
-    _centerpieceSketch->PushPaths(cylinders, 30);
-    PathList inners;
-    FOR_EACH(circle, cylinders) {
-        CoplanarPath* outer = dynamic_cast<CoplanarPath*>(*circle);
-        CoplanarPath* inner = _centerpieceSketch->AddInscribedPolygon(1.5, outer, vec2(0, 0), 8);
-        inners.push_back(inner);
-    }
-    _centerpieceSketch->PushPaths(inners, -2);
-    cylinders.clear();
+    off = vec2(0, 0);
+    CoplanarPath* circle2Roof = _centerpieceSketch->AddPolygon(7, roofEqn, off, 5);
+    _centerpieceSketch->PushPath(circle2Roof, 80);
 
-    for (float y = -32.5; y < 32.6; y += 10.0) {
-        CoplanarPath* c1 = _centerpieceSketch->AddInscribedPolygon(3, wall, vec2(-10, y), 48);
-        CoplanarPath* c2 = _centerpieceSketch->AddInscribedPolygon(3, wall, vec2(+10, y), 48);
-        cylinders.push_back(c1);
-        cylinders.push_back(c2);
-    }
-    _centerpieceSketch->PushPaths(cylinders, -1);
-
-    // Pop out an "antenna"
-    CoplanarPath* c1 = _centerpieceSketch->AddInscribedPolygon(
-        15,
-        roof,
-        vec2(0, 0),
-        4);
-    _centerpieceSketch->PushPath(c1, 40);
+    off = vec2(0, 0);
+    roofEqn.w += 80;
+    CoplanarPath* triRoof = _centerpieceSketch->AddPolygon(40, roofEqn, off, 3);
+    _centerpieceSketch->PushPath(triRoof, 4);
 
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
