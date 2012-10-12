@@ -95,7 +95,7 @@ void GrassTreeGrow::Draw() {
     float SPB = .5f * (1.0f / BPS);
     stickyTime = int(time / SPB) * SPB;
 
-    static int hhCount = 0;
+    static float hhCount = 0;
     static float flash = 0;
 
     // --------------------------------------------------------------------------------
@@ -125,14 +125,14 @@ void GrassTreeGrow::Draw() {
     }
 
     float underStart = 11.f;
-    float underStop = 19.f;
-    float overStop = 24.f;
+    float underStop = 14.5f;
+    float overStop = 30.f;
     if (time > underStart and time < underStop) {
         if (time > 13.3 and time < 14.5) {
             flash = 1.f + sinf(time*240);
         }
-        if (time > 14.5 and GetContext()->audio->GetHiHats()) {
-            hhCount++;
+        if (time > 13.3 and GetContext()->audio->GetHiHats()) {
+            hhCount += 1.0f;
             fullscreen->_mask |= Fullscreen::ScanLinesFlag;
         }
 
@@ -148,11 +148,18 @@ void GrassTreeGrow::Draw() {
     } else if (time > underStop and time < overStop) {
         fullscreen->brightness = 1.0;
         fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
+        fullscreen->solidColor = vec4(0,0,0,1);
         if (
             (GetContext()->audio->GetSnares() 
              or GetContext()->audio->GetKicks())) {
-            hhCount++;
+            hhCount += 1.0f;
+            flash = .1f;
+        } else if (GetContext()->audio->GetHiHats()) {
+            hhCount += .1f;
+            flash = .1f;
         }
+        fullscreen->brightness = 1.0 - flash;
+        flash *= .9;
         cam.eye = _tree.pos;
         cam.eye.x += 7.0 * cos(hhCount*.25 + time / 4);// + 5.0*glm::smoothstep(underStart, underStop, time);
         cam.eye.y += 2.7; // + (2 + sin(hhCount*.25 + time));
