@@ -26,10 +26,7 @@ struct GridCell {
     Vao GpuTriangles;
     bool Visible;
     int BuildingId;
-    GridAnim* NorthRidge;
-    GridAnim* SouthRidge;
-    GridAnim* EastRidge;
-    GridAnim* WestRidge;
+    GridAnim* Ridges[4];
 };
 
 typedef std::vector<GridCell> GridCells;

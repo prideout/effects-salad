@@ -30,8 +30,8 @@ static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 static const float GrowthRate = 0.1f; // lower is faster
 static const float MinHeight = 20;
-static const int NumRows = 10;
-static const int NumCols = 20;
+static const int NumRows = 5;
+static const int NumCols = 10;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
 static const bool HasWindows = false;
@@ -568,10 +568,10 @@ sketch::PathList GridCity::_AddWindows(
 
 void GridCity::_AllocCell(GridCell* cell)
 {
-    cell->NorthRidge = 0;
-    cell->SouthRidge = 0;
-    cell->EastRidge = 0;
-    cell->WestRidge = 0;
+    cell->Ridges[0] = 0;
+    cell->Ridges[1] = 0;
+    cell->Ridges[2] = 0;
+    cell->Ridges[3] = 0;
 
     sketch::Scene* shape = new sketch::Scene;
     cell->Roof.Path = shape->AddQuad(cell->Quad);
@@ -592,36 +592,86 @@ void GridCity::_AllocCell(GridCell* cell)
         }
     }
 
-    // Create roof ridges
+    // Add detail to rooftops
     const float ridgeHeight = 2.0f;
     const float ridgeThickness = 1.0f;
     sketch::Quad roofQuad = shape->ComputeQuad(cell->Roof.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
     if (_ridges.Shape) {
-        sketch::Quad northRidgeQuad;
-        northRidgeQuad.p = roofQuad.p + roofQuad.u - U * ridgeThickness;
-        northRidgeQuad.u = U * ridgeThickness;
-        northRidgeQuad.v = roofQuad.v;
-        sketch::CoplanarPath* northRidge = 
-            _ridges.Shape->AddQuad(northRidgeQuad);
-        float beginW = northRidge->Plane->Eqn.w;
-        _ridges.Shape->PushPath(northRidge, ridgeHeight);
-        float endW = northRidge->Plane->Eqn.w;
 
-        // Hide the ridge prideout
-        _ridges.Shape->SetPathPlane(northRidge, beginW);
-        northRidge->Visible = false;
-
-        // Push it onto our animation list
-        GridAnim* anim = new GridAnim();
-        anim->Path = northRidge;
-        anim->BeginW = beginW;
-        anim->EndW = endW;
-        anim->StartTime = 0.0f;
-        anim->StartBeat = 0;
-        _ridges.Anims.push_back(anim);
-        cell->NorthRidge = anim;
+        // North ridge
+        {
+            GridAnim* anim = new GridAnim();
+            sketch::Quad northRidgeQuad;
+            northRidgeQuad.p = roofQuad.p + roofQuad.u - U * ridgeThickness;
+            northRidgeQuad.u = U * ridgeThickness;
+            northRidgeQuad.v = roofQuad.v;
+            sketch::CoplanarPath* northRidge = 
+                _ridges.Shape->AddQuad(northRidgeQuad);
+            anim->BeginW = northRidge->Plane->Eqn.w;
+            _ridges.Shape->PushPath(northRidge, ridgeHeight);
+            anim->EndW = northRidge->Plane->Eqn.w;
+            _ridges.Shape->SetPathPlane(northRidge, anim->BeginW);
+            northRidge->Visible = false;
+            anim->Path = northRidge;
+            _ridges.Anims.push_back(anim);
+            cell->Ridges[0] = anim;
+        }
+        // South ridge
+        {
+            GridAnim* anim = new GridAnim();
+            sketch::Quad southRidgeQuad;
+            southRidgeQuad.p = roofQuad.p - roofQuad.u - U * ridgeThickness;
+            southRidgeQuad.u = U * ridgeThickness;
+            southRidgeQuad.v = roofQuad.v;
+            sketch::CoplanarPath* southRidge = 
+                _ridges.Shape->AddQuad(southRidgeQuad);
+            anim->BeginW = southRidge->Plane->Eqn.w;
+            _ridges.Shape->PushPath(southRidge, ridgeHeight);
+            anim->EndW = southRidge->Plane->Eqn.w;
+            _ridges.Shape->SetPathPlane(southRidge, anim->BeginW);
+            southRidge->Visible = false;
+            anim->Path = southRidge;
+            _ridges.Anims.push_back(anim);
+            cell->Ridges[1] = anim;
+        }
+        // West ridge
+        {
+            GridAnim* anim = new GridAnim();
+            sketch::Quad westRidgeQuad;
+            westRidgeQuad.p = roofQuad.p + roofQuad.v - V * ridgeThickness;
+            westRidgeQuad.u = roofQuad.u;
+            westRidgeQuad.v = V * ridgeThickness;
+            sketch::CoplanarPath* westRidge = 
+                _ridges.Shape->AddQuad(westRidgeQuad);
+            anim->BeginW = westRidge->Plane->Eqn.w;
+            _ridges.Shape->PushPath(westRidge, ridgeHeight);
+            anim->EndW = westRidge->Plane->Eqn.w;
+            _ridges.Shape->SetPathPlane(westRidge, anim->BeginW);
+            westRidge->Visible = false;
+            anim->Path = westRidge;
+            _ridges.Anims.push_back(anim);
+            cell->Ridges[2] = anim;
+        }
+        // East ridge
+        {
+            GridAnim* anim = new GridAnim();
+            sketch::Quad eastRidgeQuad;
+            eastRidgeQuad.p = roofQuad.p - roofQuad.v + V * ridgeThickness;
+            eastRidgeQuad.u = roofQuad.u;
+            eastRidgeQuad.v = V * ridgeThickness;
+            sketch::CoplanarPath* eastRidge = 
+                _ridges.Shape->AddQuad(eastRidgeQuad);
+            anim->BeginW = eastRidge->Plane->Eqn.w;
+            _ridges.Shape->PushPath(eastRidge, ridgeHeight);
+            anim->EndW = eastRidge->Plane->Eqn.w;
+            _ridges.Shape->SetPathPlane(eastRidge, anim->BeginW);
+            eastRidge->Visible = false;
+            anim->Path = eastRidge;
+            _ridges.Anims.push_back(anim);
+            cell->Ridges[3] = anim;
+        }
     }
 
     // Finalize the topology
@@ -700,11 +750,14 @@ void GridCity::Update()
             cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
 
             // Show ridges
-            if (cell.NorthRidge) {
+            for (int i = 0; i < 4; ++i) {
+                if (!cell.Ridges[i]) {
+                    continue;
+                }
                 _ridges.Shape->SetPathPlane(
-                    cell.NorthRidge->Path,
-                    cell.NorthRidge->EndW);
-                _ridges.Shape->SetVisible(cell.NorthRidge->Path, true);
+                    cell.Ridges[i]->Path,
+                    cell.Ridges[i]->EndW);
+                _ridges.Shape->SetVisible(cell.Ridges[i]->Path, true);
             }
 
             _FreeCell(&cell);
