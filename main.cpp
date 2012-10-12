@@ -251,7 +251,9 @@ static void _constructScene()
             fullscreen = new Fullscreen("SSAO", mask);
         else
             fullscreen = new Fullscreen(mask);
-        fullscreen->AddChild(new GridCity());
+        GridCity* city = new GridCity();
+        city->pingpong = true;
+        fullscreen->AddChild(city);
         ctx->drawables.push_back(fullscreen);
         if (not FINAL)
             ctx->drawables.push_back(new FpsOverlay());

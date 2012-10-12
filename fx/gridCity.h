@@ -47,6 +47,7 @@ public:
     bool trackBeat;
     bool diveCamera;
     bool centerpiece;
+    bool pingpong;
 
     GridCity();
     virtual ~GridCity();
@@ -89,4 +90,5 @@ private:
     sketch::PathList _hangingThings;
     vec3 _columnCenter;
     float _previousBump;
+    bool _backwards;
 };

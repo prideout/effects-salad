@@ -90,6 +90,8 @@ GridCity::GridCity()
     diveCamera = false;
     _currentBeat = 0;
     centerpiece = false;
+    pingpong = false;
+    _backwards = false;
 }
 
 GridCity::~GridCity()
@@ -890,7 +892,9 @@ void GridCity::Update()
                 _ridges.Shape->SetVisible(cell.Ridges[i]->Path, true);
             }
 
-            _FreeCell(&cell);
+            if (!pingpong) {
+                _FreeCell(&cell);
+            }
             continue;
         }
         // Update an in-progress animation
@@ -903,6 +907,10 @@ void GridCity::Update()
         cell.Shape->SetPathPlane(cell.Roof.Path, w);
         cell.CpuTriangles->PullFromScene();
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
+    }
+
+    if (numAnimating == 0 && pingpong) {
+        // TBD prideout
     }
 
     // update vines
@@ -918,10 +926,11 @@ void GridCity::Update()
     if (centerpiece && time > 2.0f) {
 
         bool bump = false;
-        if (time - _previousBump > 0.5) {
+        if (time - _previousBump > 0.5 || time > 10.0) {
             bump = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
-            if (time > 5.0) {
-                //bump = bump || GetContext()->audio->GetHiHats();
+            if (time > 10.0) {
+                //_centerpiecePlayer->SetCommandDuration(1.0 / 6.0); // prideout
+                bump = bump || GetContext()->audio->GetHiHats();
             }
             if (bump) {
                 _previousBump = time;
@@ -1106,14 +1115,21 @@ void GridCity::_CreateCenterpiece()
         dents.push_back(dent);
     }
     _centerpieceSketch->PushPaths(dents, -2);
-
     _centerpieceSketch->PushPath(lowerInset, -4);
-    for (int i = 0; i < numDents; i++) {
-        sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(dents[i]);
-        _centerpieceSketch->PushPath(cop, 6);
+
+    for (int repeats = 0; repeats < 5; ++repeats) {
+        for (int i = 0; i < numDents;) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(dents[i]);
+            _centerpieceSketch->PushPath(cop, 6);
+            i += (repeats + 1);
+        }
+        for (int i = 0; i < numDents;) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(dents[i]);
+            _centerpieceSketch->PushPath(cop, -6);
+            i += (repeats + 1);
+        }
     }
-    _centerpieceSketch->PushPaths(dents, -6);
-  
+
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
 
