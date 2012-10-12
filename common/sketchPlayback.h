@@ -19,7 +19,7 @@ namespace sketch
                  sketch::Scene* scene,
                  sketch::Tessellator* tess);
         void SetCommandDuration(float seconds);
-        void Update();
+        void Update(bool explicitBump = false, bool bump = false);
     private:
         float _Tween(float goalValue, float percentage);
         void _ExecuteCurrentCommand(float percentage);

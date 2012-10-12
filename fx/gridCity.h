@@ -88,4 +88,5 @@ private:
     sketch::PathList _columns;
     sketch::PathList _hangingThings;
     vec3 _columnCenter;
+    float _previousBump;
 };
