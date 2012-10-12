@@ -68,11 +68,17 @@ GridTerrainFunc(vec2 v)
     p.x *= (s / TerrainRes);
     p.z *= (s / TerrainRes);
     p += vec3(-s/2.0, 0, -s/2.0);
-   
     if (abs(p.x) < TerrainArea/2 && abs(p.z) < TerrainArea/2) {
         p.y *= 0.2;
     }
-
+/*
+    // Pathetic attempt to fix discontinuity:
+    } else {
+        float radius = 100.0f;
+        float scale = 0.2 + 0.8 * std::min(radius, length(vec2(p.x, p.z))) / radius;
+        p.y *= scale;
+    }
+*/
     return p;
 }
 
@@ -475,7 +481,7 @@ void GridCity::Init()
             _AllocCell(&cell);
             vec2 v = vec2(cell.Quad.p.x, cell.Quad.p.z);
             float d = length(v) * GrowthRate;
-            cell.Anim.StartBeat = (int) d;
+            cell.Roof.StartBeat = (int) d;
             col++;
             if (col >= NumCols) {
                 col = 0;
@@ -485,7 +491,8 @@ void GridCity::Init()
     }
 
     // Test the terrain sampling function
-    if (false) {
+    bool TestGetHeight = false;
+    if (TestGetHeight) {
         for (float x = -500; x < 500; x += 5.0) {
             printf("%f\n", 1000-(x+500));
             for (float z = -500; z < 500; z += 15.0) {
@@ -561,16 +568,21 @@ sketch::PathList GridCity::_AddWindows(
 
 void GridCity::_AllocCell(GridCell* cell)
 {
+    cell->NorthRidge = 0;
+    cell->SouthRidge = 0;
+    cell->EastRidge = 0;
+    cell->WestRidge = 0;
+
     sketch::Scene* shape = new sketch::Scene;
-    cell->Anim.Path = shape->AddQuad(cell->Quad);
-    vec3 n = cell->Anim.Path->Plane->GetNormal();
+    cell->Roof.Path = shape->AddQuad(cell->Quad);
+    vec3 n = cell->Roof.Path->Plane->GetNormal();
     float flip = dot(n, vec3(0, 1, 0)) < 0 ? -1 : 1;
 
     // Push up the roof
     sketch::PathList walls;
-    cell->Anim.BeginW = cell->Anim.Path->Plane->Eqn.w;
-    shape->PushPath(cell->Anim.Path, flip * cell->Height, &walls);
-    cell->Anim.EndW = cell->Anim.Path->Plane->Eqn.w;
+    cell->Roof.BeginW = cell->Roof.Path->Plane->Eqn.w;
+    shape->PushPath(cell->Roof.Path, flip * cell->Height, &walls);
+    cell->Roof.EndW = cell->Roof.Path->Plane->Eqn.w;
 
     // Create window holes
     if (HasWindows) {
@@ -580,13 +592,12 @@ void GridCity::_AllocCell(GridCell* cell)
         }
     }
 
-    // Create roof ridges -- we should perhaps do this later
+    // Create roof ridges
     const float ridgeHeight = 2.0f;
     const float ridgeThickness = 1.0f;
-    sketch::Quad roofQuad = shape->ComputeQuad(cell->Anim.Path);
+    sketch::Quad roofQuad = shape->ComputeQuad(cell->Roof.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
-
     if (_ridges.Shape) {
         sketch::Quad northRidgeQuad;
         northRidgeQuad.p = roofQuad.p + roofQuad.u - U * ridgeThickness;
@@ -598,18 +609,19 @@ void GridCity::_AllocCell(GridCell* cell)
         _ridges.Shape->PushPath(northRidge, ridgeHeight);
         float endW = northRidge->Plane->Eqn.w;
 
-        // Hide the ridge
+        // Hide the ridge prideout
         _ridges.Shape->SetPathPlane(northRidge, beginW);
         northRidge->Visible = false;
 
         // Push it onto our animation list
-        GridAnim anim;
-        anim.Path = northRidge;
-        anim.BeginW = beginW;
-        anim.EndW = endW;
-        anim.StartTime = 0;
-        anim.StartBeat = 0;
+        GridAnim* anim = new GridAnim();
+        anim->Path = northRidge;
+        anim->BeginW = beginW;
+        anim->EndW = endW;
+        anim->StartTime = 0.0f;
+        anim->StartBeat = 0;
         _ridges.Anims.push_back(anim);
+        cell->NorthRidge = anim;
     }
 
     // Finalize the topology
@@ -618,7 +630,7 @@ void GridCity::_AllocCell(GridCell* cell)
 
     // Push the building back into the ground to allow it to pop up later
     if (PopBuildings) {
-        shape->SetPathPlane(cell->Anim.Path, cell->Anim.BeginW);
+        shape->SetPathPlane(cell->Roof.Path, cell->Roof.BeginW);
     }
 
     // Test
@@ -638,7 +650,7 @@ void GridCity::_AllocCell(GridCell* cell)
     }
 
     // Misc
-    cell->Anim.StartTime = 0;
+    cell->Roof.StartTime = 0;
     cell->Shape = shape;
     cell->Visible = not PopBuildings;
     cell->CpuTriangles->PullFromScene();
@@ -671,32 +683,41 @@ void GridCity::Update()
         if (!cell.CpuTriangles) {
             continue;
         }
-        if (cell.Anim.StartTime == 0) {
+        if (cell.Roof.StartTime == 0) {
             // Check if the building hasn't been born yet:
-            if (cell.Anim.StartBeat > _currentBeat) {
+            if (cell.Roof.StartBeat > _currentBeat) {
                 cell.Visible = false;
                 continue;
             }
             // At this point we're starting a new pop animation
-            cell.Anim.StartTime = time;
+            cell.Roof.StartTime = time;
             cell.Visible = true;
         }
-        if (time > cell.Anim.StartTime + PopDuration) {
+        if (time > cell.Roof.StartTime + PopDuration) {
             // At this point we're ending a pop animation
-            cell.Shape->SetPathPlane(cell.Anim.Path, cell.Anim.EndW);
+            cell.Shape->SetPathPlane(cell.Roof.Path, cell.Roof.EndW);
             cell.CpuTriangles->PullFromScene();
             cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
+
+            // Show ridges
+            if (cell.NorthRidge) {
+                _ridges.Shape->SetPathPlane(
+                    cell.NorthRidge->Path,
+                    cell.NorthRidge->EndW);
+                _ridges.Shape->SetVisible(cell.NorthRidge->Path, true);
+            }
+
             _FreeCell(&cell);
             continue;
         }
         // Update an in-progress animation
         numAnimating++;
         float w = tweener.easeOut(
-            time - cell.Anim.StartTime,
-            cell.Anim.BeginW,
-            cell.Anim.EndW - cell.Anim.BeginW,
+            time - cell.Roof.StartTime,
+            cell.Roof.BeginW,
+            cell.Roof.EndW - cell.Roof.BeginW,
             PopDuration);
-        cell.Shape->SetPathPlane(cell.Anim.Path, w);
+        cell.Shape->SetPathPlane(cell.Roof.Path, w);
         cell.CpuTriangles->PullFromScene();
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }
@@ -705,6 +726,10 @@ void GridCity::Update()
     FOR_EACH(tubeIt, _vines) {
         (*tubeIt)->Update();
     }
+
+    // update ridges
+    _ridges.CpuTriangles->PullFromScene();
+    _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
 }
 
 void GridCity::Draw()
@@ -739,8 +764,6 @@ void GridCity::Draw()
 
     // Draw roof ridges
     glUniform1i(u("HasWindows"), 0);
-    _ridges.CpuTriangles->PullFromScene();
-    _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
     _ridges.GpuTriangles.Bind();
     glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
 
