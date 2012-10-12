@@ -926,14 +926,14 @@ void GridCity::Update()
                     2.0 * cos(time * 8.0));
             }
         }
-        if (time > 6.0f) {
+        if (false && time > 6.0f) {
             vec3 axis = vec3(0, 1, 0);
             FOR_EACH(c, _hangingThings) {
                 _centerpieceSketch->RotatePath(
                     *c,
                     axis,
                     _columnCenter,
-                    2.0 * (time - 6.0f));
+                    std::min(5.0, 2.0 * (time - 6.0f)));
             }
         }
     }
@@ -1042,8 +1042,10 @@ void GridCity::_CreateCenterpiece()
 
     off = vec2(0, 0);
     roofEqn.w += 80;
-    CoplanarPath* triRoof = _centerpieceSketch->AddPolygon(40, roofEqn, off, 3);
-    _centerpieceSketch->PushPath(triRoof, 4);
+    CoplanarPath* triRoof = _centerpieceSketch->AddPolygon(40, roofEqn, off, 128);
+    PathList triWalls;
+    PathList bumps;
+    _centerpieceSketch->PushPath(triRoof, 4, &triWalls);
     roofEqn.w -= 3;
 
     int numHangingThings = 32;
@@ -1061,10 +1063,36 @@ void GridCity::_CreateCenterpiece()
         hangingThingyQ.v = 0.25f * vec3(sin(theta+3.14/2.0), 0, cos(theta+3.14/2.0));
         CoplanarPath* hangingThingy = _centerpieceSketch->AddQuad(hangingThingyQ);
         _hangingThings.push_back(hangingThingy);
+
+        vec4 r = roofEqn; r.w += 3.0;
+        CoplanarPath* bump = _centerpieceSketch->AddPolygon(1, r, off, 16);
+        bumps.push_back(bump);
     }
-    _centerpieceSketch->PushPaths(_hangingThings, -30);
-    _hangingThings.push_back(triRoof);
-    
+
+    for (int i = 0; i < numHangingThings; ++i) {
+        float theta = 6.28 * i / numHangingThings;
+        off.x = 20.0f * cos(theta);
+        off.y = 20.0f * sin(theta);
+        vec4 r = roofEqn; r.w += 3.0;
+        CoplanarPath* bump = _centerpieceSketch->AddPolygon(1, r, off, 16);
+        bumps.push_back(bump);
+    }
+
+    _centerpieceSketch->PushPaths(_hangingThings, -20);
+    _centerpieceSketch->PushPaths(bumps, 6.0);
+
+    CoplanarPath* inset = _centerpieceSketch->AddInscribedPolygon(37, triRoof, vec2(0,0), 128);
+    _centerpieceSketch->PushPath(inset, -2);
+
+    // TODO Replace the following with AddInscribedPolygon(5) and push it in 
+/*
+    Quad q;
+    q.p = vec3(0, circleRoof->Plane->Eqn.w, 0);
+    q.u = vec3(10, 0, 0);
+    q.v = vec3(0, 0, 20);
+    _centerpieceSketch->AddHoleQuad(q, circleRoof);
+*/
+  
     const Json::Value& history = _centerpieceSketch->GetHistory();
     std::swap(_historicalSketch, _centerpieceSketch);
 
