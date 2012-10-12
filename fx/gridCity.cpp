@@ -129,7 +129,7 @@ GridCity::_GetHeight(vec3 p0)
     vec2 p = vec2(p0.x, p0.z);
     vec2 coord = p / float(TerrainArea);
     vec2 domain = (coord + vec2(0.5)) * float(TerrainArea);
-    return GridTerrainFunc(domain).y;
+    return BackgroundTerrainFunc(domain).y;
 }
 
 Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX)
@@ -590,8 +590,8 @@ void GridCity::_AllocCell(GridCell* cell)
     }
 
     // Create roof ridges -- we should perhaps do this later
-    const float ridgeHeight = 10.0f;
-    const float ridgeThickness = 2.0f;
+    const float ridgeHeight = 2.0f;
+    const float ridgeThickness = 1.0f;
     sketch::Quad roofQuad = shape->ComputeQuad(cell->Anim.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
@@ -604,9 +604,14 @@ void GridCity::_AllocCell(GridCell* cell)
         sketch::CoplanarPath* northRidge = 
             _ridges.Shape->AddQuad(northRidgeQuad);
         float beginW = northRidge->Plane->Eqn.w;
-        _ridges.Shape->PushPath(northRidge, ridgeHeight); 
+        _ridges.Shape->PushPath(northRidge, ridgeHeight);
         float endW = northRidge->Plane->Eqn.w;
 
+        // Hide the ridge
+        _ridges.Shape->SetPathPlane(northRidge, beginW);
+        northRidge->Visible = false;
+
+        // Push it onto our animation list
         GridAnim anim;
         anim.Path = northRidge;
         anim.BeginW = beginW;
@@ -689,10 +694,6 @@ void GridCity::Update()
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }
 
-    // update building ridges
-    _ridges.CpuTriangles->PullFromScene();
-    _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
-
     // update vines
     FOR_EACH(tubeIt, _vines) {
         (*tubeIt)->Update();
@@ -734,8 +735,10 @@ void GridCity::Draw()
 
     // Draw roof ridges
     glUniform1i(u("HasWindows"), 0);
-    //_ridges.GpuTriangles.Bind();
-    //glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
+    _ridges.CpuTriangles->PullFromScene();
+    _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
+    _ridges.GpuTriangles.Bind();
+    glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
 
     // Add city wall
     glUniform1i(u("HasWindows"), 0);
