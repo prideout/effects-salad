@@ -133,9 +133,9 @@ GridCity::_GetHeight(vec3 p0)
     return BackgroundTerrainFunc(domain).y;
 }
 
-Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX)
+Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX, float radius, float lenght)
 {
-    float area = TerrainArea/2;
+    float area = TerrainArea/2 - 2;
     vec2 min(-area, -area);
     vec2 max(area, area);
 
@@ -149,7 +149,7 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
     //
 
     float curveAmp = 10;
-    float curveLenght = 20;
+    float curveLenght = lenght;
     float curvePeriod= 1; //10 / 7.0;
 
     //
@@ -186,13 +186,16 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
                             t->cvs[cvCount - 3];
             cv = t->cvs[cvCount - 2] + dir;
         }
+
+        if (i == 0)
+            cv.y = 0;
     }
     
     //
     // These values are consumed by Init, so set them first
     //
-    t->radius = 2;
-    t->lod =5;
+    t->radius = radius;
+    t->lod = 5;
     t->sidesPerSlice = 5;
 
     //
@@ -205,23 +208,29 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
 
 void GridCity::_CreateVines() 
 {
-    for (float a = 0; a < 1.0; a+= .1) {
-        Tube* t = _CreateVine(.0, a, -1, true);
+    float inc = .05;
+
+    for (float a = 0; a < 1.0; a+= inc) {
+        float radius = 2 + .5*TerrainNoise.Get(a, 0);
+        Tube* t = _CreateVine(.0, a, -1, true, radius);
         _vines.push_back(t);
     }
 
-    for (float a = 0; a < 1.0; a+= .1) {
-        Tube* t = _CreateVine(a, 1, 1, false);
+    for (float a = 0; a < 1.0; a+= inc) {
+        float radius = 2 + .5*TerrainNoise.Get(a, 0);
+        Tube* t = _CreateVine(a, 1, 1, false, radius);
         _vines.push_back(t);
     }
 
-    for (float a = 0; a < 1.0; a+= .1) {
-        Tube* t = _CreateVine(a, 0, -1, false);
+    for (float a = 0; a < 1.0; a+= inc) {
+        float radius = 2 + .5*TerrainNoise.Get(a, 0);
+        Tube* t = _CreateVine(a, 0, -1, false, radius);
         _vines.push_back(t);
     }
 
-    for (float a = 0; a < 1.0; a+= .1) {
-        Tube* t = _CreateVine(1, a, 1, true);
+    for (float a = 0; a < 1.0; a+= inc) {
+        float radius = 2 + .5*TerrainNoise.Get(a, 0);
+        Tube* t = _CreateVine(1, a, 1, true, radius);
         _vines.push_back(t);
     }
 }
