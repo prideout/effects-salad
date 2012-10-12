@@ -184,7 +184,7 @@ void GrassTreeGrow::Draw() {
         if (time > 13.3 and time < 14.5) {
             flash = 0.f;//.5f;//1.f + sinf(time*240);
         }
-        if (time > 13.3 and GetContext()->audio->GetHiHats()) {
+        if (time > 13.3 and time < 14.9 and GetContext()->audio->GetHiHats()) {
             hhCount += 1.0f;
             fullscreen->_mask |= Fullscreen::ScanLinesFlag;
         }
