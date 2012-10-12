@@ -156,8 +156,8 @@ void GrassTreeGrow::Draw() {
             flash = .1f;
         } else if (GetContext()->audio->GetHiHats()) {
             hhCount += .1f;
-            flash = .1f;
         }
+        flash = .5*sin(hhCount+time*240);
         fullscreen->brightness = 1.0 - flash;
         flash *= .9;
         cam.eye = _tree.pos;
