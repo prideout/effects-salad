@@ -63,15 +63,16 @@ GridTerrainFunc(vec2 v)
     float tx = v.x * TerrainScale;
     float tz = v.y * TerrainScale;
     float y = TerrainNoise.Get(tx, tz) + 20.0 * TerrainNoise.Get(tx/5.0, tz/5.0);
-    //y *= 0.3;
-    y *= length(v) / 1000.0f;
     vec3 p = vec3(v.x, y, v.y);
-
     float s = TerrainArea;
     p.x *= (s / TerrainRes);
     p.z *= (s / TerrainRes);
     p += vec3(-s/2.0, 0, -s/2.0);
-    
+   
+    if (abs(p.x) < TerrainArea/2 && abs(p.z) < TerrainArea/2) {
+        p.y *= 0.2;
+    }
+
     return p;
 }
 
