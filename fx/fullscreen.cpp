@@ -47,6 +47,10 @@ Fullscreen::Init()
         size *= 2;
     }
 
+    if (_mask & UndersampleFlag) {
+        size /= 2;
+    }
+
     if (_mask & AmbientOcclusionFlag) {
         _noiseTexture.Init("normalmap.png");
     }

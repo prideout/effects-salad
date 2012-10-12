@@ -19,8 +19,8 @@ uniform sampler2D NoiseImage;
 uniform float Time = 0;
 
 uniform vec2 TexelSize;
-uniform float OccluderBias = 0.1;
-uniform float SamplingRadius = 50.0;
+uniform float OccluderBias = 0.375;
+uniform float SamplingRadius = 11.0;
 uniform vec2 Attenuation = vec2(1,1);
 
 uniform bool ApplyVignette = true;

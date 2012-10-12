@@ -30,8 +30,8 @@ static const vec2 CellScale = vec2(0.9f, 0.7f);
 static const float PopDuration = 1.0f;
 static const float GrowthRate = 0.1f; // lower is faster
 static const float MinHeight = 20;
-static const int NumRows = 5;
-static const int NumCols = 10;
+static const int NumRows = 10;
+static const int NumCols = 20;
 static const bool VisualizeCell = false;
 static const bool PopBuildings = true;
 static const bool HasWindows = false;
@@ -347,32 +347,33 @@ Vao GridCity::_CreateCityWall()
 {
     sketch::Scene shape;
 
-    const float wallHeight = -15.0f;
+    const float wallHeight = -30.0f;
     const float wallThickness = 2.0f;
+    const float base = -10.0f;
 
     sketch::Quad southWallQuad;
-    southWallQuad.p = vec3(0, 0, TerrainArea/2);
+    southWallQuad.p = vec3(0, base, TerrainArea/2);
     southWallQuad.u = vec3(TerrainArea/2+wallThickness, 0, 0);
     southWallQuad.v = vec3(0, 0, wallThickness);
     sketch::CoplanarPath* southWallRoof = shape.AddQuad(southWallQuad);
     shape.PushPath(southWallRoof, wallHeight);
 
     sketch::Quad northWallQuad;
-    northWallQuad.p = vec3(0, 0, -TerrainArea/2);
+    northWallQuad.p = vec3(0, base, -TerrainArea/2);
     northWallQuad.u = vec3(TerrainArea/2+wallThickness, 0, 0);
     northWallQuad.v = vec3(0, 0, wallThickness);
     sketch::CoplanarPath* northWallRoof = shape.AddQuad(northWallQuad);
     shape.PushPath(northWallRoof, wallHeight);
 
     sketch::Quad eastWallQuad;
-    eastWallQuad.p = vec3(TerrainArea/2, 0, 0);
+    eastWallQuad.p = vec3(TerrainArea/2, base, 0);
     eastWallQuad.u = vec3(wallThickness, 0, 0);
     eastWallQuad.v = vec3(0, 0, TerrainArea/2+wallThickness);
     sketch::CoplanarPath* eastWallRoof = shape.AddQuad(eastWallQuad);
     shape.PushPath(eastWallRoof, wallHeight);
 
     sketch::Quad westWallQuad;
-    westWallQuad.p = vec3(-TerrainArea/2, 0, 0);
+    westWallQuad.p = vec3(-TerrainArea/2, base, 0);
     westWallQuad.u = vec3(wallThickness, 0, 0);
     westWallQuad.v = vec3(0, 0, TerrainArea/2+wallThickness);
     sketch::CoplanarPath* westWallRoof = shape.AddQuad(westWallQuad);
@@ -712,8 +713,8 @@ void GridCity::_AllocCell(GridCell* cell)
     }
 
     // Add detail to rooftops
-    const float ridgeHeight = 2.0f;
-    const float ridgeThickness = 1.0f;
+    const float ridgeHeight = 1.0f;
+    const float ridgeThickness = 0.5f;
     sketch::Quad roofQuad = shape->ComputeQuad(cell->Roof.Path);
     vec3 U = normalize(roofQuad.u);
     vec3 V = normalize(roofQuad.v);
