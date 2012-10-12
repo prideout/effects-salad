@@ -161,8 +161,10 @@ void main()
     vec3 color = AmbientMaterial + df * gColor.rgb;
 
     // Craptastic AO:
-    float d = clamp((gAltitude+5)/10, 0, 1);
-    color *= d;
+    if (HasWindows) {
+        float d = clamp((gAltitude+5)/10, 0.0, 1.0);
+        color *= d;
+    }
 
     FragColor = vec4(color, gColor.a);
     Normal = N;

@@ -228,32 +228,33 @@ Vao GridCity::_CreateCityWall()
 {
     sketch::Scene shape;
 
-    const float wallHeight = -15.0f;
+    const float wallHeight = -30.0f;
     const float wallThickness = 2.0f;
+    const float base = -10.0f;
 
     sketch::Quad southWallQuad;
-    southWallQuad.p = vec3(0, 0, TerrainArea/2);
+    southWallQuad.p = vec3(0, base, TerrainArea/2);
     southWallQuad.u = vec3(TerrainArea/2+wallThickness, 0, 0);
     southWallQuad.v = vec3(0, 0, wallThickness);
     sketch::CoplanarPath* southWallRoof = shape.AddQuad(southWallQuad);
     shape.PushPath(southWallRoof, wallHeight);
 
     sketch::Quad northWallQuad;
-    northWallQuad.p = vec3(0, 0, -TerrainArea/2);
+    northWallQuad.p = vec3(0, base, -TerrainArea/2);
     northWallQuad.u = vec3(TerrainArea/2+wallThickness, 0, 0);
     northWallQuad.v = vec3(0, 0, wallThickness);
     sketch::CoplanarPath* northWallRoof = shape.AddQuad(northWallQuad);
     shape.PushPath(northWallRoof, wallHeight);
 
     sketch::Quad eastWallQuad;
-    eastWallQuad.p = vec3(TerrainArea/2, 0, 0);
+    eastWallQuad.p = vec3(TerrainArea/2, base, 0);
     eastWallQuad.u = vec3(wallThickness, 0, 0);
     eastWallQuad.v = vec3(0, 0, TerrainArea/2+wallThickness);
     sketch::CoplanarPath* eastWallRoof = shape.AddQuad(eastWallQuad);
     shape.PushPath(eastWallRoof, wallHeight);
 
     sketch::Quad westWallQuad;
-    westWallQuad.p = vec3(-TerrainArea/2, 0, 0);
+    westWallQuad.p = vec3(-TerrainArea/2, base, 0);
     westWallQuad.u = vec3(wallThickness, 0, 0);
     westWallQuad.v = vec3(0, 0, TerrainArea/2+wallThickness);
     sketch::CoplanarPath* westWallRoof = shape.AddQuad(westWallQuad);
