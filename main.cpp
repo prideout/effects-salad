@@ -414,9 +414,10 @@ void PezUpdate(float seconds)
     DemoContext::totalTime += seconds;
 
     DemoContext* ctx = DemoContext::GetCurrent();
-    ctx->Update(seconds);
     //std::cout << "seconds: " << seconds << " elapsed: " << ctx->elapsedTime << " dur: " << ctx->duration << std::endl;
     if (ctx->elapsedTime > ctx->duration) {
         _nextShot();
+        ctx = DemoContext::GetCurrent();
     }
+    ctx->Update(seconds);
 }
