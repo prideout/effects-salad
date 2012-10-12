@@ -94,6 +94,17 @@ Playback::_ExecuteCurrentCommand(float percentage)
         vec2 offset = vec2FromJson(cmd[5u]);
         CoplanarPath* path = _scene->AddRectangle(width, height, eqn, offset);
         _handles[handle] = path;
+    } else if (cmdName == "AddHoleQuad") {
+        string handle = cmd[1u].asString();
+        Quad q;
+        q.p = vec3FromJson(cmd[2u]);
+        q.u = vec3FromJson(cmd[3u]);
+        q.v = vec3FromJson(cmd[4u]);
+        Path* outer = _handles[cmd[5u].asString()];
+        pezCheck(outer != NULL, "Invalid handle %s\n", cmd[5u].asString().c_str());
+        CoplanarPath* cop = dynamic_cast<CoplanarPath*>(outer);
+        CoplanarPath* path = _scene->AddHoleQuad(q, cop);
+        _handles[handle] = path;
     } else if (cmdName == "AddQuad") {
         string handle = cmd[1u].asString();
         Quad q;

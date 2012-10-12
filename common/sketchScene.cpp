@@ -277,6 +277,16 @@ Scene::AddHoleQuad(Quad q, sketch::CoplanarPath* outer)
     outer->Holes.push_back(hole);
     _holes.push_back(hole);
 
+    if (_recording) {
+        string p = toString(q.p);
+        string u = toString(q.u);
+        string v = toString(q.v);
+        appendJson(
+            _history,
+            "[ \"AddHoleQuad\", \"%8.8x\", %s, %s, %s, \"%8.8x\"]",
+            hole, p.c_str(), u.c_str(), v.c_str(), outer );
+    }
+
     return hole;
 }
 
