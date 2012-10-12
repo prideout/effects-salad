@@ -630,6 +630,22 @@ void GridCity::_AllocCell(GridCell* cell)
         shape->SetPathPlane(cell->Anim.Path, cell->Anim.BeginW);
     }
 
+    // Test
+    if (true) {
+        for (float x = -500; x < 500; x += 20.0) {
+            for (float z = -500; z < 500; z += 20.0) {
+                sketch::Quad q;
+                q.p.x = x;
+                q.p.y = 0;
+                q.p.z = z;
+                q.p.y = _GetHeight(q.p);
+                q.u = vec3(2, 0, 0);
+                q.v = vec3(0, 0, 2);
+                _ridges.Shape->AddQuad(q);
+            }
+        }
+    }
+
     // Misc
     cell->Anim.StartTime = 0;
     cell->Shape = shape;
