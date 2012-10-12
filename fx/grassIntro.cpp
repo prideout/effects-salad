@@ -201,6 +201,10 @@ void GrassIntro::Draw() {
         cam.center = glm::vec3(0.0f);
     }
 
+    // TODO: drop the bass, add vibration
+    _ground->vibration = 0.0f; //glm::clamp(time / 10.0f, 0.0f, 1.0f)  ? 1.0 : 0.0;
+    
+
     // look where we are walking
     //  cam.center = cameraPoints.After(0);
     //cam.center = cameraPoints.After(GetContext()->elapsedTime);
