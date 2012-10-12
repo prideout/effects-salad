@@ -148,9 +148,9 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
     // or they won't draw correctly (cubic segments)
     //
 
-    float curveAmp = 20;
-    float curveLenght = 40;
-    float curvePeriod= 10 / 7.0;
+    float curveAmp = 10;
+    float curveLenght = 20;
+    float curvePeriod= 1; //10 / 7.0;
 
     //
     // Using cubic curves means they are easy to sample and spawn new curves
@@ -169,18 +169,23 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
                                 glm::mix(min.y, max.y, zmix) + dirFactor*i*curveLenght ));
         vec3& cv = t->cvs.back();
 
+        // add some noise to the movement
+        if (not facingX) 
+            cv.x += curveAmp*TerrainNoise.Get(cv.x, cv.z);
+        else
+            cv.z += curveAmp*TerrainNoise.Get(cv.x, cv.z);
+
+        // Fix up y value to match terrain
+        cv.y = _GetHeight(cv) + t->radius+.5;
+
         // force continuity between segments
+        // this correction must be last, after applying the noise
         int cvCount = t->cvs.size();
         if (i > 3 and (i-4) % 3 == 0) {
             glm::vec3 dir = t->cvs[cvCount - 2] - 
                             t->cvs[cvCount - 3];
             cv = t->cvs[cvCount - 2] + dir;
         }
-
-        if (not facingX) 
-            cv.x += curveAmp*TerrainNoise.Get(cv.x, cv.z);
-        else
-            cv.z += curveAmp*TerrainNoise.Get(cv.x, cv.z);
     }
     
     //
@@ -189,13 +194,6 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
     t->radius = 2;
     t->lod =5;
     t->sidesPerSlice = 5;
-
-    //
-    // Fix up y values to match terrain
-    //
-    FOR_EACH(cvIt, t->cvs) {
-        cvIt->y = _GetHeight(*cvIt) + t->radius+.5;
-    }
 
     //
     // Build sweep, build buffers, etc 
@@ -632,9 +630,9 @@ void GridCity::_AllocCell(GridCell* cell)
     }
 
     // Test
-    if (true) {
-        for (float x = -500; x < 500; x += 20.0) {
-            for (float z = -500; z < 500; z += 20.0) {
+    if (false) {
+        for (float x = -500; x < 500; x += 50.0) {
+            for (float z = -500; z < 500; z += 50.0) {
                 sketch::Quad q;
                 q.p.x = x;
                 q.p.y = 0;
@@ -766,7 +764,7 @@ void GridCity::Draw()
     glUseProgram(progs["FireFlies.Sig"]);
     _camera.Bind(glm::mat4());
     glUniform3f(u("Eye"), _camera.eye.x, _camera.eye.y, _camera.eye.z);
-    glUniform3f(u("MaterialColor"), .3, .8, .5);
+    glUniform3f(u("MaterialColor"), .5, .5, .2);
     glUniform1f(u("Time"), GetContext()->elapsedTime);
 
     FOR_EACH(tubeIt, _vines) {
