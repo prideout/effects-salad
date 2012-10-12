@@ -345,13 +345,20 @@ PezConfig PezGetConfig()
 {
     PezConfig config;
     config.Title = __FILE__;
-    config.Width = 2560/2;
-    config.Height = 1600/2;
+    config.Fullscreen = false;
 
-    // Accomodate my puny MacBook resolution if need be:
-    if (config.Height > pezGetDesktopHeight() * 2 /3) {
-        config.Width = config.Width * 2 / 3;
-        config.Height = config.Height * 2 / 3;
+    if (not config.Fullscreen) {
+        config.Width = 2560/2;
+        config.Height = 1600/2;
+        // Accomodate my puny MacBook resolution if need be:
+        if (config.Height > pezGetDesktopHeight() * 2 /3) {
+            config.Width = config.Width * 2 / 3;
+            config.Height = config.Height * 2 / 3;
+        }
+    } else {
+        // this is a little jenky, we should really be setting a video mode
+        config.Width = pezGetDesktopWidth();
+        config.Height = pezGetDesktopHeight();
     }
 
     config.Multisampling = false;
