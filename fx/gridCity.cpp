@@ -27,8 +27,8 @@ static const float TerrainArea = 300;
 static const float TerrainScale = 0.5;
 static const float MaxHeight = 40;
 static const vec2 CellScale = vec2(0.9f, 0.7f);
-static const float PopDuration = 1.0f;
-static const float GrowthRate = 0.1f; // lower is faster
+static const float PopDuration = 0.1f;
+static const float GrowthRate = 0.3f; // lower is faster
 static const float MinHeight = 20;
 static const int NumRows = 10;
 static const int NumCols = 20;
@@ -84,6 +84,10 @@ GridTerrainFunc(vec2 v)
 
 GridCity::GridCity()
 {
+    centerVines = false;
+    outerVines = true;
+    trackBeat = false;
+    diveCamera = false;
     _currentBeat = 0;
 }
 
@@ -287,8 +291,8 @@ Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facing
 
 void GridCity::_CreateVines() 
 {
-    bool edges = true;
-    bool centers = true;
+    bool edges = outerVines;
+    bool centers = centerVines;
     if (edges) {
         float inc = .05;
         for (float a = 0; a < 1.0; a+= inc) {
@@ -903,6 +907,10 @@ void GridCity::Update()
     // update ridges
     _ridges.CpuTriangles->PullFromScene();
     _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
+
+    _camera.eye = glm::rotate(_camera.eye, 
+                        (trackBeat and (GetContext()->audio->GetSnares() or GetContext()->audio->GetKicks())) ? 1.0f : .1f, 
+                        glm::vec3(0,1,0));
 }
 
 void GridCity::Draw()

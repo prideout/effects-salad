@@ -59,7 +59,6 @@
 
 ["GridCity", 30.0, "FranticCurve", []],
 
-["Credits", 30.0, "NuthinDoin", []],
 ["GrassTreeGrow", 30.0, "NuthinDoin", []],
 
 ["GridCity2", 30.0, "FranticCurve", []],
@@ -67,6 +66,7 @@
 ["GrassTreeBloom", 30.0, "NuthinDoin", []]
 
 
+//["Credits", 30.0, "NuthinDoin", []],
 //
 // ,
 //

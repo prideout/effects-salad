@@ -58,6 +58,7 @@ static void _constructScene()
         GrassIntro* grass = new GrassIntro;
         grass->_ground = ground;
         Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag 
+                                      | Fullscreen::BlendFlag
                                       | Fullscreen::BrightnessFlag);
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
@@ -76,16 +77,18 @@ static void _constructScene()
         ctx->mainCam.eye.z = 5;
         GrassTreeGrow* grass = new GrassTreeGrow;
         grass->_ground = ground;
-
         Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag 
+                                        | Fullscreen::BlendFlag
                                         | Fullscreen::BrightnessFlag);
         fs->solidColor = vec4(1.f);
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
         grass->fullscreen = fs;
-
+        #if 0
         ctx->drawables.push_back(fs);
-        //ctx->drawables.push_back(grass);
+        #else
+        ctx->drawables.push_back(grass);
+        #endif
         ctx->drawables.push_back(new FpsOverlay());
     }
 
@@ -98,13 +101,16 @@ static void _constructScene()
         GrassTreeGrow* grass = new GrassTreeGrow;
         grass->bloomMode = true;
         grass->_ground = ground;
-        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag);
+        #if 1
+        Fullscreen* fs = new Fullscreen(Fullscreen::VignetteFlag
+                                        | Fullscreen::BlendFlag);
         fs->clearColor = vec4(0.,0.,0.,1);
         fs->AddChild(grass);
         grass->fullscreen = fs;
-
         ctx->drawables.push_back(fs);
-        //ctx->drawables.push_back(grass);
+        #else
+        ctx->drawables.push_back(grass);
+        #endif
         ctx->drawables.push_back(new FpsOverlay());
     }
 
@@ -236,7 +242,8 @@ static void _constructScene()
         Fullscreen::Mask mask = 0;
         mask |= Fullscreen::AmbientOcclusionFlag;
         Fullscreen* fullscreen;
-        if (bool slow = true)
+        bool slow = true;
+        if (slow)
             fullscreen = new Fullscreen("SSAO", mask);
         else
             fullscreen = new Fullscreen(mask);
@@ -248,7 +255,7 @@ static void _constructScene()
     //
     // TEMPORARY FIX for double city bug
     //
-    {   // Grid City
+    {   // Grid City 2
         DemoContext* ctx = DemoContext::New("GridCity2");
         DemoContext::SetCurrent(ctx);
         shotMap[ctx->name] = ctx;
@@ -256,11 +263,16 @@ static void _constructScene()
         mask |= Fullscreen::AmbientOcclusionFlag;
         mask |= Fullscreen::SupersampleFlag;
         Fullscreen* fullscreen;
-        if (bool slow = false)
+        bool slow = true;
+        if (slow)
             fullscreen = new Fullscreen("SSAO", mask);
         else
             fullscreen = new Fullscreen(0);
-        fullscreen->AddChild(new GridCity());
+        GridCity* city = new GridCity();
+        city->trackBeat = false;
+        city->diveCamera = true;
+        city->centerVines = false;
+        fullscreen->AddChild(city);
         ctx->drawables.push_back(fullscreen);
     }
 

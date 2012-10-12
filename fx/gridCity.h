@@ -41,11 +41,19 @@ struct GridRidges {
 
 class GridCity : public Effect {
 public:
+    
+    bool centerVines;
+    bool outerVines;
+    bool trackBeat;
+    bool diveCamera;
+
     GridCity();
     virtual ~GridCity();
     virtual void Init();
     virtual void Update();
     virtual void Draw();
+
+
 private:
     vec2 _CellSample(int row, int col);
     void _AllocCell(GridCell* cell);
@@ -53,7 +61,7 @@ private:
     Vao _CreateCityWall();
     void _CreateVines();
     Tube* _CreateVine(float xmix, float zmix, float dirFactor, bool facingX,
-                        float radius=2, float lenght=10);
+                        float radius=2, float lenght=20);
     Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=100);
     float _GetHeight(vec3 p0);
 

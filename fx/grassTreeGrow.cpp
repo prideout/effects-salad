@@ -19,8 +19,8 @@ void GrassTreeGrow::Init()
     glUniform1i(u("Tex"), 1);
 
     // this must be set before Tree::Init
-    if (bloomMode) 
-        _tree.grown = true;
+    //if (bloomMode) 
+    //    _tree.grown = true;
 
     _surface.Init();
     _quad.Init();
@@ -85,6 +85,8 @@ void GrassTreeGrow::Draw() {
     
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     _ground->brightness = 1.0;
 
@@ -128,8 +130,11 @@ void GrassTreeGrow::Draw() {
     float underStop = 14.5f;
     float overStop = 30.f;
     if (time > underStart and time < underStop) {
+        if (bloomMode) {
+            fullscreen->_mask |= Fullscreen::ScanLinesFlag;
+        }
         if (time > 13.3 and time < 14.5) {
-            flash = 1.f + sinf(time*240);
+            flash = 0.f;//.5f;//1.f + sinf(time*240);
         }
         if (time > 13.3 and GetContext()->audio->GetHiHats()) {
             hhCount += 1.0f;
@@ -142,7 +147,7 @@ void GrassTreeGrow::Draw() {
         glm::vec3 orig = cam.eye;
         cam.eye = _tree.pos;
         cam.eye.x += 3.0 * cos(hhCount*.25 + time / 4);// + 5.0*glm::smoothstep(underStart, underStop, time);
-        cam.eye.y += 0.7; // + (2 + sin(hhCount*.25 + time));
+        cam.eye.y += 0.9; // + (2 + sin(hhCount*.25 + time));
         cam.eye.z -= 3.0 * sin(hhCount*.25 + time / 4);
         //cam.eye = glm::mix(cam.eye, orig, glm::smoothstep(underStart, underStop, time));
     } else if (time > underStop and time < overStop) {
@@ -186,13 +191,17 @@ void GrassTreeGrow::Draw() {
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     //glUniform3f(u("HazardCenter"), _tree.pos.x, _tree.pos.y, _tree.pos.z);
     glUniform1f(u("Time"), time);
-    _tube.Draw();
+    //_tube.Draw();
 
     FOR_EACH(tubeIt, _tubes) {
         tubeIt->Draw();
     }
 
-    _tree.Draw(time); //15 + 15*sin(time));
+    if (bloomMode) {
+        _tree.Draw(GetContext()->duration - (time+2)); //15 + 15*sin(time));
+    } else {
+        _tree.Draw(time); //15 + 15*sin(time));
+    }
     _fireFlies.Draw();
     _ground->Draw();
 
@@ -200,5 +209,6 @@ void GrassTreeGrow::Draw() {
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 };
 
