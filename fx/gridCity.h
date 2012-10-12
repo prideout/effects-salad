@@ -62,7 +62,6 @@ private:
     HalfBeat _beats;
     GridCells _cells;
     Vao _terrainVao;
-    Vao _backgroundTerrainVao;
     PerspCamera _camera;
     int _currentBeat;
     Vao _cityWall;

@@ -106,8 +106,8 @@ TerrainUtil::Smooth(int SIZE,
                     FloatList* normals,
                     IndexList* indices)
 {
-    for (float x = 0; x < SIZE; x++) {
-        for (float z = 0; z < SIZE; z++) {
+    for (float x = -SIZE/2; x < SIZE/2; x++) {
+        for (float z = -SIZE/2; z < SIZE/2; z++) {
 
             const float e = 5;
 
