@@ -22,14 +22,18 @@ struct GridCell {
     float Height;
     sketch::Scene* Shape;
     sketch::Tessellator* CpuTriangles;
-    GridAnim Anim;
+    GridAnim Roof;
     Vao GpuTriangles;
     bool Visible;
     int BuildingId;
+    GridAnim* NorthRidge;
+    GridAnim* SouthRidge;
+    GridAnim* EastRidge;
+    GridAnim* WestRidge;
 };
 
 typedef std::vector<GridCell> GridCells;
-typedef std::vector<GridAnim> GridAnims;
+typedef std::vector<GridAnim*> GridAnims;
 
 struct GridRidges {
     GridAnims Anims;
