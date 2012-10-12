@@ -158,8 +158,8 @@ Fullscreen::Draw()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _surface.texture);
     glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_LOD, 4);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 5);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_LOD, 4.0f);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_LOD, 5.0f);
 
     if (_mask & MipmapsFlag) {
         glGenerateMipmap(GL_TEXTURE_2D);
