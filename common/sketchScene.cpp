@@ -864,3 +864,25 @@ Scene::RotatePath(sketch::Path* path, vec3 axis, vec3 center, float theta)
         _points[*p] = glm::rotate(x, theta, axis);
     }
 }
+
+void
+Scene::ScalePath(sketch::Path* path, float scale, vec3 center)
+{
+    set<int> points;
+    FOR_EACH(e, path->Edges) {
+        uvec2 xy = (*e)->Endpoints;
+        points.insert(xy.x);
+        points.insert(xy.y);
+    }
+    FOR_EACH(p, points) {
+        vec3 x = center + scale * (_points[*p] - center);
+        _points[*p] = x;
+    }
+
+    if (_recording) {
+        appendJson(
+            _history,
+            "[ \"ScalePath\", \"%8.8x\", %f, %s]",
+            path, scale, toString(center) );
+    }
+}
