@@ -63,33 +63,15 @@ GridTerrainFunc(vec2 v)
     float tx = v.x * TerrainScale;
     float tz = v.y * TerrainScale;
     float y = TerrainNoise.Get(tx, tz) + 20.0 * TerrainNoise.Get(tx/5.0, tz/5.0);
-    y *= 0.3;
+    //y *= 0.3;
+    y *= length(v) / 1000.0f;
     vec3 p = vec3(v.x, y, v.y);
 
     float s = TerrainArea;
     p.x *= (s / TerrainRes);
     p.z *= (s / TerrainRes);
     p += vec3(-s/2.0, 0, -s/2.0);
-
-    return p;
-}
-
-static vec3
-BackgroundTerrainFunc(vec2 v)
-{
-    float tx = 5.0f * v.x * TerrainScale;
-    float tz = 5.0f * v.y * TerrainScale;
-    float y =
-        1.0f * TerrainNoise.Get(tx, tz) +
-        20.0f * TerrainNoise.Get(tx/5.0, tz/5.0);
-    y *= 0.3;
-    vec3 p = vec3(v.x, y, v.y);
-
-    float s = TerrainArea * 5;
-    p.x *= (s / TerrainRes);
-    p.z *= (s / TerrainRes);
-    p += vec3(-s/2.0, 0, -s/2.0);
-
+    
     return p;
 }
 
@@ -130,7 +112,7 @@ GridCity::_GetHeight(vec3 p0)
     vec2 p = vec2(p0.x, p0.z);
     vec2 coord = p / float(TerrainArea);
     vec2 domain = (coord + vec2(0.5)) * float(TerrainArea);
-    return BackgroundTerrainFunc(domain).y;
+    return GridTerrainFunc(domain).y;
 }
 
 Tube* GridCity::_CreateVine(float xmix, float zmix, float dirFactor, bool facingX)
@@ -284,19 +266,10 @@ void GridCity::Init()
     FloatList normals;
     IndexList indices;
     TerrainUtil::Smooth(
-        TerrainRes, GridTerrainFunc,
+        TerrainRes * 5, GridTerrainFunc,
         &ground, &normals, &indices);
     _terrainVao = Vao(3, ground, indices);
     _terrainVao.AddVertexAttribute(AttrNormal, 3, normals);
-
-    ground.clear();
-    normals.clear();
-    indices.clear();
-    TerrainUtil::Smooth(
-        TerrainRes, BackgroundTerrainFunc,
-        &ground, &normals, &indices);
-    _backgroundTerrainVao = Vao(3, ground, indices);
-    _backgroundTerrainVao.AddVertexAttribute(AttrNormal, 3, normals);
 
     // Form the grid
     GridCell cell;
@@ -473,23 +446,15 @@ void GridCity::Init()
         cell.Visible = true;
 
         vec3 p0 = cell.Quad.p;
-        vec2 p = vec2(p0.x, p0.z);
-        vec2 coord = p / float(TerrainArea);
-        vec2 domain = (coord + vec2(0.5)) * float(TerrainArea);
-        cell.Quad.p.y = GridTerrainFunc(domain).y;
+        cell.Quad.p.y = p0.y = _GetHeight(p0);
 
         vec3 p1 = cell.Quad.p + cell.Quad.u;
-        p = vec2(p1.x, p1.z);
-        coord = p / float(TerrainArea);
-        domain = (coord + vec2(0.5)) * float(TerrainArea);
-        p1.y = GridTerrainFunc(domain).y;
-        cell.Quad.u = length(cell.Quad.u) * normalize(p1 - cell.Quad.p);
+        p1.y = _GetHeight(p1);
 
         vec3 p2 = cell.Quad.p + cell.Quad.v;
-        p = vec2(p2.x, p2.z);
-        coord = p / float(TerrainArea);
-        domain = (coord + vec2(0.5)) * float(TerrainArea);
-        p2.y = GridTerrainFunc(domain).y;
+        p2.y = _GetHeight(p2);
+
+        cell.Quad.u = length(cell.Quad.u) * normalize(p1 - cell.Quad.p);
         cell.Quad.v = length(cell.Quad.v) * normalize(p2 - cell.Quad.p);
     }
 
@@ -507,6 +472,23 @@ void GridCity::Init()
             if (col >= NumCols) {
                 col = 0;
                 row++;
+            }
+        }
+    }
+
+    // Test the terrain sampling function
+    if (true) {
+        for (float x = -500; x < 500; x += 5.0) {
+            printf("%f\n", 1000-(x+500));
+            for (float z = -500; z < 500; z += 15.0) {
+                sketch::Quad q;
+                q.p.x = x;
+                q.p.y = 0;
+                q.p.z = z;
+                q.p.y = _GetHeight(q.p);
+                q.u = vec3(2, 0, 0);
+                q.v = vec3(0, 0, 2);
+                _ridges.Shape->AddQuad(q);
             }
         }
     }
@@ -631,22 +613,6 @@ void GridCity::_AllocCell(GridCell* cell)
         shape->SetPathPlane(cell->Anim.Path, cell->Anim.BeginW);
     }
 
-    // Test
-    if (true) {
-        for (float x = -500; x < 500; x += 20.0) {
-            for (float z = -500; z < 500; z += 20.0) {
-                sketch::Quad q;
-                q.p.x = x;
-                q.p.y = 0;
-                q.p.z = z;
-                q.p.y = _GetHeight(q.p);
-                q.u = vec3(2, 0, 0);
-                q.v = vec3(0, 0, 2);
-                _ridges.Shape->AddQuad(q);
-            }
-        }
-    }
-
     // Misc
     cell->Anim.StartTime = 0;
     cell->Shape = shape;
@@ -727,10 +693,6 @@ void GridCity::Draw()
     glEnable(GL_CULL_FACE);
     glUseProgram(progs["Buildings.Terrain"]);
     _camera.Bind(glm::mat4());
-
-    _backgroundTerrainVao.Bind();
-    glDrawElements(GL_TRIANGLES, _backgroundTerrainVao.indexCount, GL_UNSIGNED_INT, 0);
-
     _terrainVao.Bind();
     glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
 
@@ -741,6 +703,7 @@ void GridCity::Draw()
     glUniform3f(u("Translate"), 0, 0, 0);
     glUniform1i(u("HasWindows"), 1);
     _camera.Bind(glm::mat4());
+
     FOR_EACH(cell, _cells) {
         glUniform1i(u("BuildingId"), cell->BuildingId);
         if (not cell->Visible) {
@@ -761,7 +724,7 @@ void GridCity::Draw()
     glUniform1i(u("HasWindows"), 0);
     _cityWall.Bind();
     glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
-    
+
     // Grow vines
     glUseProgram(progs["FireFlies.Sig"]);
     _camera.Bind(glm::mat4());
