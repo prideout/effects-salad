@@ -107,7 +107,7 @@ void main()
     vec4 c = texture(SourceImage, tc);
 
     bool bkgd = (c.a == 0);
-    c = mix(c,vec4(1),0.4); // brighten up for pastel-like colors
+    c = mix(c,vec4(1),0.55); // brighten up for pastel-like colors
 
     vec3 n = texture(NormalsImage, tc).rgb;
 
