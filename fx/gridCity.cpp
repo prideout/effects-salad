@@ -89,6 +89,7 @@ GridCity::GridCity()
     trackBeat = false;
     diveCamera = false;
     _currentBeat = 0;
+    centerpiece = false;
 }
 
 GridCity::~GridCity()

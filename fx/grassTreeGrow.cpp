@@ -25,6 +25,10 @@ void GrassTreeGrow::Init()
     _surface.Init();
     _quad.Init();
     _milkyway.Init();
+    
+    if (bloomMode) {
+        _tree.leafDropMultiplier = 2.0f;
+    }
     _tree.Init();
     _fireFlies.Init();
 
@@ -56,16 +60,45 @@ void GrassTreeGrow::Init()
         cvs.push_back(vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
     }
     cvs[6] = _tree.pos;
-    _tube.cvs = cvs;
-    _tube.Init();
-
     // XXX: this is time independent right now
     //      need to make it explicit in time if we're going to keep the camera motion
     cameraPoints = AnimCurve<glm::vec3>(cvs, 0, GetContext()->duration);
 
 
     // Placeholder for generated curves
+    
 
+    {
+        // intro cam
+        float cameraPath[] = {
+            // intro camera
+            -73.889963783203328, 1.9022898114153644, -15.880825318011672,
+            -70.139848876016615, 1.9022898114153644, -14.874696928278611,
+            -62.68034894083236, 1.757119043952587, -8.9160731012576164,
+            -58.020746383103905, 1.6045803485703456, -7.8094230808761287,
+            -53.36114382537545, 1.4520416531881042, -6.7027730604946401,
+            -46.219941113223165, 1.1596638655462193, -7.1143489800664916,
+            -40.00023834032784, 1.1596638655462193, -6.0167543730849786,
+            -33.780535567432516, 1.1596638655462193, -4.9191597661034656,
+            -29.398405178043745, 0.3691749981521088, -3.3890212359114953,
+            -22.081107798166876, 0.3691749981521088, -3.9378185394022491,
+        };
+
+        Vec3List cvs;
+        size_t cvCount = sizeof(cameraPath) / sizeof(float);
+        for(size_t i = 0; i < cvCount; i+=3) {
+            cvs.push_back(vec3(cameraPath[i+0],cameraPath[i+1],cameraPath[i+2]));
+        }
+
+        _tube.cvs = cvs;
+        // under stop time
+        _tube.timeToGrow = GetContext()->duration - (13.0f + 5.0f);
+        _tube.startTime = 0.0f;
+        std::cout << "Grow Time: " << _tube.timeToGrow << std::endl;
+        _tube.Init();
+
+        introCameraPoints = AnimCurve<glm::vec3>(cvs, 0, GetContext()->duration);
+    }
 };
 
 void GrassTreeGrow::Update() {
@@ -92,6 +125,7 @@ void GrassTreeGrow::Draw() {
 
     static float stickyTime = 0.0f;
     float time = GetContext()->elapsedTime;
+    float rtime = GetContext()->duration - time;
 
     stickyTime = int(time*10.f) / 10.f;
     float SPB = .5f * (1.0f / BPS);
@@ -128,7 +162,21 @@ void GrassTreeGrow::Draw() {
 
     float underStart = 11.f;
     float underStop = 14.5f;
-    float overStop = 30.f;
+    float overStop = 36.f;
+    if (bloomMode) {
+        underStart = 3.0f + 5.0f;
+        underStop = 13.0f + 5.0f;
+
+        //
+        // Fade out 
+        //
+        if (fullscreen) {
+            float screenFadeTime = 4.0;
+            fullscreen->brightness = glm::smoothstep(0.0f, 1.0f, glm::min(1.0f, rtime / screenFadeTime));
+            fullscreen->_mask |= Fullscreen::BrightnessFlag;
+        }
+
+    }
     if (time > underStart and time < underStop) {
         if (bloomMode) {
             fullscreen->_mask |= Fullscreen::ScanLinesFlag;
@@ -141,7 +189,7 @@ void GrassTreeGrow::Draw() {
             fullscreen->_mask |= Fullscreen::ScanLinesFlag;
         }
 
-        fullscreen->brightness = 1.0 - flash;
+        fullscreen->brightness = 1.0;// - flash;
         flash *= .9;
 
         glm::vec3 orig = cam.eye;
@@ -150,6 +198,18 @@ void GrassTreeGrow::Draw() {
         cam.eye.y += 0.9; // + (2 + sin(hhCount*.25 + time));
         cam.eye.z -= 3.0 * sin(hhCount*.25 + time / 4);
         //cam.eye = glm::mix(cam.eye, orig, glm::smoothstep(underStart, underStop, time));
+    } else if (bloomMode and time > underStop) {
+        fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
+        cam.center= vec3(0,1,-15);
+        cam.center.x = -3;
+        cam.center.y = 0;
+        cam.center.z = 2;
+        cam.eye.x = -9;
+        cam.eye.y = 1.5;
+        cam.eye.z = 8;
+    
+        cam.eye = introCameraPoints.At(rtime);
+
     } else if (time > underStop and time < overStop) {
         fullscreen->brightness = 1.0;
         fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
@@ -164,7 +224,7 @@ void GrassTreeGrow::Draw() {
             hhCount += .1f;
         }
         flash = .5*sin(hhCount+time*240);
-        fullscreen->brightness = 1.0 - flash;
+        fullscreen->brightness = 1.0;// - flash;
         flash *= .9;
         cam.eye = _tree.pos;
         cam.eye.x += 7.0 * cos(hhCount*.25 + time / 4);// + 5.0*glm::smoothstep(underStart, underStop, time);
@@ -188,17 +248,22 @@ void GrassTreeGrow::Draw() {
     // --------------------------------------------------------------------------------
     glUseProgram(progs["FireFlies.Tube"]);
     cam.Bind(glm::translate(glm::mat4(), glm::vec3(0, -1.5, 0)));
+    //cam.Bind(glm::mat4());
     glUniform3f(u("Eye"), cam.eye.x, cam.eye.y, cam.eye.z);
     //glUniform3f(u("HazardCenter"), _tree.pos.x, _tree.pos.y, _tree.pos.z);
     glUniform1f(u("Time"), time);
-    //_tube.Draw();
+
+    if (bloomMode and time > underStop) {
+        // no clue why this doesn't work :(
+        _tube.Draw(rtime) ;//rtime*200); //(GetContext()->duration + underStop) - (time - underStop));
+    }
 
     FOR_EACH(tubeIt, _tubes) {
         tubeIt->Draw();
     }
 
     if (bloomMode) {
-        _tree.Draw(GetContext()->duration - (time+2)); //15 + 15*sin(time));
+        _tree.Draw(GetContext()->duration - (time+9.6)); //15 + 15*sin(time));
     } else {
         _tree.Draw(time); //15 + 15*sin(time));
     }
