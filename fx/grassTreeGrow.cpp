@@ -149,6 +149,7 @@ void GrassTreeGrow::Draw() {
         fullscreen->brightness = 1.0;
         fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
         fullscreen->solidColor = vec4(0,0,0,1);
+        _ground->vibration = 0.0f; //.5+.5*sin(time); 
         if (
             (GetContext()->audio->GetSnares() 
              or GetContext()->audio->GetKicks())) {
@@ -165,7 +166,8 @@ void GrassTreeGrow::Draw() {
         cam.eye.y += 2.7; // + (2 + sin(hhCount*.25 + time));
         cam.eye.z -= 7.0 * sin(hhCount*.25 + time / 4);
     } else {
-        fullscreen->brightness = 1.0;
+        _ground->vibration = 0.0f; 
+        fullscreen->brightness = 1.0f;
         fullscreen->_mask &= ~Fullscreen::ScanLinesFlag;
     }
 
