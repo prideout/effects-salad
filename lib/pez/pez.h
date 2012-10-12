@@ -25,6 +25,7 @@ typedef struct PezConfigRec
     int Height;
     bool Multisampling;
     bool VerticalSync;
+    bool Fullscreen;
 } PezConfig;
 
 #ifdef PEZ_MAINLOOP

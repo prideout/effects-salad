@@ -110,12 +110,23 @@ int main(int argc, char** argv)
     attr.colormap = XCreateColormap(context.MainDisplay, root, visinfo->visual, AllocNone);
     attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask |
                       PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
+    
+    bool fullscreen = true;
 
+    int width = PezGetConfig().Width;
+    int height = PezGetConfig().Height;
+
+    if (PezGetConfig().Fullscreen) {
+        width = XWidthOfScreen(pScreen);
+        height = XHeightOfScreen(pScreen);
+    }
     context.MainWindow = XCreateWindow(
         context.MainDisplay,
         root,
         0, 0,
-        PezGetConfig().Width, PezGetConfig().Height, 0,
+        width, 
+        height, 
+        0,
         visinfo->depth,
         InputOutput,
         visinfo->visual,
@@ -135,7 +146,7 @@ int main(int argc, char** argv)
 
     XMapWindow(context.MainDisplay, context.MainWindow);
 
-    int centerWindow = 1;
+    int centerWindow = !PezGetConfig().Fullscreen;
     if (centerWindow) {
         int left = XWidthOfScreen(pScreen)/2 - PezGetConfig().Width/2;
         int top = XHeightOfScreen(pScreen)/2 - PezGetConfig().Height/2;
