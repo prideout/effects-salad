@@ -46,6 +46,8 @@ public:
     bool outerVines;
     bool trackBeat;
     bool diveCamera;
+    bool centerpiece;
+    bool pingpong;
 
     GridCity();
     virtual ~GridCity();
@@ -62,8 +64,9 @@ private:
     void _CreateVines();
     Tube* _CreateVine(float xmix, float zmix, float dirFactor, bool facingX,
                         float radius=2, float lenght=20);
-    Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=100);
+    Tube* _CreateCenterVine(float xmix, float zmix, float radius=2, float lenght=50);
     float _GetHeight(vec3 p0);
+    void _CreateCenterpiece();
 
     sketch::PathList
     _AddWindows(GridCell* cell, sketch::CoplanarPath* wall);
@@ -77,4 +80,15 @@ private:
     int _currentBeat;
     Vao _cityWall;
     GridRidges _ridges;
+
+    Vao _centerpieceVao;
+    sketch::Scene* _centerpieceSketch;
+    sketch::Scene* _historicalSketch;
+    sketch::Tessellator* _centerpieceTess;
+    sketch::Playback* _centerpiecePlayer;
+    sketch::PathList _columns;
+    sketch::PathList _hangingThings;
+    vec3 _columnCenter;
+    float _previousBump;
+    bool _backwards;
 };

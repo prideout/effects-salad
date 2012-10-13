@@ -42,7 +42,7 @@ Playback::_IsDiscreteCommand(const Json::Value& cmd) const
 }
 
 void
-Playback::Update()
+Playback::Update(bool explicitBump, bool bump)
 {
     float time = DemoContext::totalTime;
     if (time == _previousTime) {
@@ -50,24 +50,54 @@ Playback::Update()
     }
     _previousTime = time;
 
-    // Special case the first command so that it always gets executed.
-    if (_currentCommandStartTime < 0) {
-        _currentCommandStartTime = time;
-        _currentCommand = 0;
+    if (!explicitBump) {
 
-    // Bump to the next command if it's time.
-    } else if (_IsDiscreteCommand(_GetCurrentCommand())) {
-        _currentCommandStartTime = time;
-        ++_currentCommand;
-    } else if ((time - _currentCommandStartTime) > _commandDuration) { 
-        _ExecuteCurrentCommand(1.0);
-        _currentCommandStartTime = time;
-        ++_currentCommand;
+        // Special case the first command so that it always gets executed.
+        if (_currentCommandStartTime < 0) {
+            _currentCommandStartTime = time;
+            _currentCommand = 0;
+            
+        // Bump to the next command if it's time.
+        } else if (_IsDiscreteCommand(_GetCurrentCommand())) {
+            _currentCommandStartTime = time;
+            ++_currentCommand;
+        } else if ((time - _currentCommandStartTime) > _commandDuration) { 
+            _ExecuteCurrentCommand(1.0);
+            _currentCommandStartTime = time;
+            ++_currentCommand;
+        }
+
+    } else {
+
+        if (_currentCommandStartTime < 0) {
+            if (!bump) {
+                return;
+            }
+            _currentCommandStartTime = time;
+            _currentCommand = 0;
+
+        // Bump to the next command if it's time.
+        } else if (_IsDiscreteCommand(_GetCurrentCommand())) {
+            _currentCommandStartTime = time;
+            ++_currentCommand;
+        } else if (bump) { 
+            _ExecuteCurrentCommand(1.0);
+            _currentCommandStartTime = time;
+            ++_currentCommand;
+        }
+
     }
 
     // Execute the command
     float percentage = (time - _currentCommandStartTime) / _commandDuration;
-    _ExecuteCurrentCommand(percentage);
+    while (true) {
+        _ExecuteCurrentCommand(percentage);
+        if (_IsDiscreteCommand(_GetCurrentCommand())) {
+            ++_currentCommand;
+        } else {
+            break;
+        }
+    }
 }
 
 void
@@ -93,6 +123,25 @@ Playback::_ExecuteCurrentCommand(float percentage)
         vec4 eqn = vec4FromJson(cmd[4u]);
         vec2 offset = vec2FromJson(cmd[5u]);
         CoplanarPath* path = _scene->AddRectangle(width, height, eqn, offset);
+        _handles[handle] = path;
+    } else if (cmdName == "AddHoleQuad") {
+        string handle = cmd[1u].asString();
+        Quad q;
+        q.p = vec3FromJson(cmd[2u]);
+        q.u = vec3FromJson(cmd[3u]);
+        q.v = vec3FromJson(cmd[4u]);
+        Path* outer = _handles[cmd[5u].asString()];
+        pezCheck(outer != NULL, "Invalid handle %s\n", cmd[5u].asString().c_str());
+        CoplanarPath* cop = dynamic_cast<CoplanarPath*>(outer);
+        CoplanarPath* path = _scene->AddHoleQuad(q, cop);
+        _handles[handle] = path;
+    } else if (cmdName == "AddQuad") {
+        string handle = cmd[1u].asString();
+        Quad q;
+        q.p = vec3FromJson(cmd[2u]);
+        q.u = vec3FromJson(cmd[3u]);
+        q.v = vec3FromJson(cmd[4u]);
+        CoplanarPath* path = _scene->AddQuad(q);
         _handles[handle] = path;
     } else if (cmdName == "AddPolygon") { 
         string handle = cmd[1u].asString();
@@ -169,6 +218,8 @@ Playback::_ExecuteCurrentCommand(float percentage)
             delta = _Tween(delta, percentage);
             _scene->SetPathPlane(cop, _originalPlanes.front() + delta);
         }
+    } else if (cmdName == "ScalePath") { 
+        // TBD
     } else {
         pezFatal("Unknown command: %s", cmdName.c_str());
     }

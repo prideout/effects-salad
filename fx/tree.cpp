@@ -60,7 +60,7 @@ void Tree::Init()
 
     // leaf particle system
     _leafParticles.numParticles = 1000;
-    _leafParticles.spawnPerSec = 2 * 4 * (140 / 60.0f);
+    _leafParticles.spawnPerSec = leafDropMultiplier*(2 * 4 * (140 / 60.0f));
     _leafParticles.controller = this;
     _leafParticles.Init();
 

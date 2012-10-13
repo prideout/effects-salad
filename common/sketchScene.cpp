@@ -5,6 +5,7 @@
 #include "pez/pez.h"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/constants.inl"
+#include "glm/gtx/rotate_vector.hpp"
 
 #include <algorithm>
 #include <set>
@@ -62,6 +63,17 @@ Scene::AddQuad(sketch::Quad q)
     retval->Plane = const_cast<Plane*>(plane);
     _FinalizePath(retval, _threshold);
     _paths.push_back(retval);
+
+    if (_recording) {
+        string p = toString(q.p);
+        string u = toString(q.u);
+        string v = toString(q.v);
+        appendJson(
+            _history,
+            "[ \"AddQuad\", \"%8.8x\", %s, %s, %s]",
+            retval, p.c_str(), u.c_str(), v.c_str() );
+    }
+
     return retval;
 }
 
@@ -264,6 +276,16 @@ Scene::AddHoleQuad(Quad q, sketch::CoplanarPath* outer)
     hole->Plane = outer->Plane;
     outer->Holes.push_back(hole);
     _holes.push_back(hole);
+
+    if (_recording) {
+        string p = toString(q.p);
+        string u = toString(q.u);
+        string v = toString(q.v);
+        appendJson(
+            _history,
+            "[ \"AddHoleQuad\", \"%8.8x\", %s, %s, %s, \"%8.8x\"]",
+            hole, p.c_str(), u.c_str(), v.c_str(), outer );
+    }
 
     return hole;
 }
@@ -826,4 +848,41 @@ Scene::_GetCentroid(const Path* path) const
         center += *p;
     }
     return center / float(vlist.size());
+}
+
+void
+Scene::RotatePath(sketch::Path* path, vec3 axis, vec3 center, float theta)
+{
+    set<int> points;
+    FOR_EACH(e, path->Edges) {
+        uvec2 xy = (*e)->Endpoints;
+        points.insert(xy.x);
+        points.insert(xy.y);
+    }
+    FOR_EACH(p, points) {
+        vec3 x = _points[*p];
+        _points[*p] = glm::rotate(x, theta, axis);
+    }
+}
+
+void
+Scene::ScalePath(sketch::Path* path, float scale, vec3 center)
+{
+    set<int> points;
+    FOR_EACH(e, path->Edges) {
+        uvec2 xy = (*e)->Endpoints;
+        points.insert(xy.x);
+        points.insert(xy.y);
+    }
+    FOR_EACH(p, points) {
+        vec3 x = center + scale * (_points[*p] - center);
+        _points[*p] = x;
+    }
+
+    if (_recording) {
+        appendJson(
+            _history,
+            "[ \"ScalePath\", \"%8.8x\", %f, %s]",
+            path, scale, toString(center) );
+    }
 }

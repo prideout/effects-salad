@@ -22,19 +22,22 @@ class Tree : public Effect, private ParticleController {
     BufferTexture _leafData;
     BufferTexture _leafNormals;
     Vec3List _leafPoints;
-
     ParticleSystem _leafParticles;
+
 
     virtual void Spawn(Particle* part);
     virtual void Update(Particle* part, float age);
 
 public:
+
     glm::vec3 pos;
     bool grown;
+    float leafDropMultiplier;
 
     Tree() : Effect(),
         pos(glm::vec3(-3,-2.25,2)),
-        grown(false)
+        grown(false),
+        leafDropMultiplier(1.0)
     { 
     }
    

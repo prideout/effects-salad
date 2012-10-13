@@ -154,6 +154,12 @@ namespace sketch
         sketch::Quad
         ComputeQuad(const CoplanarPath* path) const;
 
+        void
+        RotatePath(sketch::Path* path, glm::vec3 axis, glm::vec3 center, float theta);
+
+        void
+        ScalePath(sketch::Path* path, float scale, glm::vec3 center);
+
         Scene();
         ~Scene();
 

@@ -89,6 +89,9 @@ GridCity::GridCity()
     trackBeat = false;
     diveCamera = false;
     _currentBeat = 0;
+    centerpiece = false;
+    pingpong = false;
+    _backwards = false;
 }
 
 GridCity::~GridCity()
@@ -197,7 +200,7 @@ Tube* GridCity::_CreateCenterVine(float xmix, float zmix, float radius, float le
     t->radius = radius;
     t->lod = 5;
     t->sidesPerSlice = 5;
-    //t->startTime = 2.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
+    t->startTime = 10.0f + TerrainNoise.Get(cv.x, cv.z)*2.0f;
     t->timeToGrow = 15.0f + TerrainNoise.Get(cv.x, cv.z)*15.0f;
 
     //
@@ -393,8 +396,13 @@ Vao GridCity::_CreateCityWall()
 
 void GridCity::Init()
 {
+    _previousBump = 0;
     _cityWall = _CreateCityWall();
     _CreateVines();
+    
+    if (centerpiece) {
+        _CreateCenterpiece();
+    }
 
     _ridges.Shape = new sketch::Scene();
     _ridges.CpuTriangles = new sketch::Tessellator(*_ridges.Shape);
@@ -884,7 +892,9 @@ void GridCity::Update()
                 _ridges.Shape->SetVisible(cell.Ridges[i]->Path, true);
             }
 
-            _FreeCell(&cell);
+            if (!pingpong) {
+                _FreeCell(&cell);
+            }
             continue;
         }
         // Update an in-progress animation
@@ -899,6 +909,10 @@ void GridCity::Update()
         cell.CpuTriangles->PushToGpu(cell.GpuTriangles);
     }
 
+    if (numAnimating == 0 && pingpong) {
+        // TBD prideout
+    }
+
     // update vines
     FOR_EACH(tubeIt, _vines) {
         (*tubeIt)->Update();
@@ -908,6 +922,40 @@ void GridCity::Update()
     _ridges.CpuTriangles->PullFromScene();
     _ridges.CpuTriangles->PushToGpu(_ridges.GpuTriangles);
 
+    // update centerpiece
+    if (centerpiece && time > 2.0f) {
+
+        bool bump = false;
+        if (time - _previousBump > 0.5 || time > 10.0) {
+            bump = GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares();
+            if (time > 10.0) {
+                //_centerpiecePlayer->SetCommandDuration(1.0 / 6.0); // prideout
+                bump = bump || GetContext()->audio->GetHiHats();
+            }
+            if (bump) {
+                _previousBump = time;
+            }
+        }
+        _centerpiecePlayer->Update(true, bump);
+        _centerpieceTess->PullFromScene();
+
+        if (false && time > 4.0f) {
+            static bool cw = false;
+            if (GetContext()->audio->GetKicks() || GetContext()->audio->GetSnares()) {
+                vec3 axis = vec3(0, 1, 0);
+                FOR_EACH(c, _columns) {
+                    _centerpieceSketch->RotatePath(
+                        *c,
+                        axis,
+                        _columnCenter,
+                        cw ? 15.0f : -15.0f);
+                }
+                cw = !cw;
+            }
+        }
+    }
+
+    // update camera
     _camera.eye = glm::rotate(_camera.eye, 
                         (trackBeat and (GetContext()->audio->GetSnares() or GetContext()->audio->GetKicks())) ? 1.0f : .1f, 
                         glm::vec3(0,1,0));
@@ -919,7 +967,6 @@ void GridCity::Draw()
     glDisable(GL_BLEND);
     Programs& progs = Programs::GetInstance();
 
-#if 1
     // Draw terrain
     glEnable(GL_CULL_FACE);
     glUseProgram(progs["Buildings.Terrain"]);
@@ -928,7 +975,6 @@ void GridCity::Draw()
     glDrawElements(GL_TRIANGLES, _terrainVao.indexCount, GL_UNSIGNED_INT, 0);
 
     // Draw buildings
-    glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
     glUseProgram(progs["Sketch.Facets"]);
     glUniform3f(u("Scale"), 1, 1, 1);
@@ -947,6 +993,7 @@ void GridCity::Draw()
 
     // Draw roof ridges
     glUniform1i(u("HasWindows"), 0);
+    glUniform1i(u("BuildingId"), 0);
     _ridges.GpuTriangles.Bind();
     glDrawElements(GL_TRIANGLES, _ridges.GpuTriangles.indexCount, GL_UNSIGNED_INT, 0);
 
@@ -954,9 +1001,18 @@ void GridCity::Draw()
     glUniform1i(u("HasWindows"), 0);
     _cityWall.Bind();
     glDrawElements(GL_TRIANGLES, _cityWall.indexCount, GL_UNSIGNED_INT, 0);
-#endif
 
+    // Draw the centerpiece
+    if (centerpiece) {
+        glDisable(GL_CULL_FACE);
+        _centerpieceTess->PushToGpu(_centerpieceVao);
+        _centerpieceVao.Bind();
+        glDrawElements(GL_TRIANGLES, _centerpieceVao.indexCount, GL_UNSIGNED_INT, 0);
+    }
+
+    // Restore culling to normal
     glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
 
     // Grow vines
     glUseProgram(progs["FireFlies.Sig"]);
@@ -969,3 +1025,119 @@ void GridCity::Draw()
         (*tubeIt)->Draw();
     }
 }
+
+void GridCity::_CreateCenterpiece()
+{
+    using namespace sketch;
+
+    _centerpieceSketch = new Scene();
+    _historicalSketch = new Scene();
+
+    const Plane* ground = _centerpieceSketch->GroundPlane();
+    glm::vec2 off(0, 0);
+
+    vec4 groundEqn = ground->Eqn;
+
+    CoplanarPath* circleRoof = _centerpieceSketch->AddPolygon(30, groundEqn, off, 96);
+    _centerpieceSketch->PushPath(circleRoof, 80);
+
+    CoplanarPath* lowerInset = _centerpieceSketch->AddInscribedPolygon(29, circleRoof, vec2(0,0), 128);
+    _centerpieceSketch->PushPath(lowerInset, -2);
+
+    int numColumns = 12;
+    vec4 roofEqn = groundEqn; roofEqn.w = 78;
+    for (int i = 0; i < numColumns; ++i) {
+        float theta = 6.28 * i / numColumns;
+        off.x = 10.0f * cos(theta);
+        off.y = 10.0f * sin(theta);
+        CoplanarPath* column = _centerpieceSketch->AddPolygon(2, roofEqn, off, 32);
+        _columns.push_back(column);
+    }
+    _columnCenter = vec3(0, roofEqn.w, 0);
+    _centerpieceSketch->PushPaths(_columns, 30);
+    roofEqn.w = 80;
+
+    off = vec2(0, 0);
+    CoplanarPath* circle2Roof = _centerpieceSketch->AddPolygon(7, roofEqn, off, 5);
+    _centerpieceSketch->PushPath(circle2Roof, 80);
+
+    off = vec2(0, 0);
+    roofEqn.w += 80;
+    CoplanarPath* triRoof = _centerpieceSketch->AddPolygon(40, roofEqn, off, 128);
+    PathList triWalls;
+    PathList bumps;
+    _centerpieceSketch->PushPath(triRoof, 4, &triWalls);
+    roofEqn.w -= 3;
+
+    int numHangingThings = 32;
+    for (int i = 0; i < numHangingThings; ++i) {
+        Quad hangingThingyQ;
+
+        float theta = 6.28 * i / numHangingThings;
+        off.x = 15.0f * cos(theta);
+        off.y = 15.0f * sin(theta);
+
+        theta = -theta;
+
+        hangingThingyQ.p = vec3(off.x, roofEqn.w, off.y);
+        hangingThingyQ.u = 0.78f * vec3(sin(theta), 0, cos(theta));
+        hangingThingyQ.v = 0.25f * vec3(sin(theta+3.14/2.0), 0, cos(theta+3.14/2.0));
+        CoplanarPath* hangingThingy = _centerpieceSketch->AddQuad(hangingThingyQ);
+        _hangingThings.push_back(hangingThingy);
+
+        vec4 r = roofEqn; r.w += 3.0;
+        CoplanarPath* bump = _centerpieceSketch->AddPolygon(1, r, off, 16);
+        bumps.push_back(bump);
+    }
+    _centerpieceSketch->PushPaths(_hangingThings, -20);
+
+    for (int i = 0; i < numHangingThings; ++i) {
+        float theta = 6.28 * i / numHangingThings;
+        off.x = 20.0f * cos(theta);
+        off.y = 20.0f * sin(theta);
+        vec4 r = roofEqn; r.w += 3.0;
+        CoplanarPath* bump = _centerpieceSketch->AddPolygon(1, r, off, 16);
+        bumps.push_back(bump);
+    }
+
+    _centerpieceSketch->PushPaths(bumps, 6.0);
+
+    CoplanarPath* topInset = _centerpieceSketch->AddInscribedPolygon(37, triRoof, vec2(0,0), 128);
+    _centerpieceSketch->PushPath(topInset, -2);
+
+    int numDents = 30;
+    PathList dents;
+    for (int i = 0; i < numDents; i++) {
+        float theta = 6.28 * i / numDents;
+        off.x = 20.0f * cos(theta);
+        off.y = 20.0f * sin(theta);
+        CoplanarPath* dent = _centerpieceSketch->AddInscribedPolygon(1.5f, lowerInset, off, 16);
+        dents.push_back(dent);
+    }
+    _centerpieceSketch->PushPaths(dents, -2);
+    _centerpieceSketch->PushPath(lowerInset, -4);
+
+    for (int repeats = 0; repeats < 5; ++repeats) {
+        for (int i = 0; i < numDents;) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(dents[i]);
+            _centerpieceSketch->PushPath(cop, 6);
+            i += (repeats + 1);
+        }
+        for (int i = 0; i < numDents;) {
+            sketch::CoplanarPath* cop = dynamic_cast<sketch::CoplanarPath*>(dents[i]);
+            _centerpieceSketch->PushPath(cop, -6);
+            i += (repeats + 1);
+        }
+    }
+
+    const Json::Value& history = _centerpieceSketch->GetHistory();
+    std::swap(_historicalSketch, _centerpieceSketch);
+
+    _centerpieceTess = new Tessellator(*_centerpieceSketch);
+    _centerpiecePlayer = new Playback(history, _centerpieceSketch, _centerpieceTess);
+    _centerpieceSketch->EnableHistory(false);
+    _historicalSketch->EnableHistory(false);
+
+    _centerpieceTess->PullFromScene();
+}
+
