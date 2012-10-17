@@ -3,6 +3,10 @@
 #include "init.h"
 #include "glm/gtc/type_ptr.hpp"
 
+
+/*
+ * CAMERA
+ */
 Camera::Camera() :
     eye(vec3(0,0,1)),
     center(vec3(0,0,0)),

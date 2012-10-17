@@ -7,7 +7,9 @@
 
 using namespace std;
 
-
+//
+// A helper class for managing shader programs
+//
 class Programs {
     typedef map<string,GLuint> _ProgMap;
     
@@ -22,7 +24,8 @@ public:
 
     // Singleton pattern
     static Programs&
-    GetInstance() {
+    GetInstance() 
+    {
         if (not _instance) {
             _instance = new Programs();
         }

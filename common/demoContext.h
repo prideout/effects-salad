@@ -13,6 +13,12 @@
 #include "viewport.h"
 
 
+//
+// "ShotContext" may be a better name for this class, it provides the current
+// state for all currently rendering effects. The duration and elapsed time are
+// relative to the current shot. The Audio object is the one exception that is
+// globally shared.
+//
 class DemoContext {
     static DemoContext* _current;
     DemoContext(const std::string& shot);

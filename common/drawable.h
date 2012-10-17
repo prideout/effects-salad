@@ -10,6 +10,13 @@ class DemoContext;
 class Drawable;
 typedef std::vector<Drawable*> DrawableList;
 
+//
+// Drawable is a base class that provides a basic facilities interface
+// (Init,Draw,Update) and a built in model matrix.
+//
+// Drawable objects should be self-contained and should not aggregate other
+// drawables
+//
 class Drawable {
 public:
 

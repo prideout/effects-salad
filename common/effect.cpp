@@ -8,23 +8,27 @@ Effect::Effect() : Drawable(),
 
 }
 
-Effect::~Effect() {
+Effect::~Effect() 
+{
 }
 
 void
-Effect::Init() {
+Effect::Init() 
+{
     timer.Init();
     timer.name = name;
 }
 
 void
-Effect::Update() {
+Effect::Update() 
+{
     if (_enableDebug)
         timer.Update();
 }
 
 void
-Effect::Draw() {
+Effect::Draw() 
+{
     if (_enableDebug)
         timer.Draw();
 }

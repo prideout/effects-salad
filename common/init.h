@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "typedefs.h"
@@ -36,6 +35,8 @@ enum VertexAttribWidths {
     AttrLengthWidth     = 4,
 };
 
+// Some helper methods for initializing shaders and vertex buffers
+// XXX: feels like these belong in program and vao classes, rather than here
 GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey);
 GLuint InitVao(int componentCount, const FloatList& verts);
 GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices);
@@ -50,6 +51,7 @@ GLuint CurrentProgram()
     return p;
 }
 
+// A couple commonly used helper macros
 #define u(x) glGetUniformLocation(CurrentProgram(), x)
 #define ptr(x) glm::value_ptr(x)
 #define offset(x) ((const GLvoid*)(x))

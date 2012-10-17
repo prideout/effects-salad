@@ -3,32 +3,42 @@
 #include <bitset>
 #include <vector>
 
+//
+// Static audio controller methods which pass commands to SDL_mixer
+//
 void StartAudio(void);
 void StopAudio();
 void SetAudioPosition(float seconds);
 
+//
+// Some globals describing the Beats per Minute and teh Beats per Second useful
+// if client code wants to sync to the music but doesn't necessarily want to
+// track a specific signal
+//
 const int BPM = 280;
 const float BPS = BPM / 60.0f;
 
+//
+// A simple struct for building up musical signals, this emulates what has been
+// autored in the music sequencer so the patterns can be transfered directly
+//
 struct Pattern 
 {
     Pattern(int len, std::string name) : length(len), name(name) {}
 
-    // The pattern flattened into one bit per beat in the song
-    // if the pattern is present on the given beat, the bit is on
-    // if the pattern is not present, the bit is off
-    // the number of entries is equal to BPM * songLengthInSeconds
+    // The pattern flattened into one bit per beat in the song if the pattern
+    // is present on the given beat, the bit is on if the pattern is not
+    // present, the bit is off the number of entries is equal to BPM *
+    // songLengthInSeconds
     std::bitset<1024> beats;
 
-    // The unique pattern is actually only ~16 beats, this is the
-    // pattern that is stamped into the beats bitset above each time
-    // the pattern is played
+    // The unique pattern is actually only ~16 beats, this is the pattern that
+    // is stamped into the beats bitset above each time the pattern is played
     std::bitset<64> exemplar;
 
-    // two bits of state to avoid triggering the same beat multiple times
-    // it's legit to return the same beat multiple times for the same 
-    // time query, but it's not OK to return the same beat for different
-    // times
+    // two bits of state to avoid triggering the same beat multiple times it's
+    // legit to return the same beat multiple times for the same time query,
+    // but it's not OK to return the same beat for different times
     int lastBeatQuery;
     float lastTimeQuery;
 
@@ -44,6 +54,11 @@ struct Pattern
     }
 };
 
+
+//
+// Helper methods used when building up patterns / signals, not needed by
+// external clients
+//
 float TimeToBeat(float seconds);
 int GetBeat(int beat, Pattern* pat);
 void StampPattern(int beatOffset, Pattern* pat);

@@ -7,6 +7,9 @@
 
 using std::vector;
 
+//
+// Hardware instancing support
+//
 class Instancer : public Drawable {
 public:
     

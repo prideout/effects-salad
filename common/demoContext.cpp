@@ -13,11 +13,13 @@ DemoContext::DemoContext(const std::string& shot) :
     elapsedTime(0),
     name(shot),
     audio(&Audio::Get()),
-    clearColor(0,0,0,1) {
+    clearColor(0,0,0,1) 
+{
 }
 
 void 
-DemoContext::Init() {
+DemoContext::Init() 
+{
     elapsedTime = 0;
     FOR_EACH(drawable, drawables) {
         (*drawable)->Init();
@@ -25,7 +27,8 @@ DemoContext::Init() {
 }
 
 void 
-DemoContext::Render() {
+DemoContext::Render() 
+{
     viewport.Bind();
     glClearColor(clearColor.r, 
                  clearColor.g,
@@ -43,9 +46,14 @@ DemoContext::Render() {
 }
 
 void 
-DemoContext::Update(float seconds) {
+DemoContext::Update(float seconds) 
+{
     deltaTime = seconds;
     elapsedTime += seconds;
+
+    //
+    // For debugging purposes only, real shots should override the mainCam
+    //
     mainCam.eye.x += .1*cos(elapsedTime*2); 
     mainCam.aspect = viewport.GetAspect();
 
@@ -56,7 +64,8 @@ DemoContext::Update(float seconds) {
 }
 
 DemoContext*
-DemoContext::SetCurrent(DemoContext* cur) {
+DemoContext::SetCurrent(DemoContext* cur) 
+{
     _current = cur;
     cur->viewport.Bind();
     return cur;

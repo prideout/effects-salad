@@ -3,12 +3,14 @@
 
 Programs* Programs::_instance(NULL);
 
-Programs::Programs() {
+Programs::Programs() 
+{
     /* nothing */
 }
 
 GLuint 
-Programs::operator[](const string& name) {
+Programs::operator[](const string& name) 
+{
     // avoid accidentially adding missing entries
     if (_progMap.find(name) == _progMap.end())
         return NULL;
@@ -17,7 +19,8 @@ Programs::operator[](const string& name) {
 }
 
 GLuint
-Programs::Load(const string& name, bool hasGs /*false*/) {
+Programs::Load(const string& name, bool hasGs /*false*/) 
+{
     if (hasGs) {
         return Load(name, name + ".FS", name + ".VS", name + ".GS");
     } else {
@@ -28,8 +31,8 @@ Programs::Load(const string& name, bool hasGs /*false*/) {
 GLuint
 Programs::Load(const string& name, 
                 const string& fsName,
-                const string& vsName) {
-
+                const string& vsName) 
+{
     if (_progMap.find(name) != _progMap.end())
         return _progMap[name];
 
@@ -41,8 +44,8 @@ GLuint
 Programs::Load(const string& name, 
                 const string& fsName,
                 const string& vsName, 
-                const string& gsName) {
-     
+                const string& gsName) 
+{     
     if (_progMap.find(name) != _progMap.end())
         return _progMap[name];
 

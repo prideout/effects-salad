@@ -8,27 +8,32 @@ Drawable::Drawable() :
 }
 
 /* virtual */
-Drawable::~Drawable() {
+Drawable::~Drawable() 
+{
 }
 
 DemoContext*
-Drawable::GetContext() {
+Drawable::GetContext() 
+{
     return DemoContext::GetCurrent();
 }
 
 /* virtual */
 void
-Drawable::Init() {
+Drawable::Init() 
+{
 
 }
 
 /* virtual */
 void
-Drawable::Draw() {
+Drawable::Draw() 
+{
 }
 
 /* virtual */
 void
-Drawable::Update() {
+Drawable::Update() 
+{
 
 }

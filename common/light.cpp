@@ -8,19 +8,22 @@ Light::Light() : Drawable(),
 }
 
 void
-Light::Init() {
+Light::Init() 
+{
     if (not geometry) return;
     geometry->Init();
 }
 
 void
-Light::Update() {
+Light::Update() 
+{
     if (not geometry) return;
     geometry->Update();
 }
 
 void
-Light::Draw() {
+Light::Draw() 
+{
     if (not geometry) return;
     geometry->Draw();
 }

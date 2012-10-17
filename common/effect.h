@@ -5,6 +5,10 @@
 #include "drawable.h"
 #include "timer.h"
 
+//
+// An Effect is an aggregation of drawables, it has a name and timer for
+// debugging / profiling
+//
 class Effect : public Drawable {
     static bool _enableDebug;
 public:

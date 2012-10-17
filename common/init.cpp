@@ -69,7 +69,8 @@ GLuint InitProgram(const char* fsKey, const char* vsKey, const char* gsKey)
     return programHandle;
 }
 
-GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices) {
+GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indices) 
+{
     GLuint vbo, vao, ibo;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -92,7 +93,8 @@ GLuint InitVao(int componentCount, const FloatList& verts, const IndexList& indi
     return vao;
 }
 
-GLuint InitVao(int componentCount, const FloatList& verts) {
+GLuint InitVao(int componentCount, const FloatList& verts) 
+{
     GLuint vbo, vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);

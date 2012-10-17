@@ -1,7 +1,6 @@
 #pragma once
 
 #include "glm/glm.hpp"
-// specialized matrix ops
 #include "glm/gtc/matrix_transform.hpp"
 
 using namespace glm;
@@ -39,9 +38,5 @@ public:
 };
 
 
-class OrthoCamera : public Camera {
-public:
-    // TODO: implement ortho cam
-};
 
 

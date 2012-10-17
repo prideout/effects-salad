@@ -8,6 +8,9 @@
 #include "typedefs.h"
 #include "vao.h"
 
+//
+// Provides a visualization for normals, helpful when debugging
+//
 class NormalField : Drawable {
 
     GLsizei _lineCount;
@@ -30,6 +33,9 @@ public:
                 float scale=1.0f) : 
         Drawable()
     {
+        
+        //XXX: why is this constructor in-lined?
+
         FloatList lines;
         lines.reserve(points.size()*2*4);
 
@@ -67,37 +73,6 @@ public:
                 lines.push_back(1.0);
         }
 
-        if (0)
-        for(unsigned i = 0; i < lines.size() / 8; i++) {
-            std::cout << "L: "  
-                << lines[(i*8)+4+0] << ", " 
-                << lines[(i*8)+4+1] << ", " 
-                << lines[(i*8)+4+2] << ", " 
-                << lines[(i*8)+4+3] << " -- " 
-                //<< lines[i+0] << ", " 
-                //<< lines[i+1] << ", " 
-                //<< lines[i+2] << ", " 
-                //<< lines[i+3] 
-                << std::endl; 
-            std::cout << "P: " 
-                << points[i*4+0] << ", " 
-                << points[i*4+1] << ", " 
-                << points[i*4+2] << ", " 
-                << points[i*4+3] << " -- " 
-                << std::endl; 
-
-        }
-        /*
-        lines.clear();
-        lines.push_back(-200);
-        lines.push_back(0);
-        lines.push_back(-5);
-        lines.push_back(1);
-        lines.push_back(200);
-        lines.push_back(5);
-        lines.push_back(-5);
-        lines.push_back(1);
-        */
         lineBuffer = Vao(4, lines);
     }
 
@@ -106,8 +81,6 @@ public:
     virtual void Draw();
 
     virtual void Update();
-
-
 
 };
 
