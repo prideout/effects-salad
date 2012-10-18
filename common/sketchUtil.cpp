@@ -18,6 +18,8 @@ sketch::AddOffset(vec2 p2, const Plane* plane)
 void
 sketch::VerifyPlane(vec3 v, const Plane* plane, const char* msg)
 {
+    // XXX: in theory this should be a valid sanity check, but seems to be
+    //      giving false positives
     #if 0
     float distance =
         plane->Eqn.x * v.x +

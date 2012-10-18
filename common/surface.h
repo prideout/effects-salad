@@ -3,6 +3,9 @@
 #include "glm/glm.hpp"
 #include "pez/pez.h"
 
+//
+// A general surface / frame-buffer-object class for screen-space effects
+//
 class Surface {
 public:
     GLsizei width;

@@ -108,13 +108,6 @@ Playback::_ExecuteCurrentCommand(float percentage)
     }
     const Json::Value& cmd = _GetCurrentCommand();
 
-    #if 0
-    if (percentage == 0) {
-        Json::FastWriter writer;
-        cout << writer.write(cmd);
-    }
-    #endif
-
     string cmdName = cmd[0u].asString();
     if (cmdName == "AddRectangle") {
         string handle = cmd[1u].asString();

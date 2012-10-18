@@ -6,11 +6,13 @@ Surface::Surface() : width(0),
                      height(0),
                      texture(0),
                      depthTexture(0),
-                     fbo(0) {
+                     fbo(0) 
+{
 }
 
 void
-Surface::Init() {
+Surface::Init() 
+{
     ivec2 size = ivec2(256);
     GLenum internalFormat = GL_RGB16;
     GLenum format = GL_RGBA;
@@ -119,20 +121,27 @@ Surface::Init(ivec2 size,
 }
 
 void
-Surface::Bind() {
+Surface::Bind() 
+{
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glViewport(0, 0, width, height);
     pezCheckGL("Frambuffer bind failed");
 }
 
 void
-Surface::Unbind() {
+Surface::Unbind() 
+{
     glViewport(0, 0, PezGetConfig().Width, PezGetConfig().Height);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void
-Surface::Verify() {
+Surface::Verify() 
+{
+    //
+    // Pez provides a handy function to check the state of the FBO, use that
+    // rather than recreating it
+    //
     pezCheckFBO();
 }
 
